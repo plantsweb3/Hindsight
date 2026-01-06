@@ -1,13 +1,17 @@
 import { useState } from 'react'
 import { analyzeWallet, analyzeBehavior, isValidSolanaAddress } from './services/solana'
 import LandingPage from './components/LandingPage'
+import Quiz from './components/Quiz'
+import QuizResult from './components/QuizResult'
 import Results from './components/Results'
 
 export default function App() {
+  const [view, setView] = useState('landing') // 'landing' | 'quiz' | 'quizResult' | 'results'
   const [isLoading, setIsLoading] = useState(false)
   const [progress, setProgress] = useState('')
   const [error, setError] = useState('')
   const [results, setResults] = useState(null)
+  const [quizResults, setQuizResults] = useState(null)
 
   const handleAnalyze = async (walletAddress) => {
     // Validate
@@ -49,6 +53,7 @@ export default function App() {
         openPositions: walletData.openPositions,
         walletAddress,
       })
+      setView('results')
     } catch (err) {
       console.error('Analysis failed:', err)
       setError(err.message || 'Analysis failed')
@@ -60,10 +65,35 @@ export default function App() {
 
   const handleReset = () => {
     setResults(null)
+    setQuizResults(null)
     setError('')
+    setView('landing')
   }
 
-  if (results) {
+  const handleStartQuiz = () => {
+    setView('quiz')
+  }
+
+  const handleQuizComplete = (results) => {
+    setQuizResults(results)
+    setView('quizResult')
+  }
+
+  const handleQuizBack = () => {
+    setView('landing')
+  }
+
+  const handleRetakeQuiz = () => {
+    setQuizResults(null)
+    setView('quiz')
+  }
+
+  const handleAnalyzeFromQuiz = (walletAddress) => {
+    handleAnalyze(walletAddress)
+  }
+
+  // Render based on current view
+  if (view === 'results' && results) {
     return (
       <Results
         analysis={results.analysis}
@@ -73,9 +103,30 @@ export default function App() {
     )
   }
 
+  if (view === 'quizResult' && quizResults) {
+    return (
+      <QuizResult
+        results={quizResults}
+        onAnalyze={handleAnalyzeFromQuiz}
+        onRetake={handleRetakeQuiz}
+        onBack={handleReset}
+      />
+    )
+  }
+
+  if (view === 'quiz') {
+    return (
+      <Quiz
+        onComplete={handleQuizComplete}
+        onBack={handleQuizBack}
+      />
+    )
+  }
+
   return (
     <LandingPage
       onAnalyze={handleAnalyze}
+      onStartQuiz={handleStartQuiz}
       isLoading={isLoading}
       progress={progress}
       error={error}

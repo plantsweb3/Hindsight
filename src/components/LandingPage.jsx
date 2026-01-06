@@ -426,7 +426,7 @@ function WalletInputModal({ isOpen, onClose, onAnalyze, isLoading, progress, err
 }
 
 // Main Landing Page
-export default function LandingPage({ onAnalyze, isLoading, progress, error }) {
+export default function LandingPage({ onAnalyze, onStartQuiz, isLoading, progress, error }) {
   const [showWalletModal, setShowWalletModal] = useState(false)
 
   const handleLogoClick = (e) => {
@@ -443,7 +443,7 @@ export default function LandingPage({ onAnalyze, isLoading, progress, error }) {
   }
 
   const handleDigDeep = () => {
-    alert('Quiz coming soon! Use Quick Analyze for now.')
+    onStartQuiz?.()
   }
 
   const handleWalletSubmit = (wallet) => {
