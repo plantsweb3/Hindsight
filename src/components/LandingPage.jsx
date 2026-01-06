@@ -60,13 +60,41 @@ function CursorTrail() {
 }
 
 // Header
-function Header({ onLogoClick }) {
+function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, isAuthenticated, user }) {
   return (
     <header className="site-header">
       <a href="/" onClick={onLogoClick} className="header-logo">
         <img src="/hindsightlogo.png" alt="Hindsight" className="header-logo-img" />
         <span className="header-title">hindsight</span>
       </a>
+      <div className="header-nav">
+        {isAuthenticated ? (
+          <>
+            <button onClick={onOpenJournal} className="nav-link-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              </svg>
+              Journal
+            </button>
+            <button onClick={onOpenDashboard} className="nav-user-btn">
+              <span className="nav-user-avatar">
+                {user?.username?.charAt(0).toUpperCase() || 'U'}
+              </span>
+              <span className="nav-user-name">{user?.username}</span>
+            </button>
+          </>
+        ) : (
+          <div className="nav-auth-buttons">
+            <button onClick={() => onShowAuth('login')} className="nav-auth-btn nav-login">
+              Log in
+            </button>
+            <button onClick={() => onShowAuth('signup')} className="nav-auth-btn nav-signup">
+              Sign up
+            </button>
+          </div>
+        )}
+      </div>
     </header>
   )
 }
@@ -426,7 +454,18 @@ function WalletInputModal({ isOpen, onClose, onAnalyze, isLoading, progress, err
 }
 
 // Main Landing Page
-export default function LandingPage({ onAnalyze, onStartQuiz, isLoading, progress, error }) {
+export default function LandingPage({
+  onAnalyze,
+  onStartQuiz,
+  onShowAuth,
+  onOpenDashboard,
+  onOpenJournal,
+  isLoading,
+  progress,
+  error,
+  isAuthenticated,
+  user,
+}) {
   const [showWalletModal, setShowWalletModal] = useState(false)
 
   const handleLogoClick = (e) => {
@@ -454,7 +493,14 @@ export default function LandingPage({ onAnalyze, onStartQuiz, isLoading, progres
     <main className="landing-page">
       <RippleBackground />
       <CursorTrail />
-      <Header onLogoClick={handleLogoClick} />
+      <Header
+        onLogoClick={handleLogoClick}
+        onShowAuth={onShowAuth}
+        onOpenDashboard={onOpenDashboard}
+        onOpenJournal={onOpenJournal}
+        isAuthenticated={isAuthenticated}
+        user={user}
+      />
       <HeroSection onScrollDown={scrollToChoice} />
       <ComparisonSection />
       <FeaturesSection />

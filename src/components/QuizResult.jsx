@@ -35,7 +35,7 @@ function TraitList({ items, type }) {
 }
 
 // Main Quiz Result Component
-export default function QuizResult({ results, onAnalyze, onRetake, onBack }) {
+export default function QuizResult({ results, onAnalyze, onRetake, onBack, isAuthenticated, onSavePrompt }) {
   const [walletAddress, setWalletAddress] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -114,6 +114,28 @@ export default function QuizResult({ results, onAnalyze, onRetake, onBack }) {
           <h3 className="coaching-title">Coaching Focus</h3>
           <p className="coaching-text">{primaryData.coaching}</p>
         </section>
+
+        {/* Save Results Prompt (for non-authenticated users) */}
+        {!isAuthenticated && (
+          <section className="save-results-prompt glass-card">
+            <div className="save-prompt-content">
+              <div className="save-prompt-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+              </div>
+              <div className="save-prompt-text">
+                <h4>Save your results</h4>
+                <p>Create an account to track your progress and get personalized coaching</p>
+              </div>
+            </div>
+            <button onClick={onSavePrompt} className="save-prompt-btn btn-secondary">
+              Create free account
+            </button>
+          </section>
+        )}
 
         {/* CTA Section */}
         <section className="archetype-cta glass-card">

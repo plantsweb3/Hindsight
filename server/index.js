@@ -1,14 +1,27 @@
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
 import { Connection, PublicKey } from '@solana/web3.js'
 import Anthropic from '@anthropic-ai/sdk'
+import authRoutes from './auth.js'
+import journalRoutes from './journal.js'
 
 const app = express()
 const PORT = 3001
 
-app.use(cors())
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
+  credentials: true,
+}))
 app.use(express.json())
+app.use(cookieParser())
+
+// Auth routes
+app.use('/api/auth', authRoutes)
+
+// Journal routes
+app.use('/api/journal', journalRoutes)
 
 // Helius RPC
 const HELIUS_KEY = process.env.HELIUS_API_KEY
@@ -624,13 +637,16 @@ app.post('/api/analyze', async (req, res) => {
 
 // POST /api/analyze-behavior - AI behavioral analysis
 app.post('/api/analyze-behavior', async (req, res) => {
-  const { trades, stats, openPositions } = req.body
+  const { trades, stats, openPositions, userArchetype, journalPatterns } = req.body
 
   if (!trades || !trades.length) {
     return res.status(400).json({ error: 'No trades to analyze' })
   }
 
   console.log(`Analyzing behavior for ${trades.length} trades...`)
+  if (userArchetype) {
+    console.log(`User archetype: ${userArchetype.primary} / ${userArchetype.secondary}`)
+  }
 
   // Prepare trade summary with token symbols and PnL
   const tradeSummary = trades.map(t => {
@@ -699,9 +715,72 @@ TOP HOLDINGS:
 ${JSON.stringify(openPositionsSummary.slice(0, 10), null, 2)}`
     : 'OPEN POSITIONS: No significant token holdings found'
 
+  // Build archetype context if available
+  const archetypeContext = userArchetype ? `
+USER'S SELF-REPORTED TRADER TYPE:
+- Primary Archetype: ${userArchetype.primary}
+- Secondary Tendency: ${userArchetype.secondary}
+- Known Strengths: ${userArchetype.strengths?.join(', ') || 'Unknown'}
+- Known Weaknesses: ${userArchetype.weaknesses?.join(', ') || 'Unknown'}
+- Coaching Focus: ${userArchetype.coaching || 'General improvement'}
+
+PERSONALIZATION INSTRUCTIONS:
+- Reference their archetype when patterns confirm or contradict their self-reported style
+- Use their known weaknesses to frame specific observations (e.g., "As a Diamond Hands trader, you tend to hold too long - and this wallet confirms it.")
+- Acknowledge when they're playing to their strengths
+- Tailor corrections to their specific trading personality
+` : ''
+
+  // Build journal patterns context if available
+  let journalContext = ''
+  if (journalPatterns && journalPatterns.hasEnoughData) {
+    const moodSummary = journalPatterns.patterns?.moodOnLosses?.length > 0
+      ? `Most common mood on losing trades: ${journalPatterns.patterns.moodOnLosses[0].mood} (${journalPatterns.patterns.moodOnLosses[0].count} times)`
+      : 'No mood data available'
+
+    const researchSummary = journalPatterns.patterns?.researchOnWins?.length > 0
+      ? `Most common research level on winning trades: ${journalPatterns.patterns.researchOnWins[0].research_level} (${journalPatterns.patterns.researchOnWins[0].count} times)`
+      : 'No research level data available'
+
+    const insightsSummary = journalPatterns.insights?.length > 0
+      ? journalPatterns.insights.map(i => `- ${i.text}`).join('\n')
+      : 'No specific patterns identified yet'
+
+    // Build ATH patterns summary if available
+    let athSummary = ''
+    if (journalPatterns.athPatterns) {
+      const { avgExitVsAth, earlyExitCount, lateExitCount, nearAthCount, totalWithAth } = journalPatterns.athPatterns
+      if (totalWithAth > 0) {
+        athSummary = `
+ATH EXIT PATTERNS (${totalWithAth} trades with ATH data):
+- Average exit vs ATH: ${avgExitVsAth > 0 ? '+' : ''}${avgExitVsAth?.toFixed(1)}%
+- Near ATH exits (within 10%): ${nearAthCount} trades
+- Sold before peak: ${earlyExitCount} trades
+- Sold after peak: ${lateExitCount} trades`
+      }
+    }
+
+    journalContext = `
+USER'S TRADING JOURNAL DATA (${journalPatterns.journaledCount} trades journaled):
+${moodSummary}
+${researchSummary}
+${athSummary}
+
+Self-reported patterns from journal:
+${insightsSummary}
+
+JOURNAL-BASED COACHING:
+- Reference their self-reported behaviors when giving advice
+- Be specific about what they've admitted to doing wrong
+- Call out the connection between their mood/research and outcomes
+- If ATH data is available, point out their exit timing patterns (e.g., "You consistently sell before the peak" or "You're holding too long after ATH")
+`
+  }
+
   const prompt = `You are Hindsight, a brutally honest trading coach analyzing Solana memecoin trading behavior. Your job is to identify the psychological patterns affecting this trader's performance.
 
 Analyze this trading data and deliver a verdict that hits hard but helps them improve.
+${archetypeContext}${journalContext}
 
 TRADING DATA:
 - Total trades analyzed: ${stats.dexTrades}
