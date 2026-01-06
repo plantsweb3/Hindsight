@@ -320,7 +320,7 @@ function ShareCard({ analysis, stats }) {
 }
 
 // Progress CTA Section
-function ProgressCTA() {
+function ProgressCTA({ isAuthenticated, onStartTracking }) {
   return (
     <div className="progress-cta glass-card">
       <div className="cta-icon">
@@ -332,19 +332,27 @@ function ProgressCTA() {
       <p className="cta-description">
         Save your analysis, get weekly insights, and see if your corrections are actually working.
       </p>
-      <button className="cta-btn btn-primary">
+      <button className="cta-btn btn-primary" onClick={onStartTracking}>
         Start tracking
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M5 12h14M12 5l7 7-7 7" />
         </svg>
       </button>
-      <p className="cta-note">Coming soon for token holders</p>
+      {!isAuthenticated && <p className="cta-note">Sign up to start tracking your trades</p>}
     </div>
   )
 }
 
 // Main Results Component
-export default function Results({ analysis, stats, onReset }) {
+export default function Results({ analysis, stats, onReset, isAuthenticated, onShowAuth, onOpenJournal }) {
+  const handleStartTracking = () => {
+    if (isAuthenticated) {
+      onOpenJournal()
+    } else {
+      onShowAuth('signup')
+    }
+  }
+
   return (
     <div className="results-page">
       <WaveBackground />
@@ -398,7 +406,7 @@ export default function Results({ analysis, stats, onReset }) {
         <ShareCard analysis={analysis} stats={stats} />
 
         {/* Progress CTA */}
-        <ProgressCTA />
+        <ProgressCTA isAuthenticated={isAuthenticated} onStartTracking={handleStartTracking} />
 
         {/* Footer CTA */}
         <section className="footer-cta">

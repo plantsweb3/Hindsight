@@ -23,6 +23,7 @@ function AppContent() {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authModalMode, setAuthModalMode] = useState('login')
   const [pendingQuizSave, setPendingQuizSave] = useState(null)
+  const [pendingJournalRedirect, setPendingJournalRedirect] = useState(false)
 
   // Build archetype data for personalized AI analysis
   const getUserArchetypeData = () => {
@@ -169,6 +170,19 @@ function AppContent() {
       }
       setPendingQuizSave(null)
     }
+
+    // If user was trying to start tracking, redirect to journal
+    if (pendingJournalRedirect) {
+      setPendingJournalRedirect(false)
+      setView('journal')
+    }
+  }
+
+  const handleStartTrackingAuth = (mode = 'signup') => {
+    // User wants to start tracking but isn't logged in
+    setPendingJournalRedirect(true)
+    setAuthModalMode(mode)
+    setShowAuthModal(true)
   }
 
   const handleSaveQuizPrompt = () => {
@@ -226,6 +240,9 @@ function AppContent() {
           analysis={results.analysis}
           stats={results.stats}
           onReset={handleReset}
+          isAuthenticated={isAuthenticated}
+          onShowAuth={handleStartTrackingAuth}
+          onOpenJournal={handleOpenJournal}
         />
         <AuthModal
           isOpen={showAuthModal}
