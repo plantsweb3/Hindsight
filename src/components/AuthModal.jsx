@@ -1,8 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 
-export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'login' }) {
+export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'signup' }) {
   const [mode, setMode] = useState(initialMode) // 'login' or 'signup'
+
+  // Update mode when initialMode prop changes (e.g., when modal opens with different intent)
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode)
+    }
+  }, [isOpen, initialMode])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')

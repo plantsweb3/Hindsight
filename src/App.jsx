@@ -97,6 +97,14 @@ function AppContent() {
         } catch (err) {
           console.error('Failed to save analysis or journal entries:', err)
         }
+      } else {
+        // Store in localStorage for saving after signup
+        localStorage.setItem('pendingWalletAnalysis', JSON.stringify({
+          walletAddress,
+          analysis,
+          stats: walletData.stats,
+          trades: walletData.trades
+        }))
       }
 
       // Show results
@@ -130,13 +138,16 @@ function AppContent() {
   const handleQuizComplete = async (results) => {
     setQuizResults(results)
 
-    // If logged in, save archetype
+    // If logged in, save archetype immediately
     if (isAuthenticated) {
       try {
         await saveArchetype(results.primary, results.secondary, results.answers)
       } catch (err) {
         console.error('Failed to save archetype:', err)
       }
+    } else {
+      // Store in localStorage for saving after signup
+      localStorage.setItem('pendingQuizResults', JSON.stringify(results))
     }
 
     setView('quizResult')
@@ -161,7 +172,23 @@ function AppContent() {
   }
 
   const handleAuthSuccess = async () => {
-    // If there were pending quiz results to save, save them now
+    // Get the new token from auth context (it updates after signup/login)
+    const newToken = localStorage.getItem('token')
+
+    // Save pending quiz results from localStorage
+    const pendingQuiz = localStorage.getItem('pendingQuizResults')
+    if (pendingQuiz) {
+      try {
+        const quizData = JSON.parse(pendingQuiz)
+        await saveArchetype(quizData.primary, quizData.secondary, quizData.answers)
+        localStorage.removeItem('pendingQuizResults')
+        setQuizResults(quizData) // Update state too
+      } catch (err) {
+        console.error('Failed to save pending quiz results:', err)
+      }
+    }
+
+    // Also handle the old pendingQuizSave state (for backward compatibility)
     if (pendingQuizSave) {
       try {
         await saveArchetype(pendingQuizSave.primary, pendingQuizSave.secondary, pendingQuizSave.answers)
@@ -171,10 +198,30 @@ function AppContent() {
       setPendingQuizSave(null)
     }
 
-    // If user was trying to start tracking, redirect to journal
+    // Save pending wallet analysis from localStorage
+    const pendingAnalysis = localStorage.getItem('pendingWalletAnalysis')
+    if (pendingAnalysis && newToken) {
+      try {
+        const analysisData = JSON.parse(pendingAnalysis)
+        await saveAnalysis(analysisData.walletAddress, analysisData.analysis, analysisData.stats)
+
+        // Also create journal entries from the trades
+        if (analysisData.trades?.length > 0) {
+          const journalEntries = convertTradesToJournalEntries(analysisData.trades)
+          if (journalEntries.length > 0) {
+            await createJournalEntriesBatch(journalEntries, newToken)
+          }
+        }
+        localStorage.removeItem('pendingWalletAnalysis')
+      } catch (err) {
+        console.error('Failed to save pending wallet analysis:', err)
+      }
+    }
+
+    // Redirect to dashboard after signup/login
     if (pendingJournalRedirect) {
       setPendingJournalRedirect(false)
-      setView('journal')
+      setView('dashboard')
     }
   }
 
