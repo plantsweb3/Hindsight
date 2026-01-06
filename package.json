@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
+    "@libsql/client": "^0.15.15",
     "@solana/web3.js": "^1.98.4",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.5.0",

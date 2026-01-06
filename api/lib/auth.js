@@ -1,0 +1,52 @@
+import jwt from 'jsonwebtoken'
+
+const JWT_SECRET = process.env.JWT_SECRET || 'hindsight-secret-key-change-in-production'
+const JWT_EXPIRES_IN = '7d'
+
+export function signToken(payload) {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN })
+}
+
+export function verifyToken(token) {
+  try {
+    return jwt.verify(token, JWT_SECRET)
+  } catch {
+    return null
+  }
+}
+
+export function getTokenFromRequest(req) {
+  const authHeader = req.headers.authorization || req.headers.Authorization
+  if (!authHeader) return null
+
+  const parts = authHeader.split(' ')
+  if (parts.length !== 2 || parts[0] !== 'Bearer') return null
+
+  return parts[1]
+}
+
+export function authenticateRequest(req) {
+  const token = getTokenFromRequest(req)
+  if (!token) return null
+
+  const decoded = verifyToken(token)
+  return decoded
+}
+
+// Helper to send JSON responses
+export function json(res, data, status = 200) {
+  res.status(status).json(data)
+}
+
+// Helper for error responses
+export function error(res, message, status = 400) {
+  res.status(status).json({ error: message })
+}
+
+// CORS headers for API routes
+export function cors(res) {
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization,Content-Type')
+}

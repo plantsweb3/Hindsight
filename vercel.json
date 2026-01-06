@@ -3,11 +3,14 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "functions": {
-    "api/*.js": {
+    "api/**/*.js": {
       "maxDuration": 60
     }
   },
   "rewrites": [
+    { "source": "/api/auth/:path*", "destination": "/api/auth/[...path]" },
+    { "source": "/api/journal/:path*", "destination": "/api/journal/[...path]" },
+    { "source": "/api/journal", "destination": "/api/journal/[...path]" },
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
