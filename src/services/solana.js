@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:3001/api'
+// Use relative path - works for both local dev (via Vite proxy) and Vercel
+const API_URL = '/api'
 
 export function isValidSolanaAddress(address) {
   return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)
