@@ -47,7 +47,39 @@ export default function ReportBug({ onBack }) {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
 
-  const handleScreenshotChange = (e) => {
+  const compressImage = (file, maxWidth = 1200, quality = 0.7) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          let width = img.width
+          let height = img.height
+
+          // Scale down if too large
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width
+            width = maxWidth
+          }
+
+          canvas.width = width
+          canvas.height = height
+
+          const ctx = canvas.getContext('2d')
+          ctx.drawImage(img, 0, 0, width, height)
+
+          // Convert to compressed JPEG
+          const compressed = canvas.toDataURL('image/jpeg', quality)
+          resolve(compressed)
+        }
+        img.src = e.target.result
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
+  const handleScreenshotChange = async (e) => {
     const file = e.target.files[0]
     if (!file) {
       setScreenshot(null)
@@ -55,9 +87,9 @@ export default function ReportBug({ onBack }) {
       return
     }
 
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Screenshot must be less than 5MB')
+    // Check file size (max 10MB before compression)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Screenshot must be less than 10MB')
       return
     }
 
@@ -69,13 +101,15 @@ export default function ReportBug({ onBack }) {
 
     setError('')
 
-    // Create preview
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      setScreenshotPreview(e.target.result)
-      setScreenshot(e.target.result) // base64 string
+    try {
+      // Compress the image
+      const compressed = await compressImage(file)
+      setScreenshotPreview(compressed)
+      setScreenshot(compressed)
+    } catch (err) {
+      console.error('Failed to compress image:', err)
+      setError('Failed to process image')
     }
-    reader.readAsDataURL(file)
   }
 
   const removeScreenshot = () => {
