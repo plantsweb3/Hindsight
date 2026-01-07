@@ -124,11 +124,17 @@ export async function initDb() {
       email TEXT,
       description TEXT NOT NULL,
       steps TEXT,
+      screenshot TEXT,
       user_agent TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       status TEXT DEFAULT 'new'
     )
   `)
+
+  // Add screenshot column if it doesn't exist (for existing databases)
+  try {
+    await getDb().execute(`ALTER TABLE bug_reports ADD COLUMN screenshot TEXT`)
+  } catch (e) { /* Column already exists */ }
 }
 
 // User functions
@@ -626,10 +632,10 @@ export async function checkSightBalance(walletAddresses) {
 }
 
 // Bug report functions
-export async function createBugReport(email, description, steps, userAgent) {
+export async function createBugReport(email, description, steps, userAgent, screenshot = null) {
   const result = await getDb().execute({
-    sql: `INSERT INTO bug_reports (email, description, steps, user_agent) VALUES (?, ?, ?, ?)`,
-    args: [email || null, description, steps || null, userAgent || null],
+    sql: `INSERT INTO bug_reports (email, description, steps, user_agent, screenshot) VALUES (?, ?, ?, ?, ?)`,
+    args: [email || null, description, steps || null, userAgent || null, screenshot || null],
   })
   return Number(result.lastInsertRowid)
 }

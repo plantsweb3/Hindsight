@@ -41,9 +41,47 @@ export default function ReportBug({ onBack }) {
   const [email, setEmail] = useState('')
   const [description, setDescription] = useState('')
   const [steps, setSteps] = useState('')
+  const [screenshot, setScreenshot] = useState(null)
+  const [screenshotPreview, setScreenshotPreview] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
+
+  const handleScreenshotChange = (e) => {
+    const file = e.target.files[0]
+    if (!file) {
+      setScreenshot(null)
+      setScreenshotPreview(null)
+      return
+    }
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Screenshot must be less than 5MB')
+      return
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload an image file')
+      return
+    }
+
+    setError('')
+
+    // Create preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setScreenshotPreview(e.target.result)
+      setScreenshot(e.target.result) // base64 string
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const removeScreenshot = () => {
+    setScreenshot(null)
+    setScreenshotPreview(null)
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -60,6 +98,7 @@ export default function ReportBug({ onBack }) {
           email: email.trim() || null,
           description: description.trim(),
           steps: steps.trim() || null,
+          screenshot: screenshot || null,
         }),
       })
 
@@ -73,6 +112,8 @@ export default function ReportBug({ onBack }) {
       setEmail('')
       setDescription('')
       setSteps('')
+      setScreenshot(null)
+      setScreenshotPreview(null)
       setSubmitted(true)
     } catch (err) {
       console.error('Failed to submit bug report:', err)
@@ -168,6 +209,44 @@ export default function ReportBug({ onBack }) {
                 className="form-textarea"
                 rows={4}
               />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">
+                Screenshot (optional)
+              </label>
+              {screenshotPreview ? (
+                <div className="screenshot-preview">
+                  <img src={screenshotPreview} alt="Screenshot preview" />
+                  <button
+                    type="button"
+                    onClick={removeScreenshot}
+                    className="screenshot-remove"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ) : (
+                <label className="screenshot-upload">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleScreenshotChange}
+                    className="screenshot-input"
+                  />
+                  <div className="screenshot-dropzone">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                    <span>Click to upload screenshot</span>
+                    <span className="screenshot-hint">PNG, JPG up to 5MB</span>
+                  </div>
+                </label>
+              )}
             </div>
 
             {error && (

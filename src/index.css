@@ -8052,6 +8052,81 @@ input, button {
   color: #52525b;
 }
 
+/* Screenshot Upload */
+.screenshot-upload {
+  display: block;
+  cursor: pointer;
+}
+
+.screenshot-input {
+  display: none;
+}
+
+.screenshot-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px dashed rgba(139, 92, 246, 0.3);
+  border-radius: 12px;
+  color: #a1a1aa;
+  transition: all 0.2s;
+}
+
+.screenshot-dropzone:hover {
+  border-color: rgba(139, 92, 246, 0.6);
+  background: rgba(139, 92, 246, 0.05);
+  color: #d4d4d8;
+}
+
+.screenshot-dropzone svg {
+  color: #8b5cf6;
+  opacity: 0.7;
+}
+
+.screenshot-hint {
+  font-size: 0.75rem;
+  color: #71717a;
+}
+
+.screenshot-preview {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.screenshot-preview img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.screenshot-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.screenshot-remove:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
 .submit-btn {
   width: 100%;
   margin-top: 0.5rem;
@@ -8605,4 +8680,16 @@ input, button {
 .password-submit:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+}
+
+/* Admin Screenshot */
+.admin-screenshot {
+  margin-top: 0.75rem;
+}
+
+.admin-screenshot img {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }

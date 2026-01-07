@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email, description, steps } = req.body
+    const { email, description, steps, screenshot } = req.body
 
     if (!description || !description.trim()) {
       return error(res, 'Bug description is required', 400)
@@ -26,7 +26,8 @@ export default async function handler(req, res) {
       email?.trim() || null,
       description.trim(),
       steps?.trim() || null,
-      userAgent
+      userAgent,
+      screenshot || null
     )
 
     console.log(`[BugReport] Created report #${reportId}`)

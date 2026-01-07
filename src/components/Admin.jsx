@@ -305,6 +305,14 @@ export default function Admin({ onBack, isHiddenRoute = false }) {
                   <p className="detail-text">{selectedReport.steps}</p>
                 </div>
               )}
+              {selectedReport.screenshot && (
+                <div className="admin-detail-section">
+                  <span className="detail-label">Screenshot:</span>
+                  <div className="admin-screenshot">
+                    <img src={selectedReport.screenshot} alt="Bug screenshot" />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
