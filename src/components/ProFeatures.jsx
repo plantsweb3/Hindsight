@@ -19,7 +19,7 @@ function WaveBackground() {
 }
 
 // Feature Card
-function FeatureCard({ icon, title, description, comingSoon }) {
+function FeatureCard({ icon, title, description, note, comingSoon }) {
   return (
     <div className={`pro-feature-card glass-card ${comingSoon ? 'coming-soon' : ''}`}>
       <div className="pro-feature-icon">{icon}</div>
@@ -28,6 +28,7 @@ function FeatureCard({ icon, title, description, comingSoon }) {
         {comingSoon && <span className="coming-soon-badge">Coming Soon</span>}
       </h3>
       <p className="pro-feature-description">{description}</p>
+      {note && <p className="pro-feature-note">{note}</p>}
     </div>
   )
 }
@@ -47,6 +48,7 @@ export default function ProFeatures({ onBack, onAddWallet }) {
       ),
       title: 'Unlimited Wallets',
       description: 'Track all your wallets in one place. Most traders use 3-5 wallets for different strategies — now you can analyze them all.',
+      note: 'All tracked wallets are included in your cross-wallet analysis, so only add wallets you actually trade from.',
     },
     {
       icon: (

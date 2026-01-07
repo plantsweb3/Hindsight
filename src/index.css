@@ -5282,6 +5282,23 @@ input, button {
   margin-top: 0.5rem;
 }
 
+.wallet-add-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: #71717a;
+  line-height: 1.5;
+}
+
+.wallet-add-notice svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: #8b5cf6;
+  opacity: 0.7;
+}
+
 /* Trader Profile Settings */
 .profile-archetypes {
   display: flex;
@@ -5804,6 +5821,16 @@ input, button {
   font-size: 0.9rem;
   color: #a1a1aa;
   line-height: 1.6;
+}
+
+.pro-feature-note {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.8rem;
+  color: #71717a;
+  font-style: italic;
+  line-height: 1.5;
 }
 
 .pro-divider {

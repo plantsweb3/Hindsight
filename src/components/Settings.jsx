@@ -165,23 +165,33 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove }) {
         {wallets.length >= MAX_WALLETS ? (
           <p className="wallet-limit-msg">Upgrade to token holder for more wallets</p>
         ) : (
-          <div className="wallet-add">
-            <input
-              type="text"
-              placeholder="Enter Solana wallet address"
-              value={newWallet}
-              onChange={(e) => setNewWallet(e.target.value)}
-              className="wallet-input"
-              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-            />
-            <button
-              className="wallet-add-btn glass-button"
-              onClick={handleAdd}
-              disabled={isAdding}
-            >
-              {isAdding ? 'Adding...' : 'Add'}
-            </button>
-          </div>
+          <>
+            <div className="wallet-add">
+              <input
+                type="text"
+                placeholder="Enter Solana wallet address"
+                value={newWallet}
+                onChange={(e) => setNewWallet(e.target.value)}
+                className="wallet-input"
+                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+              />
+              <button
+                className="wallet-add-btn glass-button"
+                onClick={handleAdd}
+                disabled={isAdding}
+              >
+                {isAdding ? 'Adding...' : 'Add'}
+              </button>
+            </div>
+            <p className="wallet-add-notice">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4" />
+                <path d="M12 8h.01" />
+              </svg>
+              All wallets you add will be included in your trading analysis and coaching. Adding wallets you don't control will make your insights inaccurate.
+            </p>
+          </>
         )}
 
         {error && <p className="wallet-error">{error}</p>}
