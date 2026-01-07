@@ -361,9 +361,10 @@ function SightCallout() {
     <section className="sight-callout-section">
       <div className="section-container">
         <div className="sight-callout-card glass-card">
-          {/* Spinning Coin */}
+          {/* Spinning 3D Coin */}
           <div className="sight-coin-wrapper">
             <div className="sight-coin">
+              <div className="sight-coin-rim" />
               <div className="sight-coin-face sight-coin-front">
                 <img src="/hindsightlogo.png" alt="" className="sight-coin-logo" />
               </div>
