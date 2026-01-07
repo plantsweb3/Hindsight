@@ -67,11 +67,26 @@ export default function Admin({ onBack, isHiddenRoute = false }) {
   const [isUnlocked, setIsUnlocked] = useState(!isHiddenRoute) // Already unlocked if not hidden route
   const [passwordError, setPasswordError] = useState('')
 
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault()
     if (passwordInput === ADMIN_PASSWORD) {
       setIsUnlocked(true)
       setPasswordError('')
+      // Fetch reports immediately after unlocking
+      setIsLoading(true)
+      try {
+        const response = await fetch('/api/admin/bugs', {
+          headers: { 'X-Admin-Password': ADMIN_PASSWORD }
+        })
+        if (response.ok) {
+          const data = await response.json()
+          setReports(data.reports || [])
+        }
+      } catch (err) {
+        console.error('Failed to fetch reports:', err)
+      } finally {
+        setIsLoading(false)
+      }
     } else {
       setPasswordError('Incorrect password')
       setPasswordInput('')
