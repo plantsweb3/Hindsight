@@ -82,26 +82,47 @@ export default async function handler(req, res) {
 
     // POST /api/auth/login
     if (route === 'login' && req.method === 'POST') {
+      console.log('[API] Login attempt started')
       const { username, password } = req.body || {}
 
       if (!username || !password) {
         return error(res, 'Username and password are required', 400)
       }
 
+      console.log('[API] Looking up user:', username)
       const user = await getUserByUsername(username)
       if (!user) {
         return error(res, 'Invalid username or password', 401)
       }
 
+      console.log('[API] Validating password')
       const validPassword = await bcrypt.compare(password, user.password_hash)
       if (!validPassword) {
         return error(res, 'Invalid username or password', 401)
       }
 
+      console.log('[API] Generating token and fetching user data')
       const token = signToken({ id: user.id, username: user.username })
-      const wallets = await getUserWallets(user.id)
-      const usageStats = await getUserUsageStats(user.id)
 
+      let wallets = []
+      try {
+        wallets = await getUserWallets(user.id)
+        console.log('[API] Got wallets:', wallets?.length || 0)
+      } catch (walletErr) {
+        console.error('[API] Error fetching wallets:', walletErr)
+        // Continue without wallets
+      }
+
+      let usageStats = null
+      try {
+        usageStats = await getUserUsageStats(user.id)
+        console.log('[API] Got usage stats:', usageStats)
+      } catch (statsErr) {
+        console.error('[API] Error fetching usage stats:', statsErr)
+        // Continue without stats
+      }
+
+      console.log('[API] Login successful, returning response')
       return json(res, {
         token,
         user: {
@@ -356,7 +377,14 @@ export default async function handler(req, res) {
     // Route not found
     return error(res, 'Not found', 404)
   } catch (err) {
-    console.error('Auth API error:', err)
-    return error(res, err.message || 'Internal server error', 500)
+    console.error('Auth API error:', err.message, err.stack)
+    // Ensure we always return JSON, even for unexpected errors
+    try {
+      return error(res, err.message || 'Internal server error', 500)
+    } catch (responseErr) {
+      // Last resort fallback if error() fails
+      console.error('Failed to send error response:', responseErr)
+      res.status(500).json({ error: 'Internal server error' })
+    }
   }
 }

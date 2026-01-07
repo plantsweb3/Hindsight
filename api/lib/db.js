@@ -101,10 +101,9 @@ export async function initDb() {
     await db.execute(`ALTER TABLE trade_journal ADD COLUMN wallet_address TEXT`)
     console.log('[DB] Migration: Added wallet_address column to trade_journal')
   } catch (err) {
-    // Column already exists, ignore error
-    if (!err.message?.includes('duplicate column')) {
-      console.log('[DB] wallet_address column already exists')
-    }
+    // Column already exists - this is expected, just log it
+    // Turso/libsql may return different error messages for duplicate column
+    console.log('[DB] Migration note:', err.message || 'wallet_address column likely already exists')
   }
 }
 
