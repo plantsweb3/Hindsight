@@ -567,7 +567,10 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
   }
 
   const handleAddWallet = () => {
-    onAnalyze()
+    // Navigate to Settings page where wallet management is
+    if (onOpenSettings) {
+      onOpenSettings()
+    }
   }
 
   return (
