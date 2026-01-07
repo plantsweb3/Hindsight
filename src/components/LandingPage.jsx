@@ -364,11 +364,17 @@ function SightCallout() {
           {/* Spinning 3D Coin */}
           <div className="sight-coin-wrapper">
             <div className="sight-coin">
-              <div className="sight-coin-rim" />
-              <div className="sight-coin-face sight-coin-front">
+              {/* Edge thickness - 11 stacked rings */}
+              <div className="sight-coin-edge">
+                <span /><span /><span /><span /><span />
+                <span /><span /><span /><span /><span /><span />
+              </div>
+              {/* Front face */}
+              <div className="sight-coin-front">
                 <img src="/hindsightlogo.png" alt="" className="sight-coin-logo" />
               </div>
-              <div className="sight-coin-face sight-coin-back">
+              {/* Back face */}
+              <div className="sight-coin-back">
                 <img src="/hindsightlogo.png" alt="" className="sight-coin-logo" />
               </div>
             </div>

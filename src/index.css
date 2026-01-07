@@ -1022,7 +1022,7 @@ input, button {
   flex-direction: column;
   align-items: center;
   margin-bottom: 2rem;
-  perspective: 1000px;
+  perspective: 800px;
 }
 
 .sight-coin {
@@ -1033,25 +1033,8 @@ input, button {
   animation: spin-coin 7s linear infinite;
 }
 
-/* Coin outer rim (purple metallic edge) */
-.sight-coin-rim {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #7c3aed, #4c1d95);
-  box-shadow:
-    0 8px 0 -1px #3b1578,
-    0 10px 0 -1px #4c1d95,
-    0 12px 0 -1px #5b21b6,
-    0 14px 0 -1px #6d28d9,
-    0 16px 0 -1px #7c3aed,
-    0 20px 35px rgba(0, 0, 0, 0.5);
-  transform-style: preserve-3d;
-}
-
-/* Coin face (dark inner circle) */
-.sight-coin-face {
+/* Front face */
+.sight-coin-front {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -1060,29 +1043,83 @@ input, button {
   align-items: center;
   justify-content: center;
   backface-visibility: hidden;
+  transform: translateZ(12px);
   background: linear-gradient(145deg, #1a1a2e 0%, #2d2d44 50%, #1a1a2e 100%);
-  border: 5px solid transparent;
-  background-clip: padding-box;
+  border: 4px solid #7c3aed;
   box-shadow:
-    inset 0 3px 8px rgba(255, 255, 255, 0.1),
-    inset 0 -3px 8px rgba(0, 0, 0, 0.4),
-    0 0 0 5px rgba(124, 58, 237, 0.6);
+    inset 0 3px 8px rgba(255, 255, 255, 0.15),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.4);
 }
 
-/* Inner ring accent */
-.sight-coin-face::before {
+/* Inner ring accent on front */
+.sight-coin-front::before {
   content: '';
   position: absolute;
-  width: 85%;
-  height: 85%;
+  width: 80%;
+  height: 80%;
   border-radius: 50%;
-  border: 2px solid rgba(124, 58, 237, 0.3);
-  box-shadow: inset 0 0 20px rgba(124, 58, 237, 0.15);
+  border: 2px solid rgba(124, 58, 237, 0.4);
+  box-shadow: inset 0 0 20px rgba(124, 58, 237, 0.2);
 }
 
+/* Back face */
 .sight-coin-back {
-  transform: rotateY(180deg);
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+  transform: translateZ(-12px) rotateY(180deg);
+  background: linear-gradient(145deg, #1a1a2e 0%, #2d2d44 50%, #1a1a2e 100%);
+  border: 4px solid #7c3aed;
+  box-shadow:
+    inset 0 3px 8px rgba(255, 255, 255, 0.15),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.4);
 }
+
+.sight-coin-back::before {
+  content: '';
+  position: absolute;
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+  border: 2px solid rgba(124, 58, 237, 0.4);
+  box-shadow: inset 0 0 20px rgba(124, 58, 237, 0.2);
+}
+
+/* Coin edge - creates the thickness */
+.sight-coin-edge {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+/* Generate edge segments using pseudo-elements and additional divs */
+.sight-coin-edge span {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 4px solid;
+  border-color: #5b21b6 #7c3aed #4c1d95 #6d28d9;
+  box-sizing: border-box;
+}
+
+.sight-coin-edge span:nth-child(1) { transform: translateZ(10px); }
+.sight-coin-edge span:nth-child(2) { transform: translateZ(8px); }
+.sight-coin-edge span:nth-child(3) { transform: translateZ(6px); }
+.sight-coin-edge span:nth-child(4) { transform: translateZ(4px); }
+.sight-coin-edge span:nth-child(5) { transform: translateZ(2px); }
+.sight-coin-edge span:nth-child(6) { transform: translateZ(0px); }
+.sight-coin-edge span:nth-child(7) { transform: translateZ(-2px); }
+.sight-coin-edge span:nth-child(8) { transform: translateZ(-4px); }
+.sight-coin-edge span:nth-child(9) { transform: translateZ(-6px); }
+.sight-coin-edge span:nth-child(10) { transform: translateZ(-8px); }
+.sight-coin-edge span:nth-child(11) { transform: translateZ(-10px); }
 
 .sight-coin-logo {
   width: 55px;
@@ -1444,26 +1481,26 @@ input, button {
   }
 
   .sight-coin {
-    width: 90px;
-    height: 90px;
+    width: 100px;
+    height: 100px;
   }
 
-  .sight-coin-rim {
-    box-shadow:
-      0 6px 0 -1px #3b1578,
-      0 8px 0 -1px #4c1d95,
-      0 10px 0 -1px #5b21b6,
-      0 12px 0 -1px #7c3aed,
-      0 15px 25px rgba(0, 0, 0, 0.4);
+  .sight-coin-front,
+  .sight-coin-back {
+    border-width: 3px;
+  }
+
+  .sight-coin-edge span {
+    border-width: 3px;
   }
 
   .sight-coin-logo {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
   }
 
   .sight-coin-shadow {
-    width: 70px;
+    width: 80px;
     margin-top: 15px;
   }
 
