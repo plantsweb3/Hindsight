@@ -41,101 +41,9 @@ export default function ReportBug({ onBack }) {
   const [email, setEmail] = useState('')
   const [description, setDescription] = useState('')
   const [steps, setSteps] = useState('')
-  const [screenshot, setScreenshot] = useState(null)
-  const [screenshotPreview, setScreenshotPreview] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
-
-  const compressImage = (file, maxWidth = 1400, quality = 0.5) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const img = new Image()
-        img.onload = () => {
-          const canvas = document.createElement('canvas')
-          let width = img.width
-          let height = img.height
-
-          // Scale down if too large
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width)
-            width = maxWidth
-          }
-
-          canvas.width = width
-          canvas.height = height
-
-          const ctx = canvas.getContext('2d')
-          ctx.drawImage(img, 0, 0, width, height)
-
-          // Convert to compressed JPEG
-          let compressed = canvas.toDataURL('image/jpeg', quality)
-
-          // If still too large, compress more aggressively
-          if (compressed.length > 500000) {
-            console.log('Image still large, compressing further...')
-            canvas.width = Math.round(width * 0.7)
-            canvas.height = Math.round(height * 0.7)
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-            compressed = canvas.toDataURL('image/jpeg', 0.4)
-          }
-
-          console.log('Final image size:', Math.round(compressed.length / 1024), 'KB')
-
-          // Reject if still too large
-          if (compressed.length > 2000000) {
-            reject(new Error('Image too large even after compression. Please use a smaller screenshot.'))
-            return
-          }
-
-          resolve(compressed)
-        }
-        img.onerror = () => reject(new Error('Failed to load image'))
-        img.src = e.target.result
-      }
-      reader.onerror = () => reject(new Error('Failed to read file'))
-      reader.readAsDataURL(file)
-    })
-  }
-
-  const handleScreenshotChange = async (e) => {
-    const file = e.target.files[0]
-    if (!file) {
-      setScreenshot(null)
-      setScreenshotPreview(null)
-      return
-    }
-
-    // Check file size (max 10MB before compression)
-    if (file.size > 10 * 1024 * 1024) {
-      setError('Screenshot must be less than 10MB')
-      return
-    }
-
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      setError('Please upload an image file')
-      return
-    }
-
-    setError('')
-
-    try {
-      // Compress the image
-      const compressed = await compressImage(file)
-      setScreenshotPreview(compressed)
-      setScreenshot(compressed)
-    } catch (err) {
-      console.error('Failed to compress image:', err)
-      setError('Failed to process image')
-    }
-  }
-
-  const removeScreenshot = () => {
-    setScreenshot(null)
-    setScreenshotPreview(null)
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -145,28 +53,17 @@ export default function ReportBug({ onBack }) {
     setError('')
 
     try {
-      const payload = {
-        email: email.trim() || null,
-        description: description.trim(),
-        steps: steps.trim() || null,
-        screenshot: screenshot || null,
-      }
-
-      console.log('Payload size:', Math.round(JSON.stringify(payload).length / 1024), 'KB')
-
       const response = await fetch('/api/report-bug', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          email: email.trim() || null,
+          description: description.trim(),
+          steps: steps.trim() || null,
+        }),
       })
 
-      let data
-      try {
-        data = await response.json()
-      } catch {
-        // Response might not be JSON if there's a server error
-        throw new Error(`Server error: ${response.status} ${response.statusText}`)
-      }
+      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to submit report')
@@ -176,8 +73,6 @@ export default function ReportBug({ onBack }) {
       setEmail('')
       setDescription('')
       setSteps('')
-      setScreenshot(null)
-      setScreenshotPreview(null)
       setSubmitted(true)
     } catch (err) {
       console.error('Failed to submit bug report:', err)
@@ -273,44 +168,6 @@ export default function ReportBug({ onBack }) {
                 className="form-textarea"
                 rows={4}
               />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">
-                Screenshot (optional)
-              </label>
-              {screenshotPreview ? (
-                <div className="screenshot-preview">
-                  <img src={screenshotPreview} alt="Screenshot preview" />
-                  <button
-                    type="button"
-                    onClick={removeScreenshot}
-                    className="screenshot-remove"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M18 6L6 18M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              ) : (
-                <label className="screenshot-upload">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleScreenshotChange}
-                    className="screenshot-input"
-                  />
-                  <div className="screenshot-dropzone">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                      <circle cx="8.5" cy="8.5" r="1.5" />
-                      <polyline points="21 15 16 10 5 21" />
-                    </svg>
-                    <span>Click to upload screenshot</span>
-                    <span className="screenshot-hint">PNG, JPG up to 5MB</span>
-                  </div>
-                </label>
-              )}
             </div>
 
             {error && (
