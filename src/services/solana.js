@@ -155,7 +155,7 @@ export async function createJournalEntriesBatch(entries, token) {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify({ trades: entries }),
+    body: JSON.stringify({ entries }),
   })
 
   if (!response.ok) {

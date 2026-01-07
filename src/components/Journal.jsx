@@ -577,6 +577,7 @@ function SummaryView({ type, data }) {
 
 // Empty State - checks for saved wallets
 function EmptyState({ onAnalyze, savedWallets, onRefreshWallet, isRefreshing, refreshError, refreshProgress }) {
+  console.log('[EmptyState] Props:', { hasSavedWallets: savedWallets?.length > 0, onRefreshWallet: typeof onRefreshWallet })
   const hasSavedWallets = savedWallets && savedWallets.length > 0
 
   if (hasSavedWallets) {
@@ -606,8 +607,14 @@ function EmptyState({ onAnalyze, savedWallets, onRefreshWallet, isRefreshing, re
           {savedWallets.map((wallet, i) => (
             <button
               key={i}
+              type="button"
               className="saved-wallet-btn glass-button"
-              onClick={() => onRefreshWallet(wallet)}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                console.log('[EmptyState] Button clicked for wallet:', wallet)
+                onRefreshWallet(wallet)
+              }}
               disabled={isRefreshing}
             >
               <span className="wallet-address">{wallet.slice(0, 4)}...{wallet.slice(-4)}</span>
@@ -670,13 +677,16 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
 
   // Handler to refresh trades from a saved wallet - stays on journal page
   const handleRefreshWallet = async (walletAddress) => {
+    console.log('[Refresh] handleRefreshWallet called with:', walletAddress)
     setIsRefreshing(true)
     setRefreshError('')
     setRefreshProgress('Fetching transactions...')
 
     try {
       // Fetch wallet trades from Helius
+      console.log('[Refresh] Calling analyzeWallet...')
       const walletData = await analyzeWallet(walletAddress, setRefreshProgress)
+      console.log('[Refresh] analyzeWallet returned:', walletData?.trades?.length, 'trades')
 
       if (!walletData.trades || walletData.trades.length === 0) {
         setRefreshError('No trades found for this wallet')
@@ -686,10 +696,12 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
       // Convert trades to journal entries
       setRefreshProgress('Creating journal entries...')
       const journalEntries = convertTradesToJournalEntries(walletData.trades)
+      console.log('[Refresh] Converted to', journalEntries.length, 'journal entries')
 
       if (journalEntries.length > 0) {
+        console.log('[Refresh] Creating batch entries with token:', token ? 'present' : 'MISSING')
         const result = await createJournalEntriesBatch(journalEntries, token)
-        console.log(`Created ${result?.created || 0} journal entries, skipped ${result?.skipped || 0} duplicates`)
+        console.log('[Refresh] Batch result:', result)
 
         if (result?.created === 0 && result?.skipped > 0) {
           setRefreshError(`All ${result.skipped} trades already exist in your journal`)
@@ -698,10 +710,12 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
 
       // Reload journal data to show new entries
       setRefreshProgress('Loading journal...')
+      console.log('[Refresh] Reloading journal data...')
       await loadData()
+      console.log('[Refresh] Complete!')
 
     } catch (err) {
-      console.error('Failed to refresh trades:', err)
+      console.error('[Refresh] Error:', err)
       setRefreshError(err.message || 'Failed to fetch trades')
     } finally {
       setIsRefreshing(false)
