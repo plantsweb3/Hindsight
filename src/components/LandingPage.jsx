@@ -364,10 +364,10 @@ function SightCallout() {
           {/* Spinning 3D Coin */}
           <div className="sight-coin-wrapper">
             <div className="sight-coin">
-              {/* Edge thickness - 10 stacked rings between front and back faces */}
+              {/* Edge thickness - 9 hollow rings centered along Z-axis */}
               <div className="sight-coin-edge">
                 <span /><span /><span /><span /><span />
-                <span /><span /><span /><span /><span />
+                <span /><span /><span /><span />
               </div>
               {/* Front face at +10px */}
               <div className="sight-coin-front">

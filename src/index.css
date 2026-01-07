@@ -1093,31 +1093,43 @@ input, button {
 /* Coin edge - creates the thickness between front and back */
 .sight-coin-edge {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
 }
 
-/* Edge rings - evenly distributed from +9px to -9px */
+/* Edge rings - hollow rings (border only) centered and stacked along Z */
 .sight-coin-edge span {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: linear-gradient(90deg, #4c1d95 0%, #7c3aed 25%, #5b21b6 50%, #7c3aed 75%, #4c1d95 100%);
+  background: transparent;
+  border: 5px solid #6d28d9;
   box-sizing: border-box;
 }
 
-.sight-coin-edge span:nth-child(1) { transform: translateZ(9px); }
-.sight-coin-edge span:nth-child(2) { transform: translateZ(7px); }
-.sight-coin-edge span:nth-child(3) { transform: translateZ(5px); }
-.sight-coin-edge span:nth-child(4) { transform: translateZ(3px); }
-.sight-coin-edge span:nth-child(5) { transform: translateZ(1px); }
-.sight-coin-edge span:nth-child(6) { transform: translateZ(-1px); }
-.sight-coin-edge span:nth-child(7) { transform: translateZ(-3px); }
-.sight-coin-edge span:nth-child(8) { transform: translateZ(-5px); }
-.sight-coin-edge span:nth-child(9) { transform: translateZ(-7px); }
-.sight-coin-edge span:nth-child(10) { transform: translateZ(-9px); }
+/* Alternate colors for depth effect */
+.sight-coin-edge span:nth-child(odd) {
+  border-color: #7c3aed;
+}
+.sight-coin-edge span:nth-child(even) {
+  border-color: #5b21b6;
+}
+
+.sight-coin-edge span:nth-child(1) { transform: translateZ(8px); }
+.sight-coin-edge span:nth-child(2) { transform: translateZ(6px); }
+.sight-coin-edge span:nth-child(3) { transform: translateZ(4px); }
+.sight-coin-edge span:nth-child(4) { transform: translateZ(2px); }
+.sight-coin-edge span:nth-child(5) { transform: translateZ(0px); }
+.sight-coin-edge span:nth-child(6) { transform: translateZ(-2px); }
+.sight-coin-edge span:nth-child(7) { transform: translateZ(-4px); }
+.sight-coin-edge span:nth-child(8) { transform: translateZ(-6px); }
+.sight-coin-edge span:nth-child(9) { transform: translateZ(-8px); }
 
 .sight-coin-logo {
   width: 55px;
