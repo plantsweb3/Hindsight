@@ -364,10 +364,9 @@ function SightCallout({ onOpenPro }) {
           {/* Spinning 3D Coin */}
           <div className="sight-coin-wrapper">
             <div className="sight-coin">
-              {/* Edge thickness - 9 hollow rings centered along Z-axis */}
+              {/* Edge thickness - 21 overlapping rings for solid appearance */}
               <div className="sight-coin-edge">
-                <span /><span /><span /><span /><span />
-                <span /><span /><span /><span />
+                {[...Array(21)].map((_, i) => <span key={i} style={{ transform: `translateZ(${10 - i}px)` }} />)}
               </div>
               {/* Front face at +10px */}
               <div className="sight-coin-front">

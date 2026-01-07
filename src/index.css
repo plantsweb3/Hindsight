@@ -1100,7 +1100,7 @@ input, button {
   transform-style: preserve-3d;
 }
 
-/* Edge rings - hollow rings (border only) centered and stacked along Z */
+/* Edge rings - solid filled circles stacked 1px apart for seamless edge */
 .sight-coin-edge span {
   position: absolute;
   top: 0;
@@ -1108,28 +1108,18 @@ input, button {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: transparent;
-  border: 5px solid #6d28d9;
+  background: linear-gradient(180deg, #7c3aed 0%, #5b21b6 50%, #4c1d95 100%);
+  border: 2px solid #6d28d9;
   box-sizing: border-box;
 }
 
-/* Alternate colors for depth effect */
+/* Subtle alternating shading for depth */
 .sight-coin-edge span:nth-child(odd) {
-  border-color: #7c3aed;
+  background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 50%, #5b21b6 100%);
 }
 .sight-coin-edge span:nth-child(even) {
-  border-color: #5b21b6;
+  background: linear-gradient(180deg, #7c3aed 0%, #5b21b6 50%, #4c1d95 100%);
 }
-
-.sight-coin-edge span:nth-child(1) { transform: translateZ(8px); }
-.sight-coin-edge span:nth-child(2) { transform: translateZ(6px); }
-.sight-coin-edge span:nth-child(3) { transform: translateZ(4px); }
-.sight-coin-edge span:nth-child(4) { transform: translateZ(2px); }
-.sight-coin-edge span:nth-child(5) { transform: translateZ(0px); }
-.sight-coin-edge span:nth-child(6) { transform: translateZ(-2px); }
-.sight-coin-edge span:nth-child(7) { transform: translateZ(-4px); }
-.sight-coin-edge span:nth-child(8) { transform: translateZ(-6px); }
-.sight-coin-edge span:nth-child(9) { transform: translateZ(-8px); }
 
 .sight-coin-logo {
   width: 55px;
@@ -1506,7 +1496,7 @@ input, button {
   }
 
   .sight-coin-edge span {
-    border-width: 3px;
+    border-width: 1px;
   }
 
   .sight-coin-logo {
