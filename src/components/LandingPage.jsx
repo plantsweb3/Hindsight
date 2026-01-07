@@ -60,7 +60,7 @@ function CursorTrail() {
 }
 
 // Header
-function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, isAuthenticated, user }) {
+function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, onOpenContact, isAuthenticated, user }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleNavAction = (action) => {
@@ -77,6 +77,9 @@ function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, isAut
 
       {/* Desktop nav */}
       <div className="header-nav header-nav-desktop">
+        <button onClick={onOpenContact} className="nav-link-btn">
+          Contact
+        </button>
         {isAuthenticated ? (
           <>
             <button onClick={onOpenJournal} className="nav-link-btn">
@@ -137,6 +140,12 @@ function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, isAut
               </button>
             </div>
             <nav className="mobile-nav-links">
+              <button onClick={() => handleNavAction(onOpenContact)} className="mobile-nav-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                Contact
+              </button>
               {isAuthenticated ? (
                 <>
                   <button onClick={() => handleNavAction(onOpenDashboard)} className="mobile-nav-link">
@@ -644,16 +653,66 @@ function FAQSection() {
 }
 
 // Footer
-function Footer() {
+// Bottom CTA Section
+function BottomCTA({ isAuthenticated, onOpenDashboard, onShowAuth }) {
+  const handleLaunch = () => {
+    if (isAuthenticated) {
+      onOpenDashboard()
+    } else {
+      onShowAuth('signup')
+    }
+  }
+
+  return (
+    <section className="bottom-cta-section">
+      <div className="section-container">
+        <div className="bottom-cta-content">
+          <h2 className="bottom-cta-title">Ready to Level Up Your Trading?</h2>
+          <button onClick={handleLaunch} className="bottom-cta-btn btn-primary">
+            Launch Hindsight
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Footer({ onOpenContact }) {
   return (
     <footer className="site-footer">
       <div className="section-container">
         <div className="footer-content">
-          <div className="footer-logo">
-            <img src="/hindsightlogo.png" alt="Hindsight" />
-            <span>hindsight</span>
+          {/* Left side */}
+          <div className="footer-left">
+            <div className="footer-logo">
+              <img src="/hindsightlogo.png" alt="Hindsight" />
+              <span>hindsight</span>
+            </div>
+            <p className="footer-copyright">© 2025 Hindsight. All rights reserved.</p>
           </div>
-          <p className="footer-tagline">See clearly. Trade better.</p>
+
+          {/* Right side links */}
+          <div className="footer-right">
+            <a href="https://docs.tradehindsight.com" target="_blank" rel="noopener noreferrer" className="footer-link">
+              Hindsight Academy
+            </a>
+            <button onClick={onOpenContact} className="footer-link footer-link-btn">
+              Contact
+            </button>
+            <a href="https://twitter.com/tradehindsight" target="_blank" rel="noopener noreferrer" className="footer-link footer-icon-link">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+            </a>
+            <a href="https://pump.fun" target="_blank" rel="noopener noreferrer" className="footer-link">
+              Pump.fun
+            </a>
+            <a href="#" className="footer-link">Privacy Policy</a>
+            <a href="#" className="footer-link">Terms of Service</a>
+          </div>
         </div>
       </div>
     </footer>
@@ -716,6 +775,7 @@ export default function LandingPage({
   onOpenDashboard,
   onOpenJournal,
   onOpenPro,
+  onOpenContact,
   isLoading,
   progress,
   error,
@@ -754,6 +814,7 @@ export default function LandingPage({
         onShowAuth={onShowAuth}
         onOpenDashboard={onOpenDashboard}
         onOpenJournal={onOpenJournal}
+        onOpenContact={onOpenContact}
         isAuthenticated={isAuthenticated}
         user={user}
       />
@@ -769,7 +830,12 @@ export default function LandingPage({
       <FeaturesSection onOpenPro={onOpenPro} />
       <ChoiceSection onQuickAnalyze={handleQuickAnalyze} onDigDeep={handleDigDeep} />
       <FAQSection />
-      <Footer />
+      <BottomCTA
+        isAuthenticated={isAuthenticated}
+        onOpenDashboard={onOpenDashboard}
+        onShowAuth={onShowAuth}
+      />
+      <Footer onOpenContact={onOpenContact} />
       <WalletInputModal
         isOpen={showWalletModal}
         onClose={() => setShowWalletModal(false)}

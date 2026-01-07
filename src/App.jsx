@@ -12,11 +12,13 @@ import Journal from './components/Journal'
 import Settings from './components/Settings'
 import AuthModal from './components/AuthModal'
 import ProFeatures from './components/ProFeatures'
+import Contact from './components/Contact'
+import ReportBug from './components/ReportBug'
 
 function AppContent() {
   const { user, token, isAuthenticated, isLoading: authLoading, saveArchetype, saveAnalysis } = useAuth()
 
-  const [view, setView] = useState('landing') // 'landing' | 'quiz' | 'quizResult' | 'results' | 'dashboard' | 'journal' | 'settings' | 'pro'
+  const [view, setView] = useState('landing') // 'landing' | 'quiz' | 'quizResult' | 'results' | 'dashboard' | 'journal' | 'settings' | 'pro' | 'contact' | 'reportBug'
   const [isLoading, setIsLoading] = useState(false)
   const [progress, setProgress] = useState('')
   const [error, setError] = useState('')
@@ -279,6 +281,14 @@ function AppContent() {
     setView('pro')
   }
 
+  const handleOpenContact = () => {
+    setView('contact')
+  }
+
+  const handleOpenReportBug = () => {
+    setView('reportBug')
+  }
+
   const handleSettingsNavigate = (page) => {
     if (page === 'dashboard') setView('dashboard')
     else if (page === 'journal') setView('journal')
@@ -405,6 +415,23 @@ function AppContent() {
     )
   }
 
+  if (view === 'contact') {
+    return (
+      <Contact
+        onBack={handleReset}
+        onOpenReportBug={handleOpenReportBug}
+      />
+    )
+  }
+
+  if (view === 'reportBug') {
+    return (
+      <ReportBug
+        onBack={handleOpenContact}
+      />
+    )
+  }
+
   return (
     <>
       <LandingPage
@@ -414,6 +441,7 @@ function AppContent() {
         onOpenDashboard={handleOpenDashboard}
         onOpenJournal={handleOpenJournal}
         onOpenPro={handleOpenPro}
+        onOpenContact={handleOpenContact}
         isLoading={isLoading}
         progress={progress}
         error={error}
