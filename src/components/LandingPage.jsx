@@ -342,6 +342,85 @@ function ComparisonSection() {
   )
 }
 
+// $SIGHT Callout Section
+function SightCallout() {
+  const [copied, setCopied] = useState(false)
+  const contractAddress = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(contractAddress)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
+
+  return (
+    <section className="sight-callout-section">
+      <div className="section-container">
+        <div className="sight-callout-card glass-card">
+          {/* Spinning Coin */}
+          <div className="sight-coin-wrapper">
+            <div className="sight-coin">
+              <div className="sight-coin-face sight-coin-front">
+                <img src="/hindsightlogo.png" alt="" className="sight-coin-logo" />
+              </div>
+              <div className="sight-coin-face sight-coin-back">
+                <img src="/hindsightlogo.png" alt="" className="sight-coin-logo" />
+              </div>
+            </div>
+            <div className="sight-coin-shadow" />
+          </div>
+
+          {/* Content */}
+          <h2 className="sight-title">
+            <span className="sight-token">$SIGHT</span> = Pro Access
+          </h2>
+          <p className="sight-description">
+            Hold 0.25 SOL worth of $SIGHT to unlock unlimited wallets, journal entries, wallet labels, and cross-wallet analysis.
+          </p>
+
+          {/* Contract Address Box */}
+          <div className="sight-ca-box">
+            <code className="sight-ca-text">{contractAddress}</code>
+            <button className="sight-ca-copy" onClick={handleCopy}>
+              {copied ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              )}
+            </button>
+            {copied && <span className="sight-ca-tooltip">Copied!</span>}
+          </div>
+
+          {/* Buttons */}
+          <div className="sight-buttons">
+            <a href="#" className="sight-btn sight-btn-primary">
+              Buy on Pump.fun
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </a>
+            <a href="/pro" className="sight-btn sight-btn-secondary">
+              See Pro Features
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 // Features Section
 function FeaturesSection({ onOpenPro }) {
   const features = [
@@ -680,6 +759,7 @@ export default function LandingPage({
         error={error}
       />
       <ComparisonSection />
+      <SightCallout />
       <FeaturesSection onOpenPro={onOpenPro} />
       <ChoiceSection onQuickAnalyze={handleQuickAnalyze} onDigDeep={handleDigDeep} />
       <FAQSection />
