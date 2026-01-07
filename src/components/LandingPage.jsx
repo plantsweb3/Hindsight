@@ -201,11 +201,11 @@ function HeroSection({ onScrollDown }) {
         </div>
 
         <h1 className="hero-headline">
-          See the behavioral patterns <span className="text-gradient-purple">draining</span> your PnL.
+          Hindsight: Your AI copilot for the <span className="text-gradient-purple">trenches</span>
         </h1>
 
         <p className="hero-subheadline">
-          Hindsight analyzes your Solana wallet and shows you exactly why you keep losing—with brutal honesty and specific fixes.
+          Analyze your Solana trades, spot patterns in your behavior, and get personalized coaching to level up your game.
         </p>
 
         <button className="hero-cta glass-button" onClick={onScrollDown}>
@@ -431,7 +431,7 @@ function FAQSection() {
   const faqs = [
     {
       question: 'How does it work?',
-      answer: 'Hindsight reads your public on-chain transaction history, identifies DEX trades, calculates your actual PnL, and uses AI to detect behavioral patterns like FOMO entries, panic sells, and revenge trading. Everything is read-only—we never touch your funds.',
+      answer: 'Hindsight reads your public on-chain transaction history from pump.fun, Raydium, Jupiter, and other Solana DEXs, calculates your actual PnL, and uses AI to detect behavioral patterns like FOMO entries, panic sells, and revenge trading. Everything is read-only—we never touch your funds.',
     },
     {
       question: 'Is my wallet data safe?',
@@ -443,7 +443,7 @@ function FAQSection() {
     },
     {
       question: 'What do token holders get?',
-      answer: 'Token holders get access to Pro features: Progress Tracking to see if you\'re improving over time, Trading Journal to add context and let AI find patterns in your notes, and priority access to new features.',
+      answer: 'Hold 0.25 SOL worth of $SIGHT in any tracked wallet to unlock Pro features: Progress Tracking to see if you\'re improving over time, Trading Journal to add context and let AI find patterns in your notes, and priority access to new features.',
     },
     {
       question: 'How accurate is the analysis?',
