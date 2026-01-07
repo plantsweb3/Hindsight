@@ -259,20 +259,18 @@ function HeroSection({ onScrollDown, onAnalyze, isLoading, progress, error }) {
 
 // Comparison Section
 function ComparisonSection() {
-  const otherTools = [
-    'Generic advice that doesn\'t stick',
-    'No accountability or tracking',
-    'Hype-driven, not data-driven',
-    'One-size-fits-all insights',
-    'No behavioral analysis',
+  const competitors = [
+    { name: 'Cielo', limitation: 'Trade history only' },
+    { name: 'Birdeye', limitation: 'Portfolio tracking' },
+    { name: 'GMGN', limitation: 'Data dumps, no insights' },
   ]
 
-  const hindsight = [
-    'Brutal truth with specific fixes',
-    'Track if corrections actually work',
-    'Pure behavioral pattern detection',
-    'Personalized to your wallet + style',
-    'AI analyzes every trade',
+  const hindsightFeatures = [
+    'AI behavioral coaching',
+    'Personalized pattern detection',
+    'Brutally honest feedback',
+    'Trading journal with context',
+    'Tracks if you\'re actually improving',
   ]
 
   return (
@@ -284,22 +282,32 @@ function ComparisonSection() {
           <div className="comparison-card glass-card comparison-other">
             <h3 className="comparison-title">Other Tools</h3>
             <ul className="comparison-list">
-              {otherTools.map((item, i) => (
+              {competitors.map((comp, i) => (
                 <li key={i} className="comparison-item comparison-item-bad">
                   <span className="comparison-icon">✗</span>
-                  {item}
+                  <div className="competitor-info">
+                    <span className="competitor-name">{comp.name}</span>
+                    <span className="competitor-limitation">{comp.limitation}</span>
+                  </div>
                 </li>
               ))}
             </ul>
           </div>
 
           <div className="comparison-card glass-card comparison-hindsight">
-            <h3 className="comparison-title">Hindsight</h3>
+            <div className="comparison-hindsight-header">
+              <img src="/hindsightlogo.png" alt="" className="comparison-logo" />
+              <h3 className="comparison-title">Hindsight</h3>
+            </div>
             <ul className="comparison-list">
-              {hindsight.map((item, i) => (
-                <li key={i} className="comparison-item comparison-item-good">
+              {hindsightFeatures.map((feature, i) => (
+                <li
+                  key={i}
+                  className="comparison-item comparison-item-good"
+                  style={{ animationDelay: `${i * 0.1}s` }}
+                >
                   <span className="comparison-icon">✓</span>
-                  {item}
+                  {feature}
                 </li>
               ))}
             </ul>
