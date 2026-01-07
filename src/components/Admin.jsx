@@ -79,10 +79,11 @@ export default function Admin({ onBack, isHiddenRoute = false }) {
   }
 
   useEffect(() => {
-    if (isUnlocked && token) {
+    // Fetch when: logged in with token, OR hidden route is unlocked
+    if (token || (isHiddenRoute && isUnlocked)) {
       fetchReports()
     }
-  }, [token, isUnlocked])
+  }, [token, isUnlocked, isHiddenRoute])
 
   const fetchReports = async () => {
     // For hidden route, use password auth; otherwise use token
