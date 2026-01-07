@@ -47,8 +47,8 @@ export default function ReportBug({ onBack }) {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
 
-  const compressImage = (file, maxWidth = 800, quality = 0.6) => {
-    return new Promise((resolve) => {
+  const compressImage = (file, maxWidth = 1400, quality = 0.5) => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader()
       reader.onload = (e) => {
         const img = new Image()
@@ -59,7 +59,7 @@ export default function ReportBug({ onBack }) {
 
           // Scale down if too large
           if (width > maxWidth) {
-            height = (height * maxWidth) / width
+            height = Math.round((height * maxWidth) / width)
             width = maxWidth
           }
 
@@ -70,12 +70,31 @@ export default function ReportBug({ onBack }) {
           ctx.drawImage(img, 0, 0, width, height)
 
           // Convert to compressed JPEG
-          const compressed = canvas.toDataURL('image/jpeg', quality)
-          console.log('Compressed image size:', Math.round(compressed.length / 1024), 'KB')
+          let compressed = canvas.toDataURL('image/jpeg', quality)
+
+          // If still too large, compress more aggressively
+          if (compressed.length > 500000) {
+            console.log('Image still large, compressing further...')
+            canvas.width = Math.round(width * 0.7)
+            canvas.height = Math.round(height * 0.7)
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+            compressed = canvas.toDataURL('image/jpeg', 0.4)
+          }
+
+          console.log('Final image size:', Math.round(compressed.length / 1024), 'KB')
+
+          // Reject if still too large
+          if (compressed.length > 2000000) {
+            reject(new Error('Image too large even after compression. Please use a smaller screenshot.'))
+            return
+          }
+
           resolve(compressed)
         }
+        img.onerror = () => reject(new Error('Failed to load image'))
         img.src = e.target.result
       }
+      reader.onerror = () => reject(new Error('Failed to read file'))
       reader.readAsDataURL(file)
     })
   }
