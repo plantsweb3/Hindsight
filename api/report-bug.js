@@ -1,6 +1,15 @@
 import { createBugReport } from './lib/db.js'
 import { cors, json, error } from './lib/auth.js'
 
+// Increase body size limit for screenshots
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '4mb',
+    },
+  },
+}
+
 export default async function handler(req, res) {
   cors(res)
 
