@@ -100,22 +100,22 @@ export async function initDb() {
     )
   `)
 
-  // Create indexes
-  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_analyses_user_id ON analyses(user_id)`)
-  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_journal_user_id ON trade_journal(user_id)`)
-  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_journal_exit_time ON trade_journal(exit_time)`)
-  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_journal_token_address ON trade_journal(token_address)`)
-  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_journal_wallet_address ON trade_journal(wallet_address)`)
-
   // Migration: Add wallet_address column if it doesn't exist (for existing databases)
+  // MUST run BEFORE creating indexes that reference this column
   try {
     await getDb().execute(`ALTER TABLE trade_journal ADD COLUMN wallet_address TEXT`)
     console.log('[DB] Migration: Added wallet_address column to trade_journal')
   } catch (err) {
     // Column already exists - this is expected, just log it
-    // Turso/libsql may return different error messages for duplicate column
     console.log('[DB] Migration note:', err.message || 'wallet_address column likely already exists')
   }
+
+  // Create indexes (after migrations so all columns exist)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_analyses_user_id ON analyses(user_id)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_journal_user_id ON trade_journal(user_id)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_journal_exit_time ON trade_journal(exit_time)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_journal_token_address ON trade_journal(token_address)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_journal_wallet_address ON trade_journal(wallet_address)`)
 }
 
 // User functions
