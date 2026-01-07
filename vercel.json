@@ -5,10 +5,6 @@
   "functions": {
     "api/**/*.js": {
       "maxDuration": 60
-    },
-    "api/report-bug.js": {
-      "maxDuration": 60,
-      "memory": 1024
     }
   },
   "rewrites": [
