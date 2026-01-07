@@ -1033,7 +1033,7 @@ input, button {
   animation: spin-coin 7s linear infinite;
 }
 
-/* Front face */
+/* Front face - positioned at +10px */
 .sight-coin-front {
   position: absolute;
   width: 100%;
@@ -1043,7 +1043,7 @@ input, button {
   align-items: center;
   justify-content: center;
   backface-visibility: hidden;
-  transform: translateZ(12px);
+  transform: translateZ(10px);
   background: linear-gradient(145deg, #1a1a2e 0%, #2d2d44 50%, #1a1a2e 100%);
   border: 4px solid #7c3aed;
   box-shadow:
@@ -1062,7 +1062,7 @@ input, button {
   box-shadow: inset 0 0 20px rgba(124, 58, 237, 0.2);
 }
 
-/* Back face */
+/* Back face - positioned at -10px, rotated to face backward */
 .sight-coin-back {
   position: absolute;
   width: 100%;
@@ -1072,7 +1072,7 @@ input, button {
   align-items: center;
   justify-content: center;
   backface-visibility: hidden;
-  transform: translateZ(-12px) rotateY(180deg);
+  transform: rotateY(180deg) translateZ(10px);
   background: linear-gradient(145deg, #1a1a2e 0%, #2d2d44 50%, #1a1a2e 100%);
   border: 4px solid #7c3aed;
   box-shadow:
@@ -1090,7 +1090,7 @@ input, button {
   box-shadow: inset 0 0 20px rgba(124, 58, 237, 0.2);
 }
 
-/* Coin edge - creates the thickness */
+/* Coin edge - creates the thickness between front and back */
 .sight-coin-edge {
   position: absolute;
   width: 100%;
@@ -1098,28 +1098,26 @@ input, button {
   transform-style: preserve-3d;
 }
 
-/* Generate edge segments using pseudo-elements and additional divs */
+/* Edge rings - evenly distributed from +9px to -9px */
 .sight-coin-edge span {
   position: absolute;
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 4px solid;
-  border-color: #5b21b6 #7c3aed #4c1d95 #6d28d9;
+  background: linear-gradient(90deg, #4c1d95 0%, #7c3aed 25%, #5b21b6 50%, #7c3aed 75%, #4c1d95 100%);
   box-sizing: border-box;
 }
 
-.sight-coin-edge span:nth-child(1) { transform: translateZ(10px); }
-.sight-coin-edge span:nth-child(2) { transform: translateZ(8px); }
-.sight-coin-edge span:nth-child(3) { transform: translateZ(6px); }
-.sight-coin-edge span:nth-child(4) { transform: translateZ(4px); }
-.sight-coin-edge span:nth-child(5) { transform: translateZ(2px); }
-.sight-coin-edge span:nth-child(6) { transform: translateZ(0px); }
-.sight-coin-edge span:nth-child(7) { transform: translateZ(-2px); }
-.sight-coin-edge span:nth-child(8) { transform: translateZ(-4px); }
-.sight-coin-edge span:nth-child(9) { transform: translateZ(-6px); }
-.sight-coin-edge span:nth-child(10) { transform: translateZ(-8px); }
-.sight-coin-edge span:nth-child(11) { transform: translateZ(-10px); }
+.sight-coin-edge span:nth-child(1) { transform: translateZ(9px); }
+.sight-coin-edge span:nth-child(2) { transform: translateZ(7px); }
+.sight-coin-edge span:nth-child(3) { transform: translateZ(5px); }
+.sight-coin-edge span:nth-child(4) { transform: translateZ(3px); }
+.sight-coin-edge span:nth-child(5) { transform: translateZ(1px); }
+.sight-coin-edge span:nth-child(6) { transform: translateZ(-1px); }
+.sight-coin-edge span:nth-child(7) { transform: translateZ(-3px); }
+.sight-coin-edge span:nth-child(8) { transform: translateZ(-5px); }
+.sight-coin-edge span:nth-child(9) { transform: translateZ(-7px); }
+.sight-coin-edge span:nth-child(10) { transform: translateZ(-9px); }
 
 .sight-coin-logo {
   width: 55px;
