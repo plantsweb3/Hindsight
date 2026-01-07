@@ -28,6 +28,8 @@ export function AuthProvider({ children }) {
 
       if (res.ok) {
         const userData = await res.json()
+        console.log('[AuthContext] fetchUser response:', userData)
+        console.log('[AuthContext] fetchUser primaryArchetype:', userData.primaryArchetype)
         setUser(userData)
       } else {
         // Token invalid, clear it
@@ -89,7 +91,21 @@ export function AuthProvider({ children }) {
 
   const saveArchetype = async (primaryArchetype, secondaryArchetype, quizAnswers, overrideToken = null) => {
     const currentToken = overrideToken || token || localStorage.getItem('hindsight_token')
-    if (!currentToken) return
+    console.log('[AuthContext] saveArchetype called with:', {
+      primaryArchetype,
+      secondaryArchetype,
+      quizAnswers,
+      quizAnswersType: typeof quizAnswers,
+      quizAnswersIsArray: Array.isArray(quizAnswers),
+      hasToken: !!currentToken
+    })
+    if (!currentToken) {
+      console.log('[AuthContext] saveArchetype: No token, returning early')
+      return
+    }
+
+    const payload = { primaryArchetype, secondaryArchetype, quizAnswers }
+    console.log('[AuthContext] Sending to API:', JSON.stringify(payload))
 
     const res = await fetch(`${API_URL}/archetype`, {
       method: 'POST',
@@ -97,21 +113,28 @@ export function AuthProvider({ children }) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${currentToken}`,
       },
-      body: JSON.stringify({ primaryArchetype, secondaryArchetype, quizAnswers }),
+      body: JSON.stringify(payload),
     })
 
     const data = await res.json()
+    console.log('[AuthContext] saveArchetype response:', { ok: res.ok, data })
 
     if (!res.ok) {
       throw new Error(data.error || 'Failed to save archetype')
     }
 
     // Update local user state
-    setUser(prev => ({
-      ...prev,
-      primaryArchetype,
-      secondaryArchetype,
-    }))
+    console.log('[AuthContext] saveArchetype: Updating user state with archetype')
+    setUser(prev => {
+      console.log('[AuthContext] saveArchetype: prev user state:', prev)
+      const newUser = {
+        ...prev,
+        primaryArchetype,
+        secondaryArchetype,
+      }
+      console.log('[AuthContext] saveArchetype: new user state:', newUser)
+      return newUser
+    })
 
     return data
   }

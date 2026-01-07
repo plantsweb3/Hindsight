@@ -121,6 +121,13 @@ export default async function handler(req, res) {
       // Get usage stats
       const usageStats = await getUserUsageStats(decoded.id)
 
+      console.log('[API] GET /api/auth/me - user data:', {
+        id: user.id,
+        username: user.username,
+        primaryArchetype: user.primary_archetype,
+        secondaryArchetype: user.secondary_archetype,
+      })
+
       return json(res, {
         id: user.id,
         username: user.username,
@@ -138,6 +145,7 @@ export default async function handler(req, res) {
 
     // POST /api/auth/archetype
     if (route === 'archetype' && req.method === 'POST') {
+      console.log('[API] POST /api/auth/archetype - received request')
       const decoded = authenticateRequest(req)
       if (!decoded) {
         return error(res, 'Authentication required', 401)
@@ -145,11 +153,34 @@ export default async function handler(req, res) {
 
       const { primaryArchetype, secondaryArchetype, quizAnswers } = req.body || {}
 
+      // Debug: Log types and values
+      console.log('[API] Archetype raw data:', {
+        primaryArchetype,
+        secondaryArchetype,
+        quizAnswers,
+        userId: decoded.id,
+      })
+      console.log('[API] Types:', {
+        primaryType: typeof primaryArchetype,
+        secondaryType: typeof secondaryArchetype,
+        quizAnswersType: typeof quizAnswers,
+        quizAnswersIsArray: Array.isArray(quizAnswers),
+        userIdType: typeof decoded.id,
+      })
+
       if (!primaryArchetype || !secondaryArchetype) {
         return error(res, 'Archetype data required', 400)
       }
 
-      await updateUserArchetype(decoded.id, primaryArchetype, secondaryArchetype, quizAnswers)
+      // Ensure we're passing plain strings
+      const primary = typeof primaryArchetype === 'string' ? primaryArchetype : String(primaryArchetype)
+      const secondary = typeof secondaryArchetype === 'string' ? secondaryArchetype : String(secondaryArchetype)
+      const userId = typeof decoded.id === 'number' ? decoded.id : Number(decoded.id)
+
+      console.log('[API] Sanitized values:', { primary, secondary, userId })
+
+      await updateUserArchetype(userId, primary, secondary, quizAnswers)
+      console.log('[API] Archetype saved to database')
 
       return json(res, {
         success: true,

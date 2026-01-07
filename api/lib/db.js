@@ -121,10 +121,50 @@ export async function getUserById(id) {
 }
 
 export async function updateUserArchetype(userId, primary, secondary, quizAnswers) {
-  await db.execute({
-    sql: `UPDATE users SET primary_archetype = ?, secondary_archetype = ?, quiz_answers = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-    args: [primary, secondary, JSON.stringify(quizAnswers), userId],
-  })
+  // Ensure all values are valid Turso types (string, number, null, or BigInt)
+  // Convert undefined to null, ensure strings are strings
+  const safePrimary = primary != null ? String(primary) : null
+  const safeSecondary = secondary != null ? String(secondary) : null
+  const safeUserId = userId != null ? Number(userId) : null
+
+  // Serialize quizAnswers - handle undefined, null, and array
+  let serializedAnswers = null
+  if (quizAnswers != null) {
+    try {
+      serializedAnswers = JSON.stringify(quizAnswers)
+    } catch (e) {
+      console.error('[DB] Failed to serialize quizAnswers:', e)
+      serializedAnswers = null
+    }
+  }
+
+  const args = [safePrimary, safeSecondary, serializedAnswers, safeUserId]
+
+  // Debug: Log exact args being sent to Turso
+  console.log('[DB] updateUserArchetype args:', args)
+  console.log('[DB] arg types:', args.map((a, i) => ({
+    index: i,
+    value: a,
+    type: typeof a,
+    isNull: a === null,
+    isUndefined: a === undefined,
+  })))
+
+  // Verify no undefined values (Turso doesn't support undefined)
+  if (args.some(a => a === undefined)) {
+    throw new Error('Cannot pass undefined to Turso - use null instead')
+  }
+
+  try {
+    await db.execute({
+      sql: `UPDATE users SET primary_archetype = ?, secondary_archetype = ?, quiz_answers = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      args,
+    })
+  } catch (err) {
+    console.error('[DB] Turso execute error:', err)
+    console.error('[DB] Error details:', { message: err.message, code: err.code })
+    throw err
+  }
 }
 
 export async function addSavedWallet(userId, walletAddress) {

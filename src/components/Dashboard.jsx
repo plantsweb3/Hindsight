@@ -181,6 +181,10 @@ function UsageLimitsBar({ user, onOpenPro }) {
 
 // Compact Horizontal Trader Profile Card
 function TraderProfileCard({ user, onRetakeQuiz }) {
+  console.log('[Dashboard] TraderProfileCard user:', user)
+  console.log('[Dashboard] primaryArchetype:', user?.primaryArchetype)
+  console.log('[Dashboard] ARCHETYPES keys:', Object.keys(ARCHETYPES))
+
   if (!user?.primaryArchetype || !ARCHETYPES[user.primaryArchetype]) {
     return (
       <div className="archetype-bar glass-card">
@@ -422,7 +426,7 @@ function TradeHistory({ trades, onJournal }) {
 
 // Main Dashboard Component
 export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJournal, onOpenSettings, onOpenPro }) {
-  const { user, token, logout, getAnalyses } = useAuth()
+  const { user, token, logout, getAnalyses, refreshUser } = useAuth()
   const [stats, setStats] = useState({
     totalPnl: 0,
     winRate: '0%',
@@ -441,6 +445,10 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
   const loadDashboardData = async () => {
     setIsLoading(true)
     try {
+      // Refresh user data to get latest archetype info
+      console.log('[Dashboard] Refreshing user data...')
+      await refreshUser()
+
       // Load journal stats
       const statsRes = await fetch('/api/journal/stats', {
         headers: { Authorization: `Bearer ${token}` }

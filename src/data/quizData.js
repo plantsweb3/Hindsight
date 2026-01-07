@@ -274,6 +274,7 @@ export function calculateResults(answers) {
     primary,
     secondary,
     scores,
+    answers,
     primaryData: ARCHETYPES[primary],
     secondaryData: ARCHETYPES[secondary],
   }
