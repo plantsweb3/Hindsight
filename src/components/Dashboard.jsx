@@ -324,6 +324,163 @@ function QuickActions({ onAnalyze, onOpenJournal, onAddWallet }) {
   )
 }
 
+// Tracked Wallets Section with label management
+function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh }) {
+  const { token } = useAuth()
+  const [editingWallet, setEditingWallet] = useState(null)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [copyFeedback, setCopyFeedback] = useState(null)
+
+  const isPro = user?.isPro || false
+  const limits = user?.limits || { MAX_WALLETS: 1 }
+  const wallets = (user?.savedWallets || []).map(w =>
+    typeof w === 'string' ? { address: w, label: 'Unlabeled' } : w
+  )
+  const walletCount = wallets.length
+  const atLimit = walletCount >= limits.MAX_WALLETS && !isPro
+
+  const truncateAddr = (addr) => `${addr.slice(0, 4)}...${addr.slice(-4)}`
+
+  const labelOptions = ['Unlabeled', 'Main', 'Gamble', 'Long Hold', 'Sniper', 'Test', 'Tracking']
+
+  const handleCopyAddress = async (address) => {
+    try {
+      await navigator.clipboard.writeText(address)
+      setCopyFeedback(address)
+      setTimeout(() => setCopyFeedback(null), 1500)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
+
+  const handleLabelChange = async (address, newLabel) => {
+    if (!isPro) {
+      // Show Pro gate
+      onOpenPro?.()
+      setEditingWallet(null)
+      return
+    }
+
+    setIsUpdating(true)
+    try {
+      const response = await fetch(`/api/auth/wallets/${address}/label`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ label: newLabel }),
+      })
+
+      if (response.ok) {
+        onRefresh?.()
+      } else {
+        const data = await response.json()
+        if (data.requiresPro) {
+          onOpenPro?.()
+        }
+      }
+    } catch (err) {
+      console.error('Failed to update label:', err)
+    } finally {
+      setIsUpdating(false)
+      setEditingWallet(null)
+    }
+  }
+
+  return (
+    <div className="wallets-section glass-card">
+      <div className="wallets-section-header">
+        <h3 className="wallets-section-title">Tracked Wallets</h3>
+        <span className="wallets-count">
+          {walletCount}/{isPro ? 'Unlimited' : limits.MAX_WALLETS}
+          {!isPro && <span className="free-tag">Free</span>}
+          {isPro && <ProBadge className="count-badge" />}
+        </span>
+      </div>
+
+      <div className="wallets-list">
+        {wallets.length === 0 ? (
+          <div className="wallets-empty">
+            <p>No wallets tracked yet</p>
+          </div>
+        ) : (
+          wallets.map((wallet, i) => (
+            <div key={i} className="wallet-item">
+              <div className="wallet-item-left">
+                <button
+                  className="wallet-address-btn"
+                  onClick={() => handleCopyAddress(wallet.address)}
+                  title="Copy address"
+                >
+                  <span className="wallet-address">{truncateAddr(wallet.address)}</span>
+                  {copyFeedback === wallet.address ? (
+                    <svg className="copy-icon copied" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  ) : (
+                    <svg className="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+
+              <div className="wallet-item-right">
+                {editingWallet === wallet.address ? (
+                  <select
+                    className="wallet-label-select"
+                    value={wallet.label}
+                    onChange={(e) => handleLabelChange(wallet.address, e.target.value)}
+                    onBlur={() => setEditingWallet(null)}
+                    autoFocus
+                    disabled={isUpdating}
+                  >
+                    {labelOptions.map(label => (
+                      <option key={label} value={label}>{label}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <button
+                    className="wallet-label-btn"
+                    onClick={() => setEditingWallet(wallet.address)}
+                    title={isPro ? 'Click to change label' : 'Pro feature - click to upgrade'}
+                  >
+                    <WalletLabelBadge label={wallet.label} size="small" />
+                    {!isPro && (
+                      <svg className="pro-lock-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 1C8.676 1 6 3.676 6 7v2H4v14h16V9h-2V7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4v2H8V7c0-2.276 1.724-4 4-4z"/>
+                      </svg>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="wallets-section-footer">
+        <button
+          className="add-wallet-btn glass-button"
+          onClick={onOpenSettings}
+          disabled={atLimit}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          Add Wallet
+          {atLimit && !isPro && <ProBadge className="btn-badge" />}
+        </button>
+        <button className="manage-wallets-link" onClick={onOpenSettings}>
+          Manage in Settings
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // Wallet Performance Breakdown (Pro users with 2+ labeled wallets)
 function WalletPerformance({ walletStats }) {
   if (!walletStats || walletStats.length < 2) return null
@@ -695,6 +852,14 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
 
             {/* Row 2: Archetype Bar (compact horizontal) */}
             <TraderProfileCard user={user} onRetakeQuiz={onRetakeQuiz} />
+
+            {/* Row 2.5: Tracked Wallets */}
+            <WalletsSection
+              user={user}
+              onOpenSettings={onOpenSettings}
+              onOpenPro={onOpenPro}
+              onRefresh={refreshUser}
+            />
 
             {/* Row 3: Quick Actions */}
             <QuickActions
