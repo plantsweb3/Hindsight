@@ -1,6 +1,8 @@
 import { getBugReports } from '../lib/db.js'
 import { cors, json, error, authenticateRequest } from '../lib/auth.js'
 
+const ADMIN_PASSWORD = 'DeusVult777!'
+
 export default async function handler(req, res) {
   cors(res)
 
@@ -8,14 +10,15 @@ export default async function handler(req, res) {
     return res.status(200).end()
   }
 
-  // Require authentication
+  // Check for admin password auth (for hidden route)
+  const adminPassword = req.headers['x-admin-password']
+  const isAdminAuth = adminPassword === ADMIN_PASSWORD
+
+  // Require either JWT auth or admin password
   const user = authenticateRequest(req)
-  if (!user) {
+  if (!user && !isAdminAuth) {
     return error(res, 'Unauthorized', 401)
   }
-
-  // For now, any logged-in user can view bugs
-  // TODO: Add admin role check if needed
 
   if (req.method === 'GET') {
     try {

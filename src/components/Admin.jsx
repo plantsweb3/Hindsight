@@ -54,30 +54,52 @@ function truncate(text, maxLength = 100) {
   return text.substring(0, maxLength) + '...'
 }
 
-export default function Admin({ onBack }) {
+const ADMIN_PASSWORD = 'DeusVult777!'
+
+export default function Admin({ onBack, isHiddenRoute = false }) {
   const { token } = useAuth()
   const [reports, setReports] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [selectedReport, setSelectedReport] = useState(null)
   const [filter, setFilter] = useState('all')
+  const [passwordInput, setPasswordInput] = useState('')
+  const [isUnlocked, setIsUnlocked] = useState(!isHiddenRoute) // Already unlocked if not hidden route
+  const [passwordError, setPasswordError] = useState('')
+
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault()
+    if (passwordInput === ADMIN_PASSWORD) {
+      setIsUnlocked(true)
+      setPasswordError('')
+    } else {
+      setPasswordError('Incorrect password')
+      setPasswordInput('')
+    }
+  }
 
   useEffect(() => {
-    fetchReports()
-  }, [token])
+    if (isUnlocked && token) {
+      fetchReports()
+    }
+  }, [token, isUnlocked])
 
   const fetchReports = async () => {
-    if (!token) return
+    // For hidden route, use password auth; otherwise use token
+    if (!token && !isUnlocked) return
 
     setIsLoading(true)
     setError('')
 
     try {
-      const response = await fetch('/api/admin/bugs', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
+      const headers = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      } else if (isHiddenRoute && isUnlocked) {
+        headers['X-Admin-Password'] = ADMIN_PASSWORD
+      }
+
+      const response = await fetch('/api/admin/bugs', { headers })
 
       if (!response.ok) {
         throw new Error('Failed to fetch reports')
@@ -102,6 +124,44 @@ export default function Admin({ onBack }) {
     new: reports.filter(r => !r.status || r.status === 'new').length,
     reviewing: reports.filter(r => r.status === 'reviewing').length,
     resolved: reports.filter(r => r.status === 'resolved').length,
+  }
+
+  // Password gate for hidden route
+  if (!isUnlocked) {
+    return (
+      <div className="admin-page">
+        <AdminHeader onBack={onBack} />
+        <main className="admin-content">
+          <div className="admin-password-gate">
+            <div className="password-card glass-card">
+              <div className="password-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </div>
+              <h2 className="password-title">Admin Access Required</h2>
+              <form onSubmit={handlePasswordSubmit} className="password-form">
+                <input
+                  type="password"
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  placeholder="Enter password"
+                  className="password-input"
+                  autoFocus
+                />
+                {passwordError && (
+                  <div className="password-error">{passwordError}</div>
+                )}
+                <button type="submit" className="password-submit">
+                  Unlock
+                </button>
+              </form>
+            </div>
+          </div>
+        </main>
+      </div>
+    )
   }
 
   return (

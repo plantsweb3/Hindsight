@@ -35,6 +35,16 @@ function AppContent() {
     window.scrollTo(0, 0)
   }, [view])
 
+  const [isHiddenAdmin, setIsHiddenAdmin] = useState(false)
+
+  // Check for hidden admin route
+  useEffect(() => {
+    if (window.location.pathname === '/salveregina') {
+      setIsHiddenAdmin(true)
+      setView('admin')
+    }
+  }, [])
+
   // Build archetype data for personalized AI analysis
   const getUserArchetypeData = () => {
     const archetype = quizResults?.primary || user?.primaryArchetype
@@ -437,10 +447,11 @@ function AppContent() {
     )
   }
 
-  if (view === 'admin' && isAuthenticated) {
+  if (view === 'admin' && (isAuthenticated || isHiddenAdmin)) {
     return (
       <Admin
         onBack={handleReset}
+        isHiddenRoute={isHiddenAdmin}
       />
     )
   }
