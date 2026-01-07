@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { analyzeWallet, analyzeBehavior, isValidSolanaAddress, convertTradesToJournalEntries, createJournalEntriesBatch, getJournalPatterns } from './services/solana'
 import { ARCHETYPES } from './data/quizData'
@@ -25,6 +25,11 @@ function AppContent() {
   const [authModalMode, setAuthModalMode] = useState('login')
   const [pendingQuizSave, setPendingQuizSave] = useState(null)
   const [pendingJournalRedirect, setPendingJournalRedirect] = useState(false)
+
+  // Scroll to top on view change
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [view])
 
   // Build archetype data for personalized AI analysis
   const getUserArchetypeData = () => {
