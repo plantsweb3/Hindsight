@@ -273,7 +273,7 @@ function ComparisonSection() {
 }
 
 // Features Section
-function FeaturesSection() {
+function FeaturesSection({ onOpenPro }) {
   const features = [
     {
       title: 'Behavioral Patterns',
@@ -349,7 +349,12 @@ function FeaturesSection() {
 
         <div className="features-grid">
           {features.map((feature, i) => (
-            <div key={i} className="feature-card glass-card">
+            <div
+              key={i}
+              className={`feature-card glass-card ${feature.pro ? 'feature-card-pro' : ''}`}
+              onClick={feature.pro ? onOpenPro : undefined}
+              style={feature.pro ? { cursor: 'pointer' } : undefined}
+            >
               {feature.pro && <span className="pro-badge">Pro</span>}
               <div className="feature-icon">{feature.icon}</div>
               <h3 className="feature-title">{feature.title}</h3>
@@ -358,6 +363,9 @@ function FeaturesSection() {
                   <li key={j}>{item}</li>
                 ))}
               </ul>
+              {feature.pro && (
+                <span className="feature-pro-hint">Click to learn more</span>
+              )}
             </div>
           ))}
         </div>
@@ -552,6 +560,7 @@ export default function LandingPage({
   onShowAuth,
   onOpenDashboard,
   onOpenJournal,
+  onOpenPro,
   isLoading,
   progress,
   error,
@@ -595,7 +604,7 @@ export default function LandingPage({
       />
       <HeroSection onScrollDown={scrollToChoice} />
       <ComparisonSection />
-      <FeaturesSection />
+      <FeaturesSection onOpenPro={onOpenPro} />
       <ChoiceSection onQuickAnalyze={handleQuickAnalyze} onDigDeep={handleDigDeep} />
       <FAQSection />
       <Footer />

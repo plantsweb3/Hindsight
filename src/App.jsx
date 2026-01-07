@@ -10,11 +10,12 @@ import Dashboard from './components/Dashboard'
 import Journal from './components/Journal'
 import Settings from './components/Settings'
 import AuthModal from './components/AuthModal'
+import ProFeatures from './components/ProFeatures'
 
 function AppContent() {
   const { user, token, isAuthenticated, isLoading: authLoading, saveArchetype, saveAnalysis } = useAuth()
 
-  const [view, setView] = useState('landing') // 'landing' | 'quiz' | 'quizResult' | 'results' | 'dashboard' | 'journal' | 'settings'
+  const [view, setView] = useState('landing') // 'landing' | 'quiz' | 'quizResult' | 'results' | 'dashboard' | 'journal' | 'settings' | 'pro'
   const [isLoading, setIsLoading] = useState(false)
   const [progress, setProgress] = useState('')
   const [error, setError] = useState('')
@@ -251,6 +252,10 @@ function AppContent() {
     setView('settings')
   }
 
+  const handleOpenPro = () => {
+    setView('pro')
+  }
+
   const handleSettingsNavigate = (page) => {
     if (page === 'dashboard') setView('dashboard')
     else if (page === 'journal') setView('journal')
@@ -362,6 +367,21 @@ function AppContent() {
     )
   }
 
+  if (view === 'pro') {
+    return (
+      <ProFeatures
+        onBack={handleReset}
+        onAddWallet={() => {
+          if (isAuthenticated) {
+            setView('settings')
+          } else {
+            handleShowAuth('signup')
+          }
+        }}
+      />
+    )
+  }
+
   return (
     <>
       <LandingPage
@@ -370,6 +390,7 @@ function AppContent() {
         onShowAuth={handleShowAuth}
         onOpenDashboard={handleOpenDashboard}
         onOpenJournal={handleOpenJournal}
+        onOpenPro={handleOpenPro}
         isLoading={isLoading}
         progress={progress}
         error={error}
