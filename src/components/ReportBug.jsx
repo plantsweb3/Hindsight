@@ -47,7 +47,7 @@ export default function ReportBug({ onBack }) {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
 
-  const compressImage = (file, maxWidth = 1200, quality = 0.7) => {
+  const compressImage = (file, maxWidth = 800, quality = 0.6) => {
     return new Promise((resolve) => {
       const reader = new FileReader()
       reader.onload = (e) => {
@@ -71,6 +71,7 @@ export default function ReportBug({ onBack }) {
 
           // Convert to compressed JPEG
           const compressed = canvas.toDataURL('image/jpeg', quality)
+          console.log('Compressed image size:', Math.round(compressed.length / 1024), 'KB')
           resolve(compressed)
         }
         img.src = e.target.result
@@ -125,18 +126,28 @@ export default function ReportBug({ onBack }) {
     setError('')
 
     try {
+      const payload = {
+        email: email.trim() || null,
+        description: description.trim(),
+        steps: steps.trim() || null,
+        screenshot: screenshot || null,
+      }
+
+      console.log('Payload size:', Math.round(JSON.stringify(payload).length / 1024), 'KB')
+
       const response = await fetch('/api/report-bug', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email.trim() || null,
-          description: description.trim(),
-          steps: steps.trim() || null,
-          screenshot: screenshot || null,
-        }),
+        body: JSON.stringify(payload),
       })
 
-      const data = await response.json()
+      let data
+      try {
+        data = await response.json()
+      } catch {
+        // Response might not be JSON if there's a server error
+        throw new Error(`Server error: ${response.status} ${response.statusText}`)
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to submit report')
