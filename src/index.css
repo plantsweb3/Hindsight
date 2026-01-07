@@ -880,7 +880,7 @@ input, button {
 
 .comparison-other {
   border-color: rgba(255, 255, 255, 0.1);
-  background: rgba(30, 30, 40, 0.85);
+  background: rgba(20, 20, 30, 0.95);
 }
 
 .comparison-other .comparison-title {
@@ -889,7 +889,7 @@ input, button {
 
 .comparison-hindsight {
   border-color: rgba(139, 92, 246, 0.5);
-  background: linear-gradient(135deg, rgba(50, 40, 70, 0.9) 0%, rgba(30, 30, 45, 0.9) 100%);
+  background: rgba(25, 20, 35, 0.95);
   box-shadow:
     0 0 40px rgba(139, 92, 246, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -981,20 +981,21 @@ input, button {
 }
 
 /* Competitor styling */
-.competitor-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+.competitor-inline {
+  display: inline;
 }
 
 .competitor-name {
   font-weight: 600;
-  color: #71717a;
+  color: #a1a1aa;
+}
+
+.competitor-separator {
+  color: #52525b;
 }
 
 .competitor-limitation {
-  font-size: 0.9rem;
-  color: #52525b;
+  color: #71717a;
 }
 
 /* --- Features Section --- */

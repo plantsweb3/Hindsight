@@ -308,10 +308,11 @@ function ComparisonSection() {
               {competitors.map((comp, i) => (
                 <li key={i} className="comparison-item comparison-item-bad">
                   <span className="comparison-icon">✗</span>
-                  <div className="competitor-info">
+                  <span className="competitor-inline">
                     <span className="competitor-name">{comp.name}</span>
+                    <span className="competitor-separator"> — </span>
                     <span className="competitor-limitation">{comp.limitation}</span>
-                  </div>
+                  </span>
                 </li>
               ))}
             </ul>
