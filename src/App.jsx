@@ -14,11 +14,12 @@ import AuthModal from './components/AuthModal'
 import ProFeatures from './components/ProFeatures'
 import Contact from './components/Contact'
 import ReportBug from './components/ReportBug'
+import Admin from './components/Admin'
 
 function AppContent() {
   const { user, token, isAuthenticated, isLoading: authLoading, saveArchetype, saveAnalysis } = useAuth()
 
-  const [view, setView] = useState('landing') // 'landing' | 'quiz' | 'quizResult' | 'results' | 'dashboard' | 'journal' | 'settings' | 'pro' | 'contact' | 'reportBug'
+  const [view, setView] = useState('landing') // 'landing' | 'quiz' | 'quizResult' | 'results' | 'dashboard' | 'journal' | 'settings' | 'pro' | 'contact' | 'reportBug' | 'admin'
   const [isLoading, setIsLoading] = useState(false)
   const [progress, setProgress] = useState('')
   const [error, setError] = useState('')
@@ -289,6 +290,10 @@ function AppContent() {
     setView('reportBug')
   }
 
+  const handleOpenAdmin = () => {
+    setView('admin')
+  }
+
   const handleSettingsNavigate = (page) => {
     if (page === 'dashboard') setView('dashboard')
     else if (page === 'journal') setView('journal')
@@ -428,6 +433,14 @@ function AppContent() {
     return (
       <ReportBug
         onBack={handleOpenContact}
+      />
+    )
+  }
+
+  if (view === 'admin' && isAuthenticated) {
+    return (
+      <Admin
+        onBack={handleReset}
       />
     )
   }
