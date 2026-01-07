@@ -1,10 +1,21 @@
 import { createClient } from '@libsql/client'
 
-// Turso database connection
-const db = createClient({
-  url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-})
+// Turso database connection (lazy initialization)
+let db = null
+
+function getDb() {
+  if (!db) {
+    if (!process.env.TURSO_DATABASE_URL) {
+      throw new Error('TURSO_DATABASE_URL environment variable is not set')
+    }
+    db = createClient({
+      url: process.env.TURSO_DATABASE_URL,
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    })
+    console.log('[DB] Database client initialized')
+  }
+  return db
+}
 
 // Free tier limits
 export const FREE_TIER_LIMITS = {
@@ -14,7 +25,7 @@ export const FREE_TIER_LIMITS = {
 
 // Initialize tables (run once on first deploy)
 export async function initDb() {
-  await db.execute(`
+  await getDb().execute(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE NOT NULL,
@@ -33,16 +44,16 @@ export async function initDb() {
 
   // Add Pro columns if they don't exist (for existing databases)
   try {
-    await db.execute(`ALTER TABLE users ADD COLUMN is_pro INTEGER DEFAULT 0`)
+    await getDb().execute(`ALTER TABLE users ADD COLUMN is_pro INTEGER DEFAULT 0`)
   } catch (e) { /* Column already exists */ }
   try {
-    await db.execute(`ALTER TABLE users ADD COLUMN pro_verified_at DATETIME`)
+    await getDb().execute(`ALTER TABLE users ADD COLUMN pro_verified_at DATETIME`)
   } catch (e) { /* Column already exists */ }
   try {
-    await db.execute(`ALTER TABLE users ADD COLUMN pro_expires_at DATETIME`)
+    await getDb().execute(`ALTER TABLE users ADD COLUMN pro_expires_at DATETIME`)
   } catch (e) { /* Column already exists */ }
 
-  await db.execute(`
+  await getDb().execute(`
     CREATE TABLE IF NOT EXISTS analyses (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
@@ -57,7 +68,7 @@ export async function initDb() {
     )
   `)
 
-  await db.execute(`
+  await getDb().execute(`
     CREATE TABLE IF NOT EXISTS trade_journal (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
@@ -90,15 +101,15 @@ export async function initDb() {
   `)
 
   // Create indexes
-  await db.execute(`CREATE INDEX IF NOT EXISTS idx_analyses_user_id ON analyses(user_id)`)
-  await db.execute(`CREATE INDEX IF NOT EXISTS idx_journal_user_id ON trade_journal(user_id)`)
-  await db.execute(`CREATE INDEX IF NOT EXISTS idx_journal_exit_time ON trade_journal(exit_time)`)
-  await db.execute(`CREATE INDEX IF NOT EXISTS idx_journal_token_address ON trade_journal(token_address)`)
-  await db.execute(`CREATE INDEX IF NOT EXISTS idx_journal_wallet_address ON trade_journal(wallet_address)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_analyses_user_id ON analyses(user_id)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_journal_user_id ON trade_journal(user_id)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_journal_exit_time ON trade_journal(exit_time)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_journal_token_address ON trade_journal(token_address)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_journal_wallet_address ON trade_journal(wallet_address)`)
 
   // Migration: Add wallet_address column if it doesn't exist (for existing databases)
   try {
-    await db.execute(`ALTER TABLE trade_journal ADD COLUMN wallet_address TEXT`)
+    await getDb().execute(`ALTER TABLE trade_journal ADD COLUMN wallet_address TEXT`)
     console.log('[DB] Migration: Added wallet_address column to trade_journal')
   } catch (err) {
     // Column already exists - this is expected, just log it
@@ -109,7 +120,7 @@ export async function initDb() {
 
 // User functions
 export async function createUser(username, passwordHash) {
-  const result = await db.execute({
+  const result = await getDb().execute({
     sql: `INSERT INTO users (username, password_hash) VALUES (?, ?)`,
     args: [username, passwordHash],
   })
@@ -117,7 +128,7 @@ export async function createUser(username, passwordHash) {
 }
 
 export async function getUserByUsername(username) {
-  const result = await db.execute({
+  const result = await getDb().execute({
     sql: `SELECT * FROM users WHERE username = ?`,
     args: [username],
   })
@@ -125,7 +136,7 @@ export async function getUserByUsername(username) {
 }
 
 export async function getUserById(id) {
-  const result = await db.execute({
+  const result = await getDb().execute({
     sql: `SELECT * FROM users WHERE id = ?`,
     args: [id],
   })
@@ -168,7 +179,7 @@ export async function updateUserArchetype(userId, primary, secondary, quizAnswer
   }
 
   try {
-    await db.execute({
+    await getDb().execute({
       sql: `UPDATE users SET primary_archetype = ?, secondary_archetype = ?, quiz_answers = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
       args,
     })
@@ -208,7 +219,7 @@ export async function addSavedWallet(userId, walletAddress, label = 'Unlabeled')
 
   if (!exists) {
     wallets.push({ address: walletAddress, label })
-    await db.execute({
+    await getDb().execute({
       sql: `UPDATE users SET saved_wallets = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
       args: [JSON.stringify(wallets), userId],
     })
@@ -226,7 +237,7 @@ export async function addSavedWalletBypassLimit(userId, walletAddress, label = '
 
   if (!exists) {
     wallets.push({ address: walletAddress, label })
-    await db.execute({
+    await getDb().execute({
       sql: `UPDATE users SET saved_wallets = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
       args: [JSON.stringify(wallets), userId],
     })
@@ -240,7 +251,7 @@ export async function removeSavedWallet(userId, walletAddress) {
 
   let wallets = normalizeWallets(user.saved_wallets)
   wallets = wallets.filter(w => w.address !== walletAddress)
-  await db.execute({
+  await getDb().execute({
     sql: `UPDATE users SET saved_wallets = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
     args: [JSON.stringify(wallets), userId],
   })
@@ -260,7 +271,7 @@ export async function updateWalletLabel(userId, walletAddress, label) {
   }
 
   wallets[walletIndex].label = label
-  await db.execute({
+  await getDb().execute({
     sql: `UPDATE users SET saved_wallets = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
     args: [JSON.stringify(wallets), userId],
   })
@@ -276,7 +287,7 @@ export async function getUserWallets(userId) {
 
 // Analysis functions
 export async function saveAnalysis(userId, walletAddress, analysis, stats) {
-  const result = await db.execute({
+  const result = await getDb().execute({
     sql: `INSERT INTO analyses (user_id, wallet_address, verdict, win_rate, avg_hold_time, patterns, stats) VALUES (?, ?, ?, ?, ?, ?, ?)`,
     args: [
       userId,
@@ -292,7 +303,7 @@ export async function saveAnalysis(userId, walletAddress, analysis, stats) {
 }
 
 export async function getUserAnalyses(userId) {
-  const result = await db.execute({
+  const result = await getDb().execute({
     sql: `SELECT * FROM analyses WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`,
     args: [userId],
   })
@@ -343,12 +354,12 @@ export async function getJournalEntries(userId, filters = {}) {
     args.push(filters.limit)
   }
 
-  const result = await db.execute({ sql, args })
+  const result = await getDb().execute({ sql, args })
   return result.rows
 }
 
 export async function getJournalStats(userId) {
-  const result = await db.execute({
+  const result = await getDb().execute({
     sql: `
       SELECT
         COUNT(*) as total_trades,
@@ -365,7 +376,7 @@ export async function getJournalStats(userId) {
 }
 
 export async function createJournalEntry(userId, entry) {
-  const result = await db.execute({
+  const result = await getDb().execute({
     sql: `
       INSERT INTO trade_journal (
         user_id, wallet_address, token_address, token_name, entry_price, entry_time,
@@ -423,14 +434,14 @@ export async function updateJournalEntry(entryId, userId, updates) {
   fields.push('updated_at = CURRENT_TIMESTAMP')
   args.push(entryId, userId)
 
-  await db.execute({
+  await getDb().execute({
     sql: `UPDATE trade_journal SET ${fields.join(', ')} WHERE id = ? AND user_id = ?`,
     args,
   })
 }
 
 export async function journalEntryExists(userId, tokenAddress, exitTime) {
-  const result = await db.execute({
+  const result = await getDb().execute({
     sql: `SELECT id FROM trade_journal WHERE user_id = ? AND token_address = ? AND exit_time = ?`,
     args: [userId, tokenAddress, exitTime],
   })
@@ -439,7 +450,7 @@ export async function journalEntryExists(userId, tokenAddress, exitTime) {
 
 export async function getJournalPatterns(userId) {
   // Get mood distribution
-  const moodResult = await db.execute({
+  const moodResult = await getDb().execute({
     sql: `
       SELECT mood,
              COUNT(*) as count,
@@ -452,7 +463,7 @@ export async function getJournalPatterns(userId) {
   })
 
   // Get research level distribution
-  const researchResult = await db.execute({
+  const researchResult = await getDb().execute({
     sql: `
       SELECT research_level,
              COUNT(*) as count,
@@ -471,7 +482,7 @@ export async function getJournalPatterns(userId) {
 }
 
 export async function getWeeklySummary(userId) {
-  const result = await db.execute({
+  const result = await getDb().execute({
     sql: `
       SELECT
         strftime('%Y-%W', exit_time) as week,
@@ -490,7 +501,7 @@ export async function getWeeklySummary(userId) {
 }
 
 export async function getMonthlySummary(userId) {
-  const result = await db.execute({
+  const result = await getDb().execute({
     sql: `
       SELECT
         strftime('%Y-%m', exit_time) as month,
@@ -516,7 +527,7 @@ export async function getUserUsageStats(userId) {
   const wallets = normalizeWallets(user.saved_wallets)
   const walletCount = wallets.length
 
-  const journalResult = await db.execute({
+  const journalResult = await getDb().execute({
     sql: `SELECT COUNT(*) as count FROM trade_journal WHERE user_id = ?`,
     args: [userId],
   })
@@ -542,7 +553,7 @@ export async function updateProStatus(userId, isPro) {
   // Pro status expires after 24 hours (will need to re-verify)
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
 
-  await db.execute({
+  await getDb().execute({
     sql: `UPDATE users SET is_pro = ?, pro_verified_at = ?, pro_expires_at = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
     args: [isPro ? 1 : 0, isPro ? now : null, isPro ? expiresAt : null, userId],
   })
@@ -601,4 +612,4 @@ export async function checkSightBalance(walletAddresses) {
   }
 }
 
-export default db
+export default getDb
