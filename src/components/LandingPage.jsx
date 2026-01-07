@@ -276,7 +276,7 @@ function ComparisonSection() {
   ]
 
   return (
-    <section className="comparison-section">
+    <section className="comparison-section" id="comparison-section">
       <div className="section-container">
         <h2 className="section-headline">Other Tools vs <span className="text-gradient-purple">Hindsight</span></h2>
 
@@ -612,8 +612,8 @@ export default function LandingPage({
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const scrollToChoice = () => {
-    document.getElementById('choice-section')?.scrollIntoView({ behavior: 'smooth' })
+  const scrollToNextSection = () => {
+    document.getElementById('comparison-section')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   const handleQuickAnalyze = () => {
@@ -641,7 +641,7 @@ export default function LandingPage({
         user={user}
       />
       <HeroSection
-        onScrollDown={scrollToChoice}
+        onScrollDown={scrollToNextSection}
         onAnalyze={onAnalyze}
         isLoading={isLoading}
         progress={progress}
