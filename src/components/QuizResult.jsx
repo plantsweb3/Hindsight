@@ -35,11 +35,14 @@ function TraitList({ items, type }) {
 }
 
 // Main Quiz Result Component
-export default function QuizResult({ results, onAnalyze, onRetake, onBack, isAuthenticated, onSavePrompt }) {
+export default function QuizResult({ results, onAnalyze, onRetake, onBack, isAuthenticated, onSavePrompt, user, onOpenDashboard }) {
   const [walletAddress, setWalletAddress] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
   const { primaryData, secondaryData, primary, secondary } = results
+
+  // Check if user already has a saved wallet
+  const hasWallet = user?.savedWallets?.length > 0
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -137,42 +140,63 @@ export default function QuizResult({ results, onAnalyze, onRetake, onBack, isAut
           </section>
         )}
 
-        {/* CTA Section */}
+        {/* CTA Section - Different based on wallet status */}
         <section className="archetype-cta glass-card">
-          <h3 className="cta-heading">Ready to see the data?</h3>
-          <p className="cta-description">{primaryData.cta}</p>
+          {hasWallet ? (
+            <>
+              <h3 className="cta-heading">See your personalized insights</h3>
+              <p className="cta-description">
+                Your wallet is already connected. See how your trading patterns match your {primaryData.name} archetype.
+              </p>
+              <button
+                type="button"
+                onClick={onOpenDashboard}
+                className="cta-submit btn-primary"
+              >
+                Go to Dashboard
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
+          ) : (
+            <>
+              <h3 className="cta-heading">Ready to see the data?</h3>
+              <p className="cta-description">{primaryData.cta}</p>
 
-          <form onSubmit={handleSubmit} className="cta-form">
-            <div className="cta-input-wrapper">
-              <input
-                type="text"
-                value={walletAddress}
-                onChange={(e) => setWalletAddress(e.target.value)}
-                placeholder="Enter your Solana wallet address"
-                className="cta-input"
-                disabled={isLoading}
-              />
-            </div>
-            <button
-              type="submit"
-              className="cta-submit btn-primary"
-              disabled={!walletAddress.trim() || isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <span className="btn-spinner" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  Analyze my wallet
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </>
-              )}
-            </button>
-          </form>
+              <form onSubmit={handleSubmit} className="cta-form">
+                <div className="cta-input-wrapper">
+                  <input
+                    type="text"
+                    value={walletAddress}
+                    onChange={(e) => setWalletAddress(e.target.value)}
+                    placeholder="Enter your Solana wallet address"
+                    className="cta-input"
+                    disabled={isLoading}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="cta-submit btn-primary"
+                  disabled={!walletAddress.trim() || isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <span className="btn-spinner" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      Analyze my wallet
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                    </>
+                  )}
+                </button>
+              </form>
+            </>
+          )}
         </section>
 
         {/* Secondary Archetype Teaser */}

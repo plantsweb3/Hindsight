@@ -144,16 +144,21 @@ function AppContent() {
 
   const handleQuizComplete = async (results) => {
     setQuizResults(results)
+    console.log('[Quiz] Complete, results:', results.primary, results.secondary)
+    console.log('[Quiz] isAuthenticated:', isAuthenticated)
 
     // If logged in, save archetype immediately
     if (isAuthenticated) {
       try {
+        console.log('[Quiz] Saving archetype to API...')
         await saveArchetype(results.primary, results.secondary, results.answers)
+        console.log('[Quiz] Archetype saved successfully')
       } catch (err) {
-        console.error('Failed to save archetype:', err)
+        console.error('[Quiz] Failed to save archetype:', err)
       }
     } else {
       // Store in localStorage for saving after signup
+      console.log('[Quiz] Not authenticated, storing in localStorage')
       localStorage.setItem('pendingQuizResults', JSON.stringify(results))
     }
 
@@ -180,16 +185,18 @@ function AppContent() {
 
   const handleAuthSuccess = async () => {
     // Get the new token from auth context (it updates after signup/login)
-    const newToken = localStorage.getItem('token')
+    const newToken = localStorage.getItem('hindsight_token')
 
     // Save pending quiz results from localStorage
     const pendingQuiz = localStorage.getItem('pendingQuizResults')
     if (pendingQuiz) {
       try {
         const quizData = JSON.parse(pendingQuiz)
-        await saveArchetype(quizData.primary, quizData.secondary, quizData.answers)
+        console.log('[Auth] Saving pending quiz results with token:', newToken ? 'present' : 'missing')
+        await saveArchetype(quizData.primary, quizData.secondary, quizData.answers, newToken)
         localStorage.removeItem('pendingQuizResults')
         setQuizResults(quizData) // Update state too
+        console.log('[Auth] Pending quiz results saved successfully')
       } catch (err) {
         console.error('Failed to save pending quiz results:', err)
       }
@@ -198,7 +205,9 @@ function AppContent() {
     // Also handle the old pendingQuizSave state (for backward compatibility)
     if (pendingQuizSave) {
       try {
-        await saveArchetype(pendingQuizSave.primary, pendingQuizSave.secondary, pendingQuizSave.answers)
+        console.log('[Auth] Saving pendingQuizSave with token:', newToken ? 'present' : 'missing')
+        await saveArchetype(pendingQuizSave.primary, pendingQuizSave.secondary, pendingQuizSave.answers, newToken)
+        console.log('[Auth] pendingQuizSave saved successfully')
       } catch (err) {
         console.error('Failed to save pending archetype:', err)
       }
@@ -354,6 +363,8 @@ function AppContent() {
           onBack={handleReset}
           isAuthenticated={isAuthenticated}
           onSavePrompt={handleSaveQuizPrompt}
+          user={user}
+          onOpenDashboard={handleOpenDashboard}
         />
         <AuthModal
           isOpen={showAuthModal}

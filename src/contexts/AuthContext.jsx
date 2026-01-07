@@ -87,14 +87,15 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
-  const saveArchetype = async (primaryArchetype, secondaryArchetype, quizAnswers) => {
-    if (!token) return
+  const saveArchetype = async (primaryArchetype, secondaryArchetype, quizAnswers, overrideToken = null) => {
+    const currentToken = overrideToken || token || localStorage.getItem('hindsight_token')
+    if (!currentToken) return
 
     const res = await fetch(`${API_URL}/archetype`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${currentToken}`,
       },
       body: JSON.stringify({ primaryArchetype, secondaryArchetype, quizAnswers }),
     })
