@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
-import { analyzeWallet, analyzeBehavior, isValidSolanaAddress, convertTradesToJournalEntries, createJournalEntriesBatch, getJournalPatterns } from './services/solana'
+import { analyzeWallet, analyzeBehavior, isValidSolanaAddress, convertTradesToJournalEntries, createJournalEntriesBatch, getJournalPatterns, getCrossWalletStats } from './services/solana'
 import { ARCHETYPES } from './data/quizData'
 import LandingPage from './components/LandingPage'
 import Quiz from './components/Quiz'
@@ -77,8 +77,15 @@ function AppContent() {
 
       // Fetch journal patterns if authenticated
       let journalPatterns = null
+      let crossWalletStats = null
       if (isAuthenticated && token) {
         journalPatterns = await getJournalPatterns(token)
+
+        // For Pro users with multiple wallets, get cross-wallet comparison data
+        if (user?.isPro && user?.savedWallets?.length >= 2) {
+          setProgress('Comparing across wallets...')
+          crossWalletStats = await getCrossWalletStats(token, user.savedWallets)
+        }
       }
 
       const analysis = await analyzeBehavior(
@@ -87,7 +94,8 @@ function AppContent() {
         walletData.openPositions,
         setProgress,
         userArchetype,
-        journalPatterns
+        journalPatterns,
+        crossWalletStats
       )
 
       // Save analysis and create journal entries if logged in
@@ -95,8 +103,8 @@ function AppContent() {
         try {
           await saveAnalysis(walletAddress, analysis, walletData.stats)
 
-          // Auto-create journal entries from closed trades
-          const journalEntries = convertTradesToJournalEntries(walletData.trades)
+          // Auto-create journal entries from closed trades (with wallet address for filtering)
+          const journalEntries = convertTradesToJournalEntries(walletData.trades, walletAddress)
           if (journalEntries.length > 0) {
             const result = await createJournalEntriesBatch(journalEntries, token)
             console.log(`Created ${result?.created || 0} journal entries, skipped ${result?.skipped || 0} duplicates`)
@@ -221,9 +229,9 @@ function AppContent() {
         const analysisData = JSON.parse(pendingAnalysis)
         await saveAnalysis(analysisData.walletAddress, analysisData.analysis, analysisData.stats)
 
-        // Also create journal entries from the trades
+        // Also create journal entries from the trades (with wallet address)
         if (analysisData.trades?.length > 0) {
-          const journalEntries = convertTradesToJournalEntries(analysisData.trades)
+          const journalEntries = convertTradesToJournalEntries(analysisData.trades, analysisData.walletAddress)
           if (journalEntries.length > 0) {
             await createJournalEntriesBatch(journalEntries, newToken)
           }

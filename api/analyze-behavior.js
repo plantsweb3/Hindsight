@@ -20,13 +20,16 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { trades, stats, openPositions } = req.body
+  const { trades, stats, openPositions, userArchetype, journalPatterns, crossWalletStats } = req.body
 
   if (!trades || !trades.length) {
     return res.status(400).json({ error: 'No trades to analyze' })
   }
 
   console.log(`Analyzing behavior for ${trades.length} trades...`)
+  if (crossWalletStats) {
+    console.log(`Cross-wallet analysis: ${crossWalletStats.length} wallets`)
+  }
 
   // Prepare trade summary with token symbols and PnL
   const tradeSummary = trades.map(t => {
@@ -95,10 +98,39 @@ TOP HOLDINGS:
 ${JSON.stringify(openPositionsSummary.slice(0, 10), null, 2)}`
     : 'OPEN POSITIONS: No significant token holdings found'
 
+  // Build archetype context if available
+  const archetypeContext = userArchetype ? `
+USER'S TRADER PROFILE:
+- Primary Archetype: ${userArchetype.primary}
+- Secondary Tendency: ${userArchetype.secondary || 'None'}
+- Known Strengths: ${userArchetype.strengths?.join(', ') || 'Unknown'}
+- Known Weaknesses: ${userArchetype.weaknesses?.join(', ') || 'Unknown'}
+- Coaching Focus: ${userArchetype.coaching || 'General improvement'}
+
+PERSONALIZATION: Reference their archetype when patterns confirm or contradict their self-reported style.
+` : ''
+
+  // Build cross-wallet comparison if available (Pro users with 2+ wallets)
+  const truncateAddr = (addr) => `${addr.slice(0, 4)}...${addr.slice(-4)}`
+  const crossWalletContext = crossWalletStats && crossWalletStats.length >= 2 ? `
+CROSS-WALLET PERFORMANCE (Pro User):
+${crossWalletStats.map(w => {
+  const pnlSign = w.totalPnlSol >= 0 ? '+' : ''
+  return `- ${truncateAddr(w.address)} (${w.label}): ${w.trades} trades, ${pnlSign}${w.totalPnlSol} SOL, ${w.winRate} win rate`
+}).join('\n')}
+
+CROSS-WALLET ANALYSIS INSTRUCTIONS:
+- Compare behavior across their different wallet strategies
+- Note if their labeled wallets match their actual behavior (e.g., does "Long Hold" actually hold?)
+- Identify which wallet strategy is performing best and why
+- Call out inconsistencies between wallet intentions and actual trading patterns
+- Include one pattern specifically about their cross-wallet behavior
+` : ''
+
   const prompt = `You are Hindsight, a brutally honest trading coach analyzing Solana memecoin trading behavior. Your job is to identify the psychological patterns affecting this trader's performance.
 
 Analyze this trading data and deliver a verdict that hits hard but helps them improve.
-
+${archetypeContext}${crossWalletContext}
 TRADING DATA:
 - Total trades analyzed: ${stats.dexTrades}
 - Buys: ${stats.buys}

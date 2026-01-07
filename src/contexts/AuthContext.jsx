@@ -248,6 +248,36 @@ export function AuthProvider({ children }) {
     return data.wallets
   }
 
+  // Update wallet label (Pro feature)
+  const updateWalletLabel = async (walletAddress, label) => {
+    if (!token) return
+
+    const res = await fetch(`${API_URL}/wallets/${walletAddress}/label`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ label }),
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      // Handle Pro required error specially
+      if (data.error === 'pro_required') {
+        const error = new Error(data.message || 'Wallet labels are a Pro feature')
+        error.code = 'PRO_REQUIRED'
+        error.requiresPro = data.requiresPro
+        throw error
+      }
+      throw new Error(data.error || 'Failed to update wallet label')
+    }
+
+    setUser(prev => ({ ...prev, savedWallets: data.wallets }))
+    return data.wallets
+  }
+
   const value = {
     user,
     token,
@@ -261,6 +291,7 @@ export function AuthProvider({ children }) {
     getAnalyses,
     addWallet,
     removeWallet,
+    updateWalletLabel,
     refreshUser,
   }
 

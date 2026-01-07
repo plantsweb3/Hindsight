@@ -61,6 +61,7 @@ export async function initDb() {
     CREATE TABLE IF NOT EXISTS trade_journal (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
+      wallet_address TEXT,
       token_address TEXT NOT NULL,
       token_name TEXT,
       entry_price REAL,
@@ -93,6 +94,18 @@ export async function initDb() {
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_journal_user_id ON trade_journal(user_id)`)
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_journal_exit_time ON trade_journal(exit_time)`)
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_journal_token_address ON trade_journal(token_address)`)
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_journal_wallet_address ON trade_journal(wallet_address)`)
+
+  // Migration: Add wallet_address column if it doesn't exist (for existing databases)
+  try {
+    await db.execute(`ALTER TABLE trade_journal ADD COLUMN wallet_address TEXT`)
+    console.log('[DB] Migration: Added wallet_address column to trade_journal')
+  } catch (err) {
+    // Column already exists, ignore error
+    if (!err.message?.includes('duplicate column')) {
+      console.log('[DB] wallet_address column already exists')
+    }
+  }
 }
 
 // User functions
@@ -167,13 +180,35 @@ export async function updateUserArchetype(userId, primary, secondary, quizAnswer
   }
 }
 
-export async function addSavedWallet(userId, walletAddress) {
+// Default wallet labels
+export const WALLET_LABELS = ['Main', 'Long Hold', 'Gamble', 'Sniper', 'Unlabeled']
+
+// Helper to normalize wallet data (handle migration from string[] to object[])
+function normalizeWallets(walletsJson) {
+  const raw = JSON.parse(walletsJson || '[]')
+  // Convert old format (string[]) to new format (object[])
+  return raw.map(w => {
+    if (typeof w === 'string') {
+      return { address: w, label: 'Unlabeled' }
+    }
+    return w
+  })
+}
+
+// Helper to get wallet addresses as flat array
+export function getWalletAddresses(wallets) {
+  return wallets.map(w => typeof w === 'string' ? w : w.address)
+}
+
+export async function addSavedWallet(userId, walletAddress, label = 'Unlabeled') {
   const user = await getUserById(userId)
   if (!user) throw new Error('User not found')
 
-  const wallets = JSON.parse(user.saved_wallets || '[]')
-  if (!wallets.includes(walletAddress)) {
-    wallets.push(walletAddress)
+  const wallets = normalizeWallets(user.saved_wallets)
+  const exists = wallets.some(w => w.address === walletAddress)
+
+  if (!exists) {
+    wallets.push({ address: walletAddress, label })
     await db.execute({
       sql: `UPDATE users SET saved_wallets = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
       args: [JSON.stringify(wallets), userId],
@@ -183,13 +218,15 @@ export async function addSavedWallet(userId, walletAddress) {
 }
 
 // Add wallet bypassing free tier limit (used for $SIGHT verification)
-export async function addSavedWalletBypassLimit(userId, walletAddress) {
+export async function addSavedWalletBypassLimit(userId, walletAddress, label = 'Unlabeled') {
   const user = await getUserById(userId)
   if (!user) throw new Error('User not found')
 
-  const wallets = JSON.parse(user.saved_wallets || '[]')
-  if (!wallets.includes(walletAddress)) {
-    wallets.push(walletAddress)
+  const wallets = normalizeWallets(user.saved_wallets)
+  const exists = wallets.some(w => w.address === walletAddress)
+
+  if (!exists) {
+    wallets.push({ address: walletAddress, label })
     await db.execute({
       sql: `UPDATE users SET saved_wallets = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
       args: [JSON.stringify(wallets), userId],
@@ -202,13 +239,40 @@ export async function removeSavedWallet(userId, walletAddress) {
   const user = await getUserById(userId)
   if (!user) throw new Error('User not found')
 
-  let wallets = JSON.parse(user.saved_wallets || '[]')
-  wallets = wallets.filter(w => w !== walletAddress)
+  let wallets = normalizeWallets(user.saved_wallets)
+  wallets = wallets.filter(w => w.address !== walletAddress)
   await db.execute({
     sql: `UPDATE users SET saved_wallets = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
     args: [JSON.stringify(wallets), userId],
   })
   return wallets
+}
+
+// Update wallet label (Pro feature)
+export async function updateWalletLabel(userId, walletAddress, label) {
+  const user = await getUserById(userId)
+  if (!user) throw new Error('User not found')
+
+  const wallets = normalizeWallets(user.saved_wallets)
+  const walletIndex = wallets.findIndex(w => w.address === walletAddress)
+
+  if (walletIndex === -1) {
+    throw new Error('Wallet not found')
+  }
+
+  wallets[walletIndex].label = label
+  await db.execute({
+    sql: `UPDATE users SET saved_wallets = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+    args: [JSON.stringify(wallets), userId],
+  })
+  return wallets
+}
+
+// Get user's wallets with labels (normalized)
+export async function getUserWallets(userId) {
+  const user = await getUserById(userId)
+  if (!user) return []
+  return normalizeWallets(user.saved_wallets)
 }
 
 // Analysis functions
@@ -240,6 +304,12 @@ export async function getUserAnalyses(userId) {
 export async function getJournalEntries(userId, filters = {}) {
   let sql = `SELECT * FROM trade_journal WHERE user_id = ?`
   const args = [userId]
+
+  // Filter by wallet address
+  if (filters.walletAddress) {
+    sql += ` AND wallet_address = ?`
+    args.push(filters.walletAddress)
+  }
 
   if (filters.outcome === 'winners') {
     sql += ` AND pnl_percent > 0`
@@ -299,15 +369,16 @@ export async function createJournalEntry(userId, entry) {
   const result = await db.execute({
     sql: `
       INSERT INTO trade_journal (
-        user_id, token_address, token_name, entry_price, entry_time,
+        user_id, wallet_address, token_address, token_name, entry_price, entry_time,
         exit_price, exit_time, position_size, pnl_sol, pnl_percent,
         hold_duration, thesis, execution, mood, research_level,
         exit_reasoning, lesson_learned, ath_price, ath_time,
         ath_market_cap, exit_vs_ath_percent, ath_timing
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     args: [
       userId,
+      entry.walletAddress || null,
       entry.tokenAddress,
       entry.tokenName,
       entry.entryPrice,
@@ -443,7 +514,8 @@ export async function getUserUsageStats(userId) {
   const user = await getUserById(userId)
   if (!user) return null
 
-  const walletCount = JSON.parse(user.saved_wallets || '[]').length
+  const wallets = normalizeWallets(user.saved_wallets)
+  const walletCount = wallets.length
 
   const journalResult = await db.execute({
     sql: `SELECT COUNT(*) as count FROM trade_journal WHERE user_id = ?`,

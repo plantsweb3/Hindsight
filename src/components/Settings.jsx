@@ -4,6 +4,10 @@ import { ARCHETYPES } from '../data/quizData'
 import { isValidSolanaAddress } from '../services/solana'
 import { ProBadge } from './ProBadge'
 import UpgradeModal from './UpgradeModal'
+import WalletLabelBadge, { LABEL_COLORS } from './WalletLabelBadge'
+
+// Available wallet labels
+const WALLET_LABELS = ['Main', 'Long Hold', 'Gamble', 'Sniper', 'Unlabeled']
 
 // Wave Background
 function WaveBackground() {
@@ -83,14 +87,20 @@ function AccountSection({ user, onLogout }) {
 }
 
 // Saved Wallets Section
-function SavedWalletsSection({ wallets = [], onAdd, onRemove, isPro, limits, onOpenPro }) {
+function SavedWalletsSection({ wallets = [], onAdd, onRemove, onUpdateLabel, isPro, limits, onOpenPro }) {
   const [newWallet, setNewWallet] = useState('')
   const [error, setError] = useState('')
   const [isAdding, setIsAdding] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [pendingLabels, setPendingLabels] = useState({}) // Track unsaved label changes
 
   const maxWallets = isPro ? 10 : (limits?.MAX_WALLETS || 1)
   const isAtFreeLimit = !isPro && wallets.length >= maxWallets
+
+  // Normalize wallets to handle both string[] and {address, label}[] formats
+  const normalizedWallets = wallets.map(w =>
+    typeof w === 'string' ? { address: w, label: 'Unlabeled' } : w
+  )
 
   const handleAdd = async () => {
     if (!newWallet.trim()) {
@@ -103,7 +113,7 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove, isPro, limits, onO
       return
     }
 
-    if (wallets.includes(newWallet.trim())) {
+    if (normalizedWallets.some(w => w.address === newWallet.trim())) {
       setError('Wallet already saved')
       return
     }
@@ -126,15 +136,65 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove, isPro, limits, onO
     }
   }
 
-  const handleRemove = async (wallet) => {
+  const handleRemove = async (walletAddress) => {
     try {
-      await onRemove(wallet)
+      await onRemove(walletAddress)
+      // Clear any pending label for this wallet
+      setPendingLabels(prev => {
+        const updated = { ...prev }
+        delete updated[walletAddress]
+        return updated
+      })
     } catch (err) {
       console.error('Failed to remove wallet:', err)
     }
   }
 
+  const handleLabelChange = (walletAddress, newLabel) => {
+    // Track the pending label change
+    setPendingLabels(prev => ({
+      ...prev,
+      [walletAddress]: newLabel
+    }))
+  }
+
+  const handleLabelSave = async (walletAddress) => {
+    const newLabel = pendingLabels[walletAddress]
+    if (!newLabel) return
+
+    // Pro gate on save
+    if (!isPro) {
+      setShowUpgradeModal(true)
+      return
+    }
+
+    try {
+      await onUpdateLabel(walletAddress, newLabel)
+      // Clear the pending label after successful save
+      setPendingLabels(prev => {
+        const updated = { ...prev }
+        delete updated[walletAddress]
+        return updated
+      })
+    } catch (err) {
+      if (err.code === 'PRO_REQUIRED') {
+        setShowUpgradeModal(true)
+      } else {
+        setError(err.message || 'Failed to update label')
+      }
+    }
+  }
+
   const truncateWallet = (addr) => `${addr.slice(0, 4)}...${addr.slice(-4)}`
+
+  const getDisplayLabel = (wallet) => {
+    // Show pending label if exists, otherwise show saved label
+    return pendingLabels[wallet.address] || wallet.label || 'Unlabeled'
+  }
+
+  const hasPendingChange = (walletAddress) => {
+    return pendingLabels[walletAddress] !== undefined
+  }
 
   return (
     <section className="settings-section">
@@ -142,29 +202,75 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove, isPro, limits, onO
       <div className="settings-card glass-card">
         <div className="wallet-counter">
           <span>
-            {wallets.length}/{isPro ? 'Unlimited' : maxWallets} wallets
+            {normalizedWallets.length}/{isPro ? 'Unlimited' : maxWallets} wallets
             {!isPro && <span className="free-tag">(Free)</span>}
             {isPro && <ProBadge className="counter-badge" />}
           </span>
         </div>
 
-        {wallets.length > 0 ? (
+        {normalizedWallets.length > 0 ? (
           <div className="wallet-list">
-            {wallets.map((wallet, i) => (
-              <div key={i} className="wallet-item">
-                <span className="wallet-address" title={wallet}>{truncateWallet(wallet)}</span>
-                <button
-                  className="wallet-remove-btn"
-                  onClick={() => handleRemove(wallet)}
-                  title="Remove wallet"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              </div>
-            ))}
+            {normalizedWallets.map((wallet, i) => {
+              const displayLabel = getDisplayLabel(wallet)
+              const hasPending = hasPendingChange(wallet.address)
+              const labelColors = LABEL_COLORS[displayLabel] || LABEL_COLORS['Unlabeled']
+
+              return (
+                <div key={i} className="wallet-item wallet-item-with-label">
+                  <div className="wallet-info">
+                    <span className="wallet-address" title={wallet.address}>
+                      {truncateWallet(wallet.address)}
+                    </span>
+                    <WalletLabelBadge label={wallet.label} size="small" />
+                  </div>
+                  <div className="wallet-actions">
+                    <div className="wallet-label-control">
+                      <select
+                        className="wallet-label-select"
+                        value={displayLabel}
+                        onChange={(e) => handleLabelChange(wallet.address, e.target.value)}
+                        style={{
+                          borderColor: labelColors.border,
+                          color: labelColors.text,
+                        }}
+                      >
+                        {WALLET_LABELS.map(label => (
+                          <option key={label} value={label}>{label}</option>
+                        ))}
+                      </select>
+                      {hasPending && (
+                        <button
+                          className="wallet-label-save-btn"
+                          onClick={() => handleLabelSave(wallet.address)}
+                          title={isPro ? 'Save label' : 'Pro feature - click to upgrade'}
+                        >
+                          {isPro ? (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          ) : (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                    <button
+                      className="wallet-remove-btn"
+                      onClick={() => handleRemove(wallet.address)}
+                      title="Remove wallet"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         ) : (
           <p className="wallet-empty">No wallets saved yet</p>
@@ -308,7 +414,7 @@ function HelpDocsSection() {
 
 // Main Settings Component
 export default function Settings({ onNavigate, onRetakeQuiz, onOpenPro }) {
-  const { user, logout, addWallet, removeWallet } = useAuth()
+  const { user, logout, addWallet, removeWallet, updateWalletLabel } = useAuth()
 
   const handleLogout = () => {
     logout()
@@ -344,6 +450,7 @@ export default function Settings({ onNavigate, onRetakeQuiz, onOpenPro }) {
           wallets={user?.savedWallets || []}
           onAdd={addWallet}
           onRemove={removeWallet}
+          onUpdateLabel={updateWalletLabel}
           isPro={user?.isPro || false}
           limits={user?.limits}
           onOpenPro={handleOpenPro}

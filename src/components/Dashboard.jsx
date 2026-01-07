@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { ARCHETYPES } from '../data/quizData'
 import { ProBadge } from './ProBadge'
+import WalletLabelBadge, { LABEL_COLORS } from './WalletLabelBadge'
 
 // Wave Background
 function WaveBackground() {
@@ -323,6 +324,43 @@ function QuickActions({ onAnalyze, onOpenJournal, onAddWallet }) {
   )
 }
 
+// Wallet Performance Breakdown (Pro users with 2+ labeled wallets)
+function WalletPerformance({ walletStats }) {
+  if (!walletStats || walletStats.length < 2) return null
+
+  const truncateAddr = (addr) => `${addr.slice(0, 4)}...${addr.slice(-4)}`
+
+  return (
+    <div className="wallet-performance glass-card">
+      <h3 className="wallet-performance-title">
+        Wallet Performance
+        <ProBadge className="title-badge" />
+      </h3>
+      <div className="wallet-performance-list">
+        {walletStats.map((wallet, i) => {
+          const isPositive = wallet.totalPnlSol >= 0
+          const labelColors = LABEL_COLORS[wallet.label] || LABEL_COLORS['Unlabeled']
+
+          return (
+            <div key={i} className="wallet-performance-item">
+              <div className="wallet-perf-info">
+                <WalletLabelBadge label={wallet.label} size="small" />
+                <span className="wallet-perf-address">{truncateAddr(wallet.address)}</span>
+              </div>
+              <div className="wallet-perf-stats">
+                <span className={`wallet-perf-pnl ${isPositive ? 'positive' : 'negative'}`}>
+                  {isPositive ? '+' : ''}{wallet.totalPnlSol} SOL
+                </span>
+                <span className="wallet-perf-winrate">{wallet.winRate}</span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // Expandable Trade Row
 function TradeRow({ trade, isExpanded, onToggle, onJournal }) {
   const isPositive = trade.pnlPercent >= 0
@@ -436,6 +474,7 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
   })
   const [activities, setActivities] = useState([])
   const [trades, setTrades] = useState([])
+  const [walletStats, setWalletStats] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -492,6 +531,57 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
           date: entry.exitTime || entry.createdAt,
         }))
         setActivities(activityItems)
+
+        // Calculate wallet performance stats for Pro users with 2+ wallets
+        if (user?.isPro && user?.savedWallets?.length >= 2) {
+          const walletStatsMap = new Map()
+
+          // Normalize saved wallets
+          const wallets = (user.savedWallets || []).map(w =>
+            typeof w === 'string' ? { address: w, label: 'Unlabeled' } : w
+          )
+
+          // Initialize stats for each wallet
+          wallets.forEach(w => {
+            walletStatsMap.set(w.address, {
+              address: w.address,
+              label: w.label,
+              trades: 0,
+              wins: 0,
+              losses: 0,
+              totalPnlSol: 0,
+            })
+          })
+
+          // Aggregate stats from journal entries
+          entriesData.forEach(entry => {
+            if (!entry.walletAddress) return
+            const stats = walletStatsMap.get(entry.walletAddress)
+            if (!stats) return
+
+            stats.trades++
+            if (entry.pnlSol > 0) stats.wins++
+            else if (entry.pnlSol < 0) stats.losses++
+            stats.totalPnlSol += entry.pnlSol || 0
+          })
+
+          // Build wallet stats array
+          const walletStatsArray = []
+          walletStatsMap.forEach(stats => {
+            if (stats.trades === 0) return
+            walletStatsArray.push({
+              ...stats,
+              totalPnlSol: Math.round(stats.totalPnlSol * 1000) / 1000,
+              winRate: stats.trades > 0
+                ? `${Math.round((stats.wins / stats.trades) * 100)}%`
+                : '0%',
+            })
+          })
+
+          if (walletStatsArray.length >= 2) {
+            setWalletStats(walletStatsArray)
+          }
+        }
       }
 
       // Load analyses and add to activities
@@ -612,6 +702,9 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
               onOpenJournal={onOpenJournal}
               onAddWallet={handleAddWallet}
             />
+
+            {/* Row 3.5: Wallet Performance (Pro users with 2+ wallets) */}
+            <WalletPerformance walletStats={walletStats} />
 
             {/* Row 4: Two Column Layout - Activity + Trade History */}
             <div className="dashboard-columns">

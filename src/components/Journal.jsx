@@ -1,11 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { analyzeWallet, convertTradesToJournalEntries, createJournalEntriesBatch } from '../services/solana'
+import WalletLabelBadge from './WalletLabelBadge'
 
 const API_URL = '/api/journal'
 
 const MOODS = ['Confident', 'Uncertain', 'FOMO', 'Revenge Trade']
 const RESEARCH_LEVELS = ['Deep Dive', 'Quick Look', 'Blind Ape']
+
+// Helper to normalize wallets (handle both string[] and object[] formats)
+const normalizeWallets = (wallets) => {
+  if (!wallets) return []
+  return wallets.map(w =>
+    typeof w === 'string' ? { address: w, label: 'Unlabeled' } : w
+  )
+}
 
 // Shared Wave Background
 function WaveBackground() {
@@ -59,10 +68,32 @@ function Header({ user, onDashboard, onLogout }) {
 }
 
 // Filter Bar
-function FilterBar({ filters, onFilterChange, onClearFilters }) {
+function FilterBar({ filters, onFilterChange, onClearFilters, savedWallets = [] }) {
+  const wallets = normalizeWallets(savedWallets)
+  const hasMultipleWallets = wallets.length > 1
+
   return (
     <div className="journal-filters glass-card">
       <div className="filter-row">
+        {/* Wallet filter - only show if user has multiple wallets */}
+        {hasMultipleWallets && (
+          <div className="filter-group">
+            <label>Wallet</label>
+            <select
+              value={filters.walletAddress || ''}
+              onChange={(e) => onFilterChange('walletAddress', e.target.value || null)}
+              className="wallet-filter-select"
+            >
+              <option value="">All Wallets</option>
+              {wallets.map(wallet => (
+                <option key={wallet.address} value={wallet.address}>
+                  {wallet.label !== 'Unlabeled' ? wallet.label : `${wallet.address.slice(0, 4)}...${wallet.address.slice(-4)}`}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div className="filter-group">
           <label>Outcome</label>
           <select
@@ -578,7 +609,8 @@ function SummaryView({ type, data }) {
 // Empty State - checks for saved wallets
 function EmptyState({ onAnalyze, savedWallets, onRefreshWallet, isRefreshing, refreshError, refreshProgress }) {
   console.log('[EmptyState] Props:', { hasSavedWallets: savedWallets?.length > 0, onRefreshWallet: typeof onRefreshWallet })
-  const hasSavedWallets = savedWallets && savedWallets.length > 0
+  const wallets = normalizeWallets(savedWallets)
+  const hasSavedWallets = wallets && wallets.length > 0
 
   if (hasSavedWallets) {
     return (
@@ -604,7 +636,7 @@ function EmptyState({ onAnalyze, savedWallets, onRefreshWallet, isRefreshing, re
         )}
 
         <div className="saved-wallets-list">
-          {savedWallets.map((wallet, i) => (
+          {wallets.map((wallet, i) => (
             <button
               key={i}
               type="button"
@@ -612,12 +644,15 @@ function EmptyState({ onAnalyze, savedWallets, onRefreshWallet, isRefreshing, re
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                console.log('[EmptyState] Button clicked for wallet:', wallet)
-                onRefreshWallet(wallet)
+                console.log('[EmptyState] Button clicked for wallet:', wallet.address)
+                onRefreshWallet(wallet.address)
               }}
               disabled={isRefreshing}
             >
-              <span className="wallet-address">{wallet.slice(0, 4)}...{wallet.slice(-4)}</span>
+              <div className="wallet-btn-info">
+                <span className="wallet-address">{wallet.address.slice(0, 4)}...{wallet.address.slice(-4)}</span>
+                <WalletLabelBadge label={wallet.label} size="small" />
+              </div>
               <span className="refresh-icon">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
@@ -693,9 +728,9 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
         return
       }
 
-      // Convert trades to journal entries
+      // Convert trades to journal entries (with wallet address for filtering)
       setRefreshProgress('Creating journal entries...')
-      const journalEntries = convertTradesToJournalEntries(walletData.trades)
+      const journalEntries = convertTradesToJournalEntries(walletData.trades, walletAddress)
       console.log('[Refresh] Converted to', journalEntries.length, 'journal entries')
 
       if (journalEntries.length > 0) {
@@ -859,6 +894,7 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
                   filters={filters}
                   onFilterChange={handleFilterChange}
                   onClearFilters={handleClearFilters}
+                  savedWallets={savedWallets}
                 />
 
                 <div className="trades-list">

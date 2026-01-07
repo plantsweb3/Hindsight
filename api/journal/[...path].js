@@ -44,6 +44,7 @@ export default async function handler(req, res) {
     // GET /api/journal - List entries
     if (route === '' && req.method === 'GET') {
       const filters = {
+        walletAddress: req.query.walletAddress,
         outcome: req.query.outcome,
         mood: req.query.mood,
         researchLevel: req.query.researchLevel,
@@ -57,6 +58,7 @@ export default async function handler(req, res) {
       // Transform to camelCase
       const transformed = entries.map(e => ({
         id: e.id,
+        walletAddress: e.wallet_address,
         tokenAddress: e.token_address,
         tokenName: e.token_name,
         entryPrice: e.entry_price,

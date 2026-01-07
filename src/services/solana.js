@@ -32,13 +32,13 @@ export async function analyzeWallet(walletAddress, onProgress) {
   return result
 }
 
-export async function analyzeBehavior(trades, stats, openPositions, onProgress, userArchetype, journalPatterns) {
+export async function analyzeBehavior(trades, stats, openPositions, onProgress, userArchetype, journalPatterns, crossWalletStats = null) {
   onProgress?.('Analyzing trading patterns...')
 
   const response = await fetch(`${API_URL}/analyze-behavior`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ trades, stats, openPositions, userArchetype, journalPatterns }),
+    body: JSON.stringify({ trades, stats, openPositions, userArchetype, journalPatterns, crossWalletStats }),
   })
 
   if (!response.ok) {
@@ -55,7 +55,7 @@ export async function analyzeBehavior(trades, stats, openPositions, onProgress, 
 }
 
 // Convert trades from wallet analysis to journal entry format
-export function convertTradesToJournalEntries(trades) {
+export function convertTradesToJournalEntries(trades, walletAddress = null) {
   // Group trades by token to calculate entries/exits
   const tokenTrades = new Map()
 
@@ -122,6 +122,7 @@ export function convertTradesToJournalEntries(trades) {
         : null
 
       journalEntries.push({
+        walletAddress,
         tokenAddress: tokenMint,
         tokenName: tokenChange.symbol || tokenMint.slice(0, 8),
         entryPrice,
@@ -180,6 +181,84 @@ export async function getJournalPatterns(token) {
     return response.json()
   } catch (err) {
     console.warn('Failed to fetch journal patterns:', err)
+    return null
+  }
+}
+
+// Get cross-wallet performance stats for Pro users
+export async function getCrossWalletStats(token, savedWallets) {
+  if (!token || !savedWallets || savedWallets.length < 2) return null
+
+  try {
+    // Fetch all journal entries
+    const response = await fetch('/api/journal?limit=500', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) return null
+    const entries = await response.json()
+
+    // Normalize wallets (handle string[] and object[] formats)
+    const wallets = savedWallets.map(w =>
+      typeof w === 'string' ? { address: w, label: 'Unlabeled' } : w
+    )
+
+    // Group entries by wallet address
+    const walletStats = new Map()
+
+    for (const wallet of wallets) {
+      walletStats.set(wallet.address, {
+        address: wallet.address,
+        label: wallet.label,
+        trades: 0,
+        wins: 0,
+        losses: 0,
+        totalPnlSol: 0,
+        avgPnlPercent: 0,
+        pnlPercentSum: 0,
+      })
+    }
+
+    // Calculate stats per wallet
+    for (const entry of entries) {
+      if (!entry.walletAddress) continue
+
+      const stats = walletStats.get(entry.walletAddress)
+      if (!stats) continue
+
+      stats.trades++
+      if (entry.pnlSol > 0) stats.wins++
+      else if (entry.pnlSol < 0) stats.losses++
+      stats.totalPnlSol += entry.pnlSol || 0
+      stats.pnlPercentSum += entry.pnlPercent || 0
+    }
+
+    // Calculate averages and win rates
+    const result = []
+    for (const [address, stats] of walletStats) {
+      if (stats.trades === 0) continue
+
+      result.push({
+        address: stats.address,
+        label: stats.label,
+        trades: stats.trades,
+        wins: stats.wins,
+        losses: stats.losses,
+        totalPnlSol: Math.round(stats.totalPnlSol * 1000) / 1000,
+        winRate: stats.trades > 0
+          ? `${Math.round((stats.wins / stats.trades) * 100)}%`
+          : '0%',
+        avgPnlPercent: stats.trades > 0
+          ? Math.round(stats.pnlPercentSum / stats.trades)
+          : 0,
+      })
+    }
+
+    return result.length >= 2 ? result : null
+  } catch (err) {
+    console.warn('Failed to fetch cross-wallet stats:', err)
     return null
   }
 }

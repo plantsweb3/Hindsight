@@ -7,6 +7,8 @@ import {
   addSavedWallet,
   addSavedWalletBypassLimit,
   removeSavedWallet,
+  updateWalletLabel,
+  getUserWallets,
   saveAnalysis,
   getUserAnalyses,
   getUserUsageStats,
@@ -14,6 +16,7 @@ import {
   updateProStatus,
   checkSightBalance,
   FREE_TIER_LIMITS,
+  WALLET_LABELS,
   initDb,
 } from '../lib/db.js'
 import { signToken, authenticateRequest, json, error, cors } from '../lib/auth.js'
@@ -96,6 +99,8 @@ export default async function handler(req, res) {
       }
 
       const token = signToken({ id: user.id, username: user.username })
+      const wallets = await getUserWallets(user.id)
+      const usageStats = await getUserUsageStats(user.id)
 
       return json(res, {
         token,
@@ -104,7 +109,8 @@ export default async function handler(req, res) {
           username: user.username,
           primaryArchetype: user.primary_archetype,
           secondaryArchetype: user.secondary_archetype,
-          savedWallets: JSON.parse(user.saved_wallets || '[]'),
+          savedWallets: wallets,
+          isPro: usageStats?.isPro || false,
         },
       })
     }
@@ -121,8 +127,9 @@ export default async function handler(req, res) {
         return error(res, 'User not found', 404)
       }
 
-      // Get usage stats
+      // Get usage stats and wallets with labels
       const usageStats = await getUserUsageStats(decoded.id)
+      const wallets = await getUserWallets(decoded.id)
 
       console.log('[API] GET /api/auth/me - user data:', {
         id: user.id,
@@ -136,13 +143,14 @@ export default async function handler(req, res) {
         username: user.username,
         primaryArchetype: user.primary_archetype,
         secondaryArchetype: user.secondary_archetype,
-        savedWallets: JSON.parse(user.saved_wallets || '[]'),
+        savedWallets: wallets,
         createdAt: user.created_at,
         // Pro status and usage
         isPro: usageStats?.isPro || false,
         walletCount: usageStats?.walletCount || 0,
         journalEntryCount: usageStats?.journalEntryCount || 0,
         limits: FREE_TIER_LIMITS,
+        walletLabels: WALLET_LABELS,
       })
     }
 
@@ -230,6 +238,34 @@ export default async function handler(req, res) {
       const address = route.replace('wallets/', '')
       const wallets = await removeSavedWallet(decoded.id, address)
       return json(res, { wallets })
+    }
+
+    // PATCH /api/auth/wallets/:address/label - Update wallet label (Pro feature)
+    if (route.match(/^wallets\/[^/]+\/label$/) && req.method === 'PATCH') {
+      const decoded = authenticateRequest(req)
+      if (!decoded) {
+        return error(res, 'Authentication required', 401)
+      }
+
+      // Check Pro status
+      const usageStats = await getUserUsageStats(decoded.id)
+      if (!usageStats?.isPro) {
+        return json(res, {
+          error: 'pro_required',
+          message: 'Wallet labels are a Pro feature',
+          requiresPro: true,
+        }, 403)
+      }
+
+      const address = route.replace('wallets/', '').replace('/label', '')
+      const { label } = req.body || {}
+
+      if (!label) {
+        return error(res, 'Label required', 400)
+      }
+
+      const wallets = await updateWalletLabel(decoded.id, address, label)
+      return json(res, { wallets, success: true })
     }
 
     // POST /api/auth/analyses
