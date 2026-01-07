@@ -192,7 +192,16 @@ function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, isAut
 }
 
 // Hero Section
-function HeroSection({ onScrollDown }) {
+function HeroSection({ onScrollDown, onAnalyze, isLoading, progress, error }) {
+  const [walletAddress, setWalletAddress] = useState('')
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (walletAddress.trim()) {
+      onAnalyze(walletAddress.trim())
+    }
+  }
+
   return (
     <section className="hero-section">
       <div className="hero-content">
@@ -208,10 +217,39 @@ function HeroSection({ onScrollDown }) {
           Analyze your Solana trades, spot patterns in your behavior, and get personalized coaching to level up your game.
         </p>
 
-        <button className="hero-cta glass-button" onClick={onScrollDown}>
-          Analyze my trading
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 5v14M19 12l-7 7-7-7" />
+        <form className="hero-wallet-form" onSubmit={handleSubmit}>
+          <div className="hero-input-wrapper">
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder="Paste any Solana wallet address"
+              disabled={isLoading}
+              className="hero-wallet-input"
+            />
+            <button type="submit" disabled={isLoading || !walletAddress.trim()} className="hero-analyze-btn">
+              {isLoading ? (
+                <>
+                  <span className="spinner" />
+                  {progress || 'Analyzing...'}
+                </>
+              ) : (
+                <>
+                  Analyze
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </>
+              )}
+            </button>
+          </div>
+          {error && <p className="hero-error">{error}</p>}
+        </form>
+
+        <button className="hero-learn-more" onClick={onScrollDown}>
+          <span>Learn more</span>
+          <svg className="hero-learn-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M6 9l6 6 6-6" />
           </svg>
         </button>
       </div>
@@ -602,7 +640,13 @@ export default function LandingPage({
         isAuthenticated={isAuthenticated}
         user={user}
       />
-      <HeroSection onScrollDown={scrollToChoice} />
+      <HeroSection
+        onScrollDown={scrollToChoice}
+        onAnalyze={onAnalyze}
+        isLoading={isLoading}
+        progress={progress}
+        error={error}
+      />
       <ComparisonSection />
       <FeaturesSection onOpenPro={onOpenPro} />
       <ChoiceSection onQuickAnalyze={handleQuickAnalyze} onDigDeep={handleDigDeep} />
