@@ -1252,6 +1252,8 @@ input, button {
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
+  position: relative;
+  z-index: 10;
 }
 
 .sight-btn {
@@ -1264,6 +1266,9 @@ input, button {
   font-weight: 600;
   text-decoration: none;
   transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+  z-index: 10;
 }
 
 .sight-btn-primary {
