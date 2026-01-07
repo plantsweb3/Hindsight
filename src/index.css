@@ -6389,6 +6389,154 @@ input, button {
   margin: 0;
 }
 
+/* Verify $SIGHT Modal */
+.verify-sight-modal {
+  max-width: 420px;
+}
+
+.verify-icon {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(139, 92, 246, 0.2));
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.verify-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.verify-input-wrapper {
+  width: 100%;
+}
+
+.verify-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #fafafa;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.verify-input:focus {
+  outline: none;
+  border-color: rgba(139, 92, 246, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.verify-input::placeholder {
+  color: #71717a;
+}
+
+.verify-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #fca5a5;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.verify-error svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.verify-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #10b981, #8b5cf6);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.verify-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+}
+
+.verify-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.verify-footer {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.verify-requirement {
+  font-size: 0.8rem;
+  color: #71717a;
+  margin: 0 0 0.75rem;
+}
+
+.verify-buy-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.85rem;
+  color: #8b5cf6;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.verify-buy-link:hover {
+  color: #a78bfa;
+}
+
+/* Verify Success State */
+.verify-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.verify-success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(139, 92, 246, 0.2));
+  border-radius: 50%;
+  margin-bottom: 1.5rem;
+  color: #10b981;
+}
+
+.verify-success-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #fafafa;
+  margin: 0 0 0.5rem;
+}
+
+.verify-success-text {
+  font-size: 0.95rem;
+  color: #a1a1aa;
+  margin: 0;
+}
+
 /* Feature card Pro hint */
 .feature-card-pro {
   transition: all 0.2s;

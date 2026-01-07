@@ -215,7 +215,7 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove, isPro, limits, onO
       <UpgradeModal
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
-        onAddWallet={onOpenPro}
+        onSuccess={() => setShowUpgradeModal(false)}
       />
     </section>
   )

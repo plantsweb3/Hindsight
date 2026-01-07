@@ -1,13 +1,38 @@
 import { useState } from 'react'
+import VerifySightModal from './VerifySightModal'
 
 // Upgrade Modal - Shows when user hits free tier limit
-export default function UpgradeModal({ isOpen, onClose, onAddWallet }) {
-  if (!isOpen) return null
+export default function UpgradeModal({ isOpen, onClose, onSuccess }) {
+  const [showVerifyModal, setShowVerifyModal] = useState(false)
 
-  const handleAddWallet = () => {
-    onClose()
-    onAddWallet?.()
+  if (!isOpen && !showVerifyModal) return null
+
+  const handleVerifyClick = () => {
+    setShowVerifyModal(true)
   }
+
+  const handleVerifyClose = () => {
+    setShowVerifyModal(false)
+  }
+
+  const handleVerifySuccess = () => {
+    setShowVerifyModal(false)
+    onClose()
+    onSuccess?.()
+  }
+
+  // Show verify modal if open
+  if (showVerifyModal) {
+    return (
+      <VerifySightModal
+        isOpen={true}
+        onClose={handleVerifyClose}
+        onSuccess={handleVerifySuccess}
+      />
+    )
+  }
+
+  if (!isOpen) return null
 
   return (
     <div className="upgrade-modal-overlay" onClick={onClose}>
@@ -67,14 +92,14 @@ export default function UpgradeModal({ isOpen, onClose, onAddWallet }) {
         </div>
 
         <div className="upgrade-modal-actions">
-          <button className="upgrade-modal-btn primary" onClick={handleAddWallet}>
+          <button className="upgrade-modal-btn primary" onClick={handleVerifyClick}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
               <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
               <path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z" />
             </svg>
             I already hold $SIGHT
-            <span className="btn-hint">Add wallet with tokens</span>
+            <span className="btn-hint">Verify wallet to unlock</span>
           </button>
 
           <a

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import VerifySightModal from './VerifySightModal'
 
 // Shared Wave Background
 function WaveBackground() {
@@ -34,7 +35,14 @@ function FeatureCard({ icon, title, description, note, comingSoon }) {
 }
 
 // Main Pro Features Component
-export default function ProFeatures({ onBack, onAddWallet }) {
+export default function ProFeatures({ onBack, onVerifySuccess }) {
+  const [showVerifyModal, setShowVerifyModal] = useState(false)
+
+  const handleVerifySuccess = () => {
+    setShowVerifyModal(false)
+    onVerifySuccess?.()
+  }
+
   const features = [
     {
       icon: (
@@ -163,13 +171,13 @@ export default function ProFeatures({ onBack, onAddWallet }) {
               </svg>
               Buy $SIGHT on pump.fun
             </a>
-            <button className="pro-btn pro-btn-secondary" onClick={onAddWallet}>
+            <button className="pro-btn pro-btn-secondary" onClick={() => setShowVerifyModal(true)}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
                 <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
                 <path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z" />
               </svg>
-              I already hold — Add wallet
+              I already hold — Verify wallet
             </button>
           </div>
         </section>
@@ -184,10 +192,16 @@ export default function ProFeatures({ onBack, onAddWallet }) {
             </svg>
           </div>
           <p>
-            $SIGHT token powers the Hindsight ecosystem. Pro status is checked automatically when you add a wallet containing $SIGHT.
+            $SIGHT token powers the Hindsight ecosystem. Pro status is verified when you add a wallet containing $SIGHT.
           </p>
         </section>
       </main>
+
+      <VerifySightModal
+        isOpen={showVerifyModal}
+        onClose={() => setShowVerifyModal(false)}
+        onSuccess={handleVerifySuccess}
+      />
     </div>
   )
 }

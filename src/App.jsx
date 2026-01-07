@@ -389,12 +389,9 @@ function AppContent() {
     return (
       <ProFeatures
         onBack={handleReset}
-        onAddWallet={() => {
-          if (isAuthenticated) {
-            setView('settings')
-          } else {
-            handleShowAuth('signup')
-          }
+        onVerifySuccess={() => {
+          // After successful Pro verification, go to dashboard
+          setView('dashboard')
         }}
       />
     )

@@ -5,11 +5,14 @@ import {
   getUserById,
   updateUserArchetype,
   addSavedWallet,
+  addSavedWalletBypassLimit,
   removeSavedWallet,
   saveAnalysis,
   getUserAnalyses,
   getUserUsageStats,
   canAddWallet,
+  updateProStatus,
+  checkSightBalance,
   FREE_TIER_LIMITS,
   initDb,
 } from '../lib/db.js'
@@ -269,6 +272,49 @@ export default async function handler(req, res) {
       }))
 
       return json(res, parsed)
+    }
+
+    // POST /api/auth/verify-sight - Verify $SIGHT holdings and grant Pro
+    if (route === 'verify-sight' && req.method === 'POST') {
+      const decoded = authenticateRequest(req)
+      if (!decoded) {
+        return error(res, 'Authentication required', 401)
+      }
+
+      const { walletAddress } = req.body || {}
+      if (!walletAddress) {
+        return error(res, 'Wallet address required', 400)
+      }
+
+      console.log('[API] verify-sight: Checking wallet', walletAddress, 'for user', decoded.id)
+
+      // Check if wallet holds enough $SIGHT
+      // TODO: Plug in $SIGHT CA and actual balance check after launch
+      const balanceCheck = await checkSightBalance([walletAddress])
+
+      if (!balanceCheck.isPro) {
+        console.log('[API] verify-sight: Insufficient balance', balanceCheck)
+        return json(res, {
+          error: 'Insufficient $SIGHT balance',
+          insufficientBalance: true,
+          balance: balanceCheck.balance,
+          requiredBalance: balanceCheck.requiredBalance,
+        }, 400)
+      }
+
+      // Grant Pro status
+      console.log('[API] verify-sight: Granting Pro status')
+      await updateProStatus(decoded.id, true)
+
+      // Add wallet to saved wallets (bypassing free tier limit)
+      const wallets = await addSavedWalletBypassLimit(decoded.id, walletAddress)
+
+      console.log('[API] verify-sight: Success! User is now Pro')
+      return json(res, {
+        success: true,
+        isPro: true,
+        wallets,
+      })
     }
 
     // Route not found

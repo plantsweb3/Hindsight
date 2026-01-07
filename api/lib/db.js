@@ -182,6 +182,22 @@ export async function addSavedWallet(userId, walletAddress) {
   return wallets
 }
 
+// Add wallet bypassing free tier limit (used for $SIGHT verification)
+export async function addSavedWalletBypassLimit(userId, walletAddress) {
+  const user = await getUserById(userId)
+  if (!user) throw new Error('User not found')
+
+  const wallets = JSON.parse(user.saved_wallets || '[]')
+  if (!wallets.includes(walletAddress)) {
+    wallets.push(walletAddress)
+    await db.execute({
+      sql: `UPDATE users SET saved_wallets = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      args: [JSON.stringify(wallets), userId],
+    })
+  }
+  return wallets
+}
+
 export async function removeSavedWallet(userId, walletAddress) {
   const user = await getUserById(userId)
   if (!user) throw new Error('User not found')
