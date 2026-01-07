@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { analyzeWallet, convertTradesToJournalEntries, createJournalEntriesBatch } from '../services/solana'
 
 const API_URL = '/api/journal'
 
@@ -575,7 +576,7 @@ function SummaryView({ type, data }) {
 }
 
 // Empty State - checks for saved wallets
-function EmptyState({ onAnalyze, savedWallets, onRefreshWallet }) {
+function EmptyState({ onAnalyze, savedWallets, onRefreshWallet, isRefreshing, refreshError, refreshProgress }) {
   const hasSavedWallets = savedWallets && savedWallets.length > 0
 
   if (hasSavedWallets) {
@@ -589,12 +590,25 @@ function EmptyState({ onAnalyze, savedWallets, onRefreshWallet }) {
         </div>
         <h3>Refresh your trades</h3>
         <p>Pull the latest trades from your saved wallet to update your journal.</p>
+
+        {refreshError && (
+          <p className="refresh-error">{refreshError}</p>
+        )}
+
+        {isRefreshing && (
+          <div className="refresh-progress">
+            <span className="spinner" />
+            <span>{refreshProgress || 'Fetching trades...'}</span>
+          </div>
+        )}
+
         <div className="saved-wallets-list">
           {savedWallets.map((wallet, i) => (
             <button
               key={i}
               className="saved-wallet-btn glass-button"
               onClick={() => onRefreshWallet(wallet)}
+              disabled={isRefreshing}
             >
               <span className="wallet-address">{wallet.slice(0, 4)}...{wallet.slice(-4)}</span>
               <span className="refresh-icon">
@@ -603,12 +617,12 @@ function EmptyState({ onAnalyze, savedWallets, onRefreshWallet }) {
                   <path d="M21 3v5h-5" />
                 </svg>
               </span>
-              Refresh Trades
+              {isRefreshing ? 'Refreshing...' : 'Refresh Trades'}
             </button>
           ))}
         </div>
         <p className="or-divider">or</p>
-        <button className="secondary-action" onClick={onAnalyze}>
+        <button className="secondary-action" onClick={onAnalyze} disabled={isRefreshing}>
           Analyze a different wallet
         </button>
       </div>
@@ -646,12 +660,53 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
   const [view, setView] = useState('trades') // 'trades' | 'weekly' | 'monthly'
   const [filters, setFilters] = useState({})
 
+  // Refresh wallet state
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [refreshError, setRefreshError] = useState('')
+  const [refreshProgress, setRefreshProgress] = useState('')
+
   // Get saved wallets from user
   const savedWallets = user?.savedWallets || []
 
-  // Handler to refresh trades from a saved wallet
-  const handleRefreshWallet = (walletAddress) => {
-    onAnalyze(walletAddress)
+  // Handler to refresh trades from a saved wallet - stays on journal page
+  const handleRefreshWallet = async (walletAddress) => {
+    setIsRefreshing(true)
+    setRefreshError('')
+    setRefreshProgress('Fetching transactions...')
+
+    try {
+      // Fetch wallet trades from Helius
+      const walletData = await analyzeWallet(walletAddress, setRefreshProgress)
+
+      if (!walletData.trades || walletData.trades.length === 0) {
+        setRefreshError('No trades found for this wallet')
+        return
+      }
+
+      // Convert trades to journal entries
+      setRefreshProgress('Creating journal entries...')
+      const journalEntries = convertTradesToJournalEntries(walletData.trades)
+
+      if (journalEntries.length > 0) {
+        const result = await createJournalEntriesBatch(journalEntries, token)
+        console.log(`Created ${result?.created || 0} journal entries, skipped ${result?.skipped || 0} duplicates`)
+
+        if (result?.created === 0 && result?.skipped > 0) {
+          setRefreshError(`All ${result.skipped} trades already exist in your journal`)
+        }
+      }
+
+      // Reload journal data to show new entries
+      setRefreshProgress('Loading journal...')
+      await loadData()
+
+    } catch (err) {
+      console.error('Failed to refresh trades:', err)
+      setRefreshError(err.message || 'Failed to fetch trades')
+    } finally {
+      setIsRefreshing(false)
+      setRefreshProgress('')
+    }
   }
 
   useEffect(() => {
@@ -752,6 +807,9 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
             onAnalyze={onAnalyze}
             savedWallets={savedWallets}
             onRefreshWallet={handleRefreshWallet}
+            isRefreshing={isRefreshing}
+            refreshError={refreshError}
+            refreshProgress={refreshProgress}
           />
         ) : (
           <>
