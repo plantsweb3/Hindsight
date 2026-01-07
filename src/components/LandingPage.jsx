@@ -385,7 +385,7 @@ function SightCallout({ onOpenPro }) {
             <span className="sight-token">$SIGHT</span> = Pro Access
           </h2>
           <p className="sight-description">
-            Hold 0.25 SOL worth of $SIGHT to unlock unlimited wallets, journal entries, wallet labels, and cross-wallet analysis.
+            Hold at least 0.25 SOL worth of $SIGHT to unlock unlimited wallets, journal entries, wallet labels, and cross-wallet analysis.
           </p>
 
           {/* Contract Address Box */}
