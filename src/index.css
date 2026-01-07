@@ -879,9 +879,8 @@ input, button {
 }
 
 .comparison-other {
-  border-color: rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
-  opacity: 0.7;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(30, 30, 40, 0.85);
 }
 
 .comparison-other .comparison-title {
@@ -890,7 +889,7 @@ input, button {
 
 .comparison-hindsight {
   border-color: rgba(139, 92, 246, 0.5);
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(139, 92, 246, 0.06) 100%);
+  background: linear-gradient(135deg, rgba(50, 40, 70, 0.9) 0%, rgba(30, 30, 45, 0.9) 100%);
   box-shadow:
     0 0 40px rgba(139, 92, 246, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -958,8 +957,12 @@ input, button {
 
 .comparison-item-good {
   color: #f5f5f5;
-  animation: comparisonFadeIn 0.5s ease forwards;
   opacity: 0;
+  transform: translateY(8px);
+}
+
+.comparison-item-good.animate {
+  animation: comparisonFadeIn 0.5s ease forwards;
 }
 
 .comparison-item-good .comparison-icon {

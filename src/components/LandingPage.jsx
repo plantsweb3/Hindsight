@@ -259,10 +259,33 @@ function HeroSection({ onScrollDown, onAnalyze, isLoading, progress, error }) {
 
 // Comparison Section
 function ComparisonSection() {
+  const [isVisible, setIsVisible] = useState(false)
+  const sectionRef = useRef(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.3 }
+    )
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
   const competitors = [
     { name: 'Cielo', limitation: 'Trade history only' },
     { name: 'Birdeye', limitation: 'Portfolio tracking' },
     { name: 'GMGN', limitation: 'Data dumps, no insights' },
+    { name: 'Trading Terminals', limitation: 'Execution only, no reflection' },
+    { name: 'Dexscreener', limitation: 'Charts without context' },
   ]
 
   const hindsightFeatures = [
@@ -274,7 +297,7 @@ function ComparisonSection() {
   ]
 
   return (
-    <section className="comparison-section" id="comparison-section">
+    <section className="comparison-section" id="comparison-section" ref={sectionRef}>
       <div className="section-container">
         <h2 className="section-headline">Other Tools vs <span className="text-gradient-purple">Hindsight</span></h2>
 
@@ -303,7 +326,7 @@ function ComparisonSection() {
               {hindsightFeatures.map((feature, i) => (
                 <li
                   key={i}
-                  className="comparison-item comparison-item-good"
+                  className={`comparison-item comparison-item-good ${isVisible ? 'animate' : ''}`}
                   style={{ animationDelay: `${i * 0.1}s` }}
                 >
                   <span className="comparison-icon">✓</span>
