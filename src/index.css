@@ -8132,3 +8132,17 @@ input, button {
     font-size: 1rem;
   }
 }
+
+/* Form error message */
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #f87171;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}

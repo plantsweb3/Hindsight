@@ -43,18 +43,43 @@ export default function ReportBug({ onBack }) {
   const [steps, setSteps] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!description.trim()) return
 
     setIsSubmitting(true)
+    setError('')
 
-    // Simulate submission (can be hooked up to backend later)
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      const response = await fetch('/api/report-bug', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim() || null,
+          description: description.trim(),
+          steps: steps.trim() || null,
+        }),
+      })
 
-    setIsSubmitting(false)
-    setSubmitted(true)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit report')
+      }
+
+      // Clear form and show success
+      setEmail('')
+      setDescription('')
+      setSteps('')
+      setSubmitted(true)
+    } catch (err) {
+      console.error('Failed to submit bug report:', err)
+      setError(err.message || 'Failed to submit report. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (submitted) {
@@ -144,6 +169,17 @@ export default function ReportBug({ onBack }) {
                 rows={4}
               />
             </div>
+
+            {error && (
+              <div className="form-error">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="15" y1="9" x2="9" y2="15" />
+                  <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+                {error}
+              </div>
+            )}
 
             <button
               type="submit"

@@ -116,6 +116,19 @@ export async function initDb() {
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_journal_exit_time ON trade_journal(exit_time)`)
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_journal_token_address ON trade_journal(token_address)`)
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_journal_wallet_address ON trade_journal(wallet_address)`)
+
+  // Bug reports table
+  await getDb().execute(`
+    CREATE TABLE IF NOT EXISTS bug_reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT,
+      description TEXT NOT NULL,
+      steps TEXT,
+      user_agent TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      status TEXT DEFAULT 'new'
+    )
+  `)
 }
 
 // User functions
@@ -610,6 +623,30 @@ export async function checkSightBalance(walletAddresses) {
     // const SIGHT_CA = 'YOUR_TOKEN_CA_HERE'
     // const MIN_BALANCE_SOL = 0.25
   }
+}
+
+// Bug report functions
+export async function createBugReport(email, description, steps, userAgent) {
+  const result = await getDb().execute({
+    sql: `INSERT INTO bug_reports (email, description, steps, user_agent) VALUES (?, ?, ?, ?)`,
+    args: [email || null, description, steps || null, userAgent || null],
+  })
+  return Number(result.lastInsertRowid)
+}
+
+export async function getBugReports(status = null) {
+  let sql = `SELECT * FROM bug_reports`
+  const args = []
+
+  if (status) {
+    sql += ` WHERE status = ?`
+    args.push(status)
+  }
+
+  sql += ` ORDER BY created_at DESC`
+
+  const result = await getDb().execute({ sql, args })
+  return result.rows
 }
 
 export default getDb
