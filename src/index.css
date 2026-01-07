@@ -880,7 +880,7 @@ input, button {
 
 .comparison-other {
   border-color: rgba(255, 255, 255, 0.1);
-  background: rgba(20, 20, 30, 0.95);
+  background: rgba(20, 20, 30, 0.98);
 }
 
 .comparison-other .comparison-title {
@@ -889,7 +889,7 @@ input, button {
 
 .comparison-hindsight {
   border-color: rgba(139, 92, 246, 0.5);
-  background: rgba(25, 20, 35, 0.95);
+  background: rgba(25, 20, 35, 0.98);
   box-shadow:
     0 0 40px rgba(139, 92, 246, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
