@@ -49,25 +49,34 @@ export default function ReportBug({ onBack }) {
     e.preventDefault()
     if (!description.trim()) return
 
+    console.log('[BugReport] Starting submission...')
     setIsSubmitting(true)
     setError('')
 
     try {
+      const payload = {
+        email: email.trim() || null,
+        description: description.trim(),
+        steps: steps.trim() || null,
+      }
+      console.log('[BugReport] Payload:', payload)
+
       const response = await fetch('/api/report-bug', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email.trim() || null,
-          description: description.trim(),
-          steps: steps.trim() || null,
-        }),
+        body: JSON.stringify(payload),
       })
 
+      console.log('[BugReport] Response status:', response.status)
+
       const data = await response.json()
+      console.log('[BugReport] Response data:', data)
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to submit report')
       }
+
+      console.log('[BugReport] Success! Report ID:', data.reportId)
 
       // Clear form and show success
       setEmail('')
@@ -75,7 +84,7 @@ export default function ReportBug({ onBack }) {
       setSteps('')
       setSubmitted(true)
     } catch (err) {
-      console.error('Failed to submit bug report:', err)
+      console.error('[BugReport] Error:', err)
       setError(err.message || 'Failed to submit report. Please try again.')
     } finally {
       setIsSubmitting(false)
