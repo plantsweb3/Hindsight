@@ -732,6 +732,14 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
       <Header user={user} onDashboard={handleDashboard} onLogout={handleLogout} />
 
       <main className="journal-content">
+        {/* Mobile back link */}
+        <button className="mobile-back-link" onClick={handleDashboard}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          Back to Dashboard
+        </button>
+
         <section className="journal-header-section">
           <h1 className="journal-title">Trading Journal</h1>
           <p className="journal-subtitle">Track your trades and build self-awareness</p>

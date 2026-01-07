@@ -5629,3 +5629,40 @@ input, button {
     padding: 0.875rem 1rem;
   }
 }
+
+/* --- Mobile Back Link --- */
+.mobile-back-link {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  margin-bottom: 1rem;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 0.5rem;
+  color: #a78bfa;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: fit-content;
+}
+
+.mobile-back-link:hover {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.mobile-back-link:active {
+  transform: scale(0.98);
+}
+
+.mobile-back-link svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .mobile-back-link {
+    display: flex;
+  }
+}
