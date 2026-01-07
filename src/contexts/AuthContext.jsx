@@ -177,11 +177,31 @@ export function AuthProvider({ children }) {
     const data = await res.json()
 
     if (!res.ok) {
+      // Handle limit reached error specially
+      if (data.error === 'limit_reached') {
+        const error = new Error(data.message || 'Wallet limit reached')
+        error.code = 'LIMIT_REACHED'
+        error.requiresPro = data.requiresPro
+        error.limit = data.limit
+        error.current = data.current
+        throw error
+      }
       throw new Error(data.error || 'Failed to save wallet')
     }
 
-    setUser(prev => ({ ...prev, savedWallets: data.wallets }))
+    // Update wallet count
+    setUser(prev => ({
+      ...prev,
+      savedWallets: data.wallets,
+      walletCount: data.wallets.length,
+    }))
     return data.wallets
+  }
+
+  // Refresh user data (to get updated counts)
+  const refreshUser = async () => {
+    if (!token) return
+    await fetchUser()
   }
 
   const removeWallet = async (walletAddress) => {
@@ -217,6 +237,7 @@ export function AuthProvider({ children }) {
     getAnalyses,
     addWallet,
     removeWallet,
+    refreshUser,
   }
 
   return (

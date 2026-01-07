@@ -320,6 +320,7 @@ function AppContent() {
         onRetakeQuiz={handleRetakeQuiz}
         onOpenJournal={handleOpenJournal}
         onOpenSettings={handleOpenSettings}
+        onOpenPro={handleOpenPro}
       />
     )
   }

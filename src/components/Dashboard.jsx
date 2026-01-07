@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { ARCHETYPES } from '../data/quizData'
+import { ProBadge } from './ProBadge'
 
 // Wave Background
 function WaveBackground() {
@@ -130,6 +131,49 @@ function StatsBar({ stats }) {
         <span className="stat-value negative">
           {stats.worstTrade ? `${stats.worstTrade.token} ${stats.worstTrade.pnlPercent?.toFixed(0)}%` : '-'}
         </span>
+      </div>
+    </div>
+  )
+}
+
+// Usage Limits Bar (for free users)
+function UsageLimitsBar({ user, onOpenPro }) {
+  const isPro = user?.isPro || false
+  const walletCount = user?.walletCount ?? (user?.savedWallets?.length || 0)
+  const journalCount = user?.journalEntryCount || 0
+  const limits = user?.limits || { MAX_WALLETS: 1, MAX_JOURNAL_ENTRIES: 1 }
+
+  if (isPro) {
+    return (
+      <div className="usage-limits-bar glass-card pro-user">
+        <div className="usage-limits-content">
+          <ProBadge />
+          <span className="pro-status-text">Unlimited access active</span>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="usage-limits-bar glass-card">
+      <div className="usage-limits-content">
+        <div className="usage-item">
+          <span className="usage-label">Wallets</span>
+          <span className={`usage-value ${walletCount >= limits.MAX_WALLETS ? 'at-limit' : ''}`}>
+            {walletCount}/{limits.MAX_WALLETS}
+          </span>
+        </div>
+        <div className="usage-divider" />
+        <div className="usage-item">
+          <span className="usage-label">Journal Entries</span>
+          <span className={`usage-value ${journalCount >= limits.MAX_JOURNAL_ENTRIES ? 'at-limit' : ''}`}>
+            {journalCount}/{limits.MAX_JOURNAL_ENTRIES}
+          </span>
+        </div>
+        <span className="usage-free-tag">Free Tier</span>
+        <button className="usage-upgrade-btn" onClick={onOpenPro}>
+          Upgrade to Pro
+        </button>
       </div>
     </div>
   )
@@ -377,7 +421,7 @@ function TradeHistory({ trades, onJournal }) {
 }
 
 // Main Dashboard Component
-export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJournal, onOpenSettings }) {
+export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJournal, onOpenSettings, onOpenPro }) {
   const { user, token, logout, getAnalyses } = useAuth()
   const [stats, setStats] = useState({
     totalPnl: 0,
@@ -544,6 +588,9 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
           <>
             {/* Row 1: Stats Bar */}
             <StatsBar stats={stats} />
+
+            {/* Row 1.5: Usage Limits (Free/Pro) */}
+            <UsageLimitsBar user={user} onOpenPro={onOpenPro} />
 
             {/* Row 2: Archetype Bar (compact horizontal) */}
             <TraderProfileCard user={user} onRetakeQuiz={onRetakeQuiz} />

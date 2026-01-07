@@ -7,6 +7,8 @@ import {
   getJournalPatterns,
   getWeeklySummary,
   getMonthlySummary,
+  canAddJournalEntry,
+  FREE_TIER_LIMITS,
   initDb,
 } from '../lib/db.js'
 import { authenticateRequest, json, error, cors } from '../lib/auth.js'
@@ -138,8 +140,12 @@ export default async function handler(req, res) {
         return error(res, 'Entries array required', 400)
       }
 
+      // Check if user can add journal entries
+      const canAdd = await canAddJournalEntry(decoded.id)
+
       let created = 0
       let skipped = 0
+      let limitReached = false
 
       for (const entry of entries) {
         // Skip if already exists
@@ -149,11 +155,27 @@ export default async function handler(req, res) {
           continue
         }
 
+        // Check limits before each creation (for free users)
+        if (!canAdd.isPro) {
+          const currentCanAdd = await canAddJournalEntry(decoded.id)
+          if (!currentCanAdd.allowed) {
+            limitReached = true
+            break
+          }
+        }
+
         await createJournalEntry(decoded.id, entry)
         created++
       }
 
-      return json(res, { created, skipped, total: entries.length })
+      return json(res, {
+        created,
+        skipped,
+        total: entries.length,
+        limitReached,
+        limit: FREE_TIER_LIMITS.MAX_JOURNAL_ENTRIES,
+        isPro: canAdd.isPro,
+      })
     }
 
     // PATCH /api/journal/:id - Update entry

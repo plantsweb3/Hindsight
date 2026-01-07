@@ -8,6 +8,9 @@ import {
   removeSavedWallet,
   saveAnalysis,
   getUserAnalyses,
+  getUserUsageStats,
+  canAddWallet,
+  FREE_TIER_LIMITS,
   initDb,
 } from '../lib/db.js'
 import { signToken, authenticateRequest, json, error, cors } from '../lib/auth.js'
@@ -115,6 +118,9 @@ export default async function handler(req, res) {
         return error(res, 'User not found', 404)
       }
 
+      // Get usage stats
+      const usageStats = await getUserUsageStats(decoded.id)
+
       return json(res, {
         id: user.id,
         username: user.username,
@@ -122,6 +128,11 @@ export default async function handler(req, res) {
         secondaryArchetype: user.secondary_archetype,
         savedWallets: JSON.parse(user.saved_wallets || '[]'),
         createdAt: user.created_at,
+        // Pro status and usage
+        isPro: usageStats?.isPro || false,
+        walletCount: usageStats?.walletCount || 0,
+        journalEntryCount: usageStats?.journalEntryCount || 0,
+        limits: FREE_TIER_LIMITS,
       })
     }
 
@@ -157,6 +168,18 @@ export default async function handler(req, res) {
       const { walletAddress } = req.body || {}
       if (!walletAddress) {
         return error(res, 'Wallet address required', 400)
+      }
+
+      // Check if user can add more wallets
+      const canAdd = await canAddWallet(decoded.id)
+      if (!canAdd.allowed) {
+        return json(res, {
+          error: 'limit_reached',
+          message: canAdd.reason,
+          limit: canAdd.limit,
+          current: canAdd.current,
+          requiresPro: true,
+        }, 403)
       }
 
       const wallets = await addSavedWallet(decoded.id, walletAddress)

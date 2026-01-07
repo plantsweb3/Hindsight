@@ -6,6 +6,12 @@ const db = createClient({
   authToken: process.env.TURSO_AUTH_TOKEN,
 })
 
+// Free tier limits
+export const FREE_TIER_LIMITS = {
+  MAX_WALLETS: 1,
+  MAX_JOURNAL_ENTRIES: 1,
+}
+
 // Initialize tables (run once on first deploy)
 export async function initDb() {
   await db.execute(`
@@ -17,10 +23,24 @@ export async function initDb() {
       secondary_archetype TEXT,
       quiz_answers TEXT,
       saved_wallets TEXT DEFAULT '[]',
+      is_pro INTEGER DEFAULT 0,
+      pro_verified_at DATETIME,
+      pro_expires_at DATETIME,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `)
+
+  // Add Pro columns if they don't exist (for existing databases)
+  try {
+    await db.execute(`ALTER TABLE users ADD COLUMN is_pro INTEGER DEFAULT 0`)
+  } catch (e) { /* Column already exists */ }
+  try {
+    await db.execute(`ALTER TABLE users ADD COLUMN pro_verified_at DATETIME`)
+  } catch (e) { /* Column already exists */ }
+  try {
+    await db.execute(`ALTER TABLE users ADD COLUMN pro_expires_at DATETIME`)
+  } catch (e) { /* Column already exists */ }
 
   await db.execute(`
     CREATE TABLE IF NOT EXISTS analyses (
@@ -360,6 +380,98 @@ export async function getMonthlySummary(userId) {
     args: [userId],
   })
   return result.rows
+}
+
+// Get user's usage stats
+export async function getUserUsageStats(userId) {
+  const user = await getUserById(userId)
+  if (!user) return null
+
+  const walletCount = JSON.parse(user.saved_wallets || '[]').length
+
+  const journalResult = await db.execute({
+    sql: `SELECT COUNT(*) as count FROM trade_journal WHERE user_id = ?`,
+    args: [userId],
+  })
+  const journalEntryCount = Number(journalResult.rows[0]?.count || 0)
+
+  // Check if Pro status is still valid (not expired)
+  const isPro = user.is_pro === 1 && (
+    !user.pro_expires_at || new Date(user.pro_expires_at) > new Date()
+  )
+
+  return {
+    walletCount,
+    journalEntryCount,
+    isPro,
+    proVerifiedAt: user.pro_verified_at,
+    proExpiresAt: user.pro_expires_at,
+  }
+}
+
+// Update Pro status
+export async function updateProStatus(userId, isPro) {
+  const now = new Date().toISOString()
+  // Pro status expires after 24 hours (will need to re-verify)
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+
+  await db.execute({
+    sql: `UPDATE users SET is_pro = ?, pro_verified_at = ?, pro_expires_at = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+    args: [isPro ? 1 : 0, isPro ? now : null, isPro ? expiresAt : null, userId],
+  })
+}
+
+// Check if user can add wallet (within free tier or is Pro)
+export async function canAddWallet(userId) {
+  const stats = await getUserUsageStats(userId)
+  if (!stats) return { allowed: false, reason: 'User not found' }
+
+  if (stats.isPro) return { allowed: true, isPro: true }
+  if (stats.walletCount < FREE_TIER_LIMITS.MAX_WALLETS) {
+    return { allowed: true, isPro: false, remaining: FREE_TIER_LIMITS.MAX_WALLETS - stats.walletCount }
+  }
+
+  return {
+    allowed: false,
+    isPro: false,
+    reason: 'Free tier wallet limit reached',
+    limit: FREE_TIER_LIMITS.MAX_WALLETS,
+    current: stats.walletCount,
+  }
+}
+
+// Check if user can add journal entry (within free tier or is Pro)
+export async function canAddJournalEntry(userId) {
+  const stats = await getUserUsageStats(userId)
+  if (!stats) return { allowed: false, reason: 'User not found' }
+
+  if (stats.isPro) return { allowed: true, isPro: true }
+  if (stats.journalEntryCount < FREE_TIER_LIMITS.MAX_JOURNAL_ENTRIES) {
+    return { allowed: true, isPro: false, remaining: FREE_TIER_LIMITS.MAX_JOURNAL_ENTRIES - stats.journalEntryCount }
+  }
+
+  return {
+    allowed: false,
+    isPro: false,
+    reason: 'Free tier journal entry limit reached',
+    limit: FREE_TIER_LIMITS.MAX_JOURNAL_ENTRIES,
+    current: stats.journalEntryCount,
+  }
+}
+
+// Placeholder for $SIGHT token verification
+// TODO: Plug in $SIGHT CA after launch
+export async function checkSightBalance(walletAddresses) {
+  // This will be updated post-launch to actually check balances
+  // For now, returns not Pro
+  return {
+    isPro: false,
+    balance: 0,
+    requiredBalance: 0.25, // 0.25 SOL worth of $SIGHT
+    // TODO: Add actual token check here
+    // const SIGHT_CA = 'YOUR_TOKEN_CA_HERE'
+    // const MIN_BALANCE_SOL = 0.25
+  }
 }
 
 export default db

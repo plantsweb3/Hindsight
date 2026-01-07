@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { ARCHETYPES } from '../data/quizData'
 import { isValidSolanaAddress } from '../services/solana'
+import { ProBadge } from './ProBadge'
+import UpgradeModal from './UpgradeModal'
 
 // Wave Background
 function WaveBackground() {
@@ -81,12 +83,14 @@ function AccountSection({ user, onLogout }) {
 }
 
 // Saved Wallets Section
-function SavedWalletsSection({ wallets = [], onAdd, onRemove }) {
+function SavedWalletsSection({ wallets = [], onAdd, onRemove, isPro, limits, onOpenPro }) {
   const [newWallet, setNewWallet] = useState('')
   const [error, setError] = useState('')
   const [isAdding, setIsAdding] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
 
-  const MAX_WALLETS = 10
+  const maxWallets = isPro ? 10 : (limits?.MAX_WALLETS || 1)
+  const isAtFreeLimit = !isPro && wallets.length >= maxWallets
 
   const handleAdd = async () => {
     if (!newWallet.trim()) {
@@ -104,11 +108,6 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove }) {
       return
     }
 
-    if (wallets.length >= MAX_WALLETS) {
-      setError(`Maximum ${MAX_WALLETS} wallets allowed`)
-      return
-    }
-
     setError('')
     setIsAdding(true)
 
@@ -116,7 +115,12 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove }) {
       await onAdd(newWallet.trim())
       setNewWallet('')
     } catch (err) {
-      setError(err.message || 'Failed to add wallet')
+      // Handle limit reached error
+      if (err.code === 'LIMIT_REACHED') {
+        setShowUpgradeModal(true)
+      } else {
+        setError(err.message || 'Failed to add wallet')
+      }
     } finally {
       setIsAdding(false)
     }
@@ -137,7 +141,11 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove }) {
       <h2 className="settings-section-title">Saved Wallets</h2>
       <div className="settings-card glass-card">
         <div className="wallet-counter">
-          <span>{wallets.length}/{MAX_WALLETS} wallets</span>
+          <span>
+            {wallets.length}/{isPro ? 'Unlimited' : maxWallets} wallets
+            {!isPro && <span className="free-tag">(Free)</span>}
+            {isPro && <ProBadge className="counter-badge" />}
+          </span>
         </div>
 
         {wallets.length > 0 ? (
@@ -162,8 +170,15 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove }) {
           <p className="wallet-empty">No wallets saved yet</p>
         )}
 
-        {wallets.length >= MAX_WALLETS ? (
-          <p className="wallet-limit-msg">Upgrade to token holder for more wallets</p>
+        {isAtFreeLimit ? (
+          <div className="wallet-limit-section">
+            <p className="wallet-limit-msg">
+              You've reached your free wallet limit.
+            </p>
+            <button className="upgrade-link" onClick={() => setShowUpgradeModal(true)}>
+              Upgrade to Pro for unlimited wallets
+            </button>
+          </div>
         ) : (
           <>
             <div className="wallet-add">
@@ -196,6 +211,12 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove }) {
 
         {error && <p className="wallet-error">{error}</p>}
       </div>
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onAddWallet={onOpenPro}
+      />
     </section>
   )
 }
@@ -286,7 +307,7 @@ function HelpDocsSection() {
 }
 
 // Main Settings Component
-export default function Settings({ onNavigate, onRetakeQuiz }) {
+export default function Settings({ onNavigate, onRetakeQuiz, onOpenPro }) {
   const { user, logout, addWallet, removeWallet } = useAuth()
 
   const handleLogout = () => {
@@ -296,6 +317,14 @@ export default function Settings({ onNavigate, onRetakeQuiz }) {
 
   const handleRetakeQuiz = () => {
     onRetakeQuiz()
+  }
+
+  const handleOpenPro = () => {
+    if (onOpenPro) {
+      onOpenPro()
+    } else {
+      onNavigate('pro')
+    }
   }
 
   return (
@@ -315,6 +344,9 @@ export default function Settings({ onNavigate, onRetakeQuiz }) {
           wallets={user?.savedWallets || []}
           onAdd={addWallet}
           onRemove={removeWallet}
+          isPro={user?.isPro || false}
+          limits={user?.limits}
+          onOpenPro={handleOpenPro}
         />
         <TraderProfileSection user={user} onRetakeQuiz={handleRetakeQuiz} />
         <HelpDocsSection />
