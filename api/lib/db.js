@@ -655,4 +655,11 @@ export async function getBugReports(status = null) {
   return result.rows
 }
 
+export async function updateBugReportStatus(id, status) {
+  await getDb().execute({
+    sql: `UPDATE bug_reports SET status = ? WHERE id = ?`,
+    args: [status, id],
+  })
+}
+
 export default getDb

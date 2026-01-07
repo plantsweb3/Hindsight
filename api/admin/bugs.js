@@ -1,7 +1,8 @@
-import { getBugReports } from '../lib/db.js'
+import { getBugReports, updateBugReportStatus } from '../lib/db.js'
 import { cors, json, error, authenticateRequest } from '../lib/auth.js'
 
 const ADMIN_PASSWORD = 'DeusVult777!'
+const VALID_STATUSES = ['new', 'reviewing', 'resolved']
 
 export default async function handler(req, res) {
   cors(res)
@@ -29,6 +30,28 @@ export default async function handler(req, res) {
     } catch (err) {
       console.error('[Admin] Error fetching bug reports:', err)
       return error(res, 'Failed to fetch bug reports', 500)
+    }
+  }
+
+  if (req.method === 'PATCH') {
+    try {
+      const { id, status } = req.body
+
+      if (!id) {
+        return error(res, 'Report ID is required', 400)
+      }
+
+      if (!status || !VALID_STATUSES.includes(status)) {
+        return error(res, 'Invalid status. Must be: new, reviewing, or resolved', 400)
+      }
+
+      await updateBugReportStatus(id, status)
+      console.log(`[Admin] Updated bug report #${id} status to: ${status}`)
+
+      return json(res, { success: true })
+    } catch (err) {
+      console.error('[Admin] Error updating bug report:', err)
+      return error(res, 'Failed to update bug report', 500)
     }
   }
 

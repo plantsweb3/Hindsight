@@ -131,6 +131,40 @@ export default function Admin({ onBack, isHiddenRoute = false }) {
     }
   }
 
+  const updateStatus = async (reportId, newStatus) => {
+    try {
+      const headers = { 'Content-Type': 'application/json' }
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      } else if (isHiddenRoute && isUnlocked) {
+        headers['X-Admin-Password'] = ADMIN_PASSWORD
+      }
+
+      const response = await fetch('/api/admin/bugs', {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ id: reportId, status: newStatus }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update status')
+      }
+
+      // Update local state
+      setReports(reports.map(r =>
+        r.id === reportId ? { ...r, status: newStatus } : r
+      ))
+
+      // Update selected report if it's the one being changed
+      if (selectedReport?.id === reportId) {
+        setSelectedReport({ ...selectedReport, status: newStatus })
+      }
+    } catch (err) {
+      console.error('Failed to update status:', err)
+      setError('Failed to update status')
+    }
+  }
+
   const filteredReports = filter === 'all'
     ? reports
     : reports.filter(r => (r.status || 'new') === filter)
@@ -313,6 +347,34 @@ export default function Admin({ onBack, isHiddenRoute = false }) {
                   </div>
                 </div>
               )}
+
+              {/* Status Actions */}
+              <div className="admin-status-actions">
+                <span className="detail-label">Change Status:</span>
+                <div className="status-buttons">
+                  <button
+                    onClick={() => updateStatus(selectedReport.id, 'new')}
+                    className={`status-btn status-btn-new ${(selectedReport.status || 'new') === 'new' ? 'active' : ''}`}
+                    disabled={(selectedReport.status || 'new') === 'new'}
+                  >
+                    New
+                  </button>
+                  <button
+                    onClick={() => updateStatus(selectedReport.id, 'reviewing')}
+                    className={`status-btn status-btn-reviewing ${selectedReport.status === 'reviewing' ? 'active' : ''}`}
+                    disabled={selectedReport.status === 'reviewing'}
+                  >
+                    Reviewing
+                  </button>
+                  <button
+                    onClick={() => updateStatus(selectedReport.id, 'resolved')}
+                    className={`status-btn status-btn-resolved ${selectedReport.status === 'resolved' ? 'active' : ''}`}
+                    disabled={selectedReport.status === 'resolved'}
+                  >
+                    Resolved
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
