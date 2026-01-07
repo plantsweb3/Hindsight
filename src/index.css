@@ -4645,30 +4645,32 @@ input, button {
   position: relative;
 }
 
-/* Add Label button */
+/* Add Label button - purple gradient style */
 .add-label-btn {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  background: transparent;
-  border: 1px solid rgba(168, 85, 247, 0.4);
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+  border: none;
   border-radius: 6px;
-  padding: 0.35rem 0.6rem;
-  color: #c4b5fd;
+  padding: 0.4rem 0.7rem;
+  color: white;
   font-size: 0.75rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3);
 }
 
 .add-label-btn:hover {
-  background: rgba(168, 85, 247, 0.15);
-  border-color: rgba(168, 85, 247, 0.6);
-  color: #e4e4e7;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
 }
 
 .add-label-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .add-label-icon {
@@ -4695,28 +4697,29 @@ input, button {
   cursor: not-allowed;
 }
 
-/* Floating label options popup */
+/* Floating label options popup - glassmorphism horizontal bar */
 .label-options-popup {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  padding: 0.6rem;
-  background: rgba(24, 24, 27, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  flex-wrap: nowrap;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(20, 20, 30, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   z-index: 100;
-  animation: labelPopupFadeIn 0.15s ease-out;
-  min-width: 180px;
+  animation: labelPopupFadeIn 0.2s ease-out;
 }
 
 @keyframes labelPopupFadeIn {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -4724,13 +4727,23 @@ input, button {
   }
 }
 
+/* Responsive: wrap on mobile */
+@media (max-width: 500px) {
+  .label-options-popup {
+    flex-wrap: wrap;
+    max-width: 200px;
+  }
+}
+
 .label-option-pill {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.65rem;
-  background: color-mix(in srgb, var(--pill-color) 20%, transparent);
-  border: 1px solid color-mix(in srgb, var(--pill-color) 40%, transparent);
+  justify-content: center;
+  gap: 0.3rem;
+  min-height: 36px;
+  padding: 0.4rem 0.7rem;
+  background: color-mix(in srgb, var(--pill-color) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pill-color) 45%, transparent);
   border-radius: 20px;
   color: #e4e4e7;
   font-size: 0.75rem;
@@ -4740,15 +4753,17 @@ input, button {
 }
 
 .label-option-pill:hover {
-  background: color-mix(in srgb, var(--pill-color) 35%, transparent);
-  border-color: color-mix(in srgb, var(--pill-color) 60%, transparent);
-  transform: scale(1.02);
+  background: color-mix(in srgb, var(--pill-color) 40%, transparent);
+  border-color: color-mix(in srgb, var(--pill-color) 70%, transparent);
+  transform: scale(1.05);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--pill-color) 40%, transparent);
 }
 
 .label-option-pill:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 .label-option-emoji {

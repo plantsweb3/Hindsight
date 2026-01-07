@@ -330,7 +330,7 @@ const LABEL_OPTIONS = [
   { label: 'Gamble', emoji: '🎰', color: '#ef4444' },
   { label: 'Long Hold', emoji: '💎', color: '#3b82f6' },
   { label: 'Sniper', emoji: '⚡', color: '#eab308' },
-  { label: 'Test', emoji: '🧪', color: '#71717a' },
+  { label: 'Test', emoji: '🧪', color: '#22c55e' },
 ]
 
 // Pro Feature Popup for label selection
