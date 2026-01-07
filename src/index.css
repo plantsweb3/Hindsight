@@ -5923,6 +5923,7 @@ input, button {
   align-items: center;
   gap: 0.5rem;
   margin-left: auto;
+  position: relative;
 }
 
 .wallet-label-control {

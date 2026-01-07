@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { ARCHETYPES } from '../data/quizData'
 import { isValidSolanaAddress } from '../services/solana'
@@ -6,8 +6,52 @@ import { ProBadge } from './ProBadge'
 import UpgradeModal from './UpgradeModal'
 import WalletLabelBadge, { LABEL_COLORS } from './WalletLabelBadge'
 
-// Available wallet labels
-const WALLET_LABELS = ['Main', 'Long Hold', 'Gamble', 'Sniper', 'Unlabeled']
+// Label options with emojis and colors (matches Dashboard)
+const LABEL_OPTIONS = [
+  { label: 'Main', emoji: '🏠', color: '#a855f7' },
+  { label: 'Gamble', emoji: '🎰', color: '#ef4444' },
+  { label: 'Long Hold', emoji: '💎', color: '#3b82f6' },
+  { label: 'Sniper', emoji: '⚡', color: '#eab308' },
+  { label: 'Test', emoji: '🧪', color: '#22c55e' },
+]
+
+// Pro Feature Popup - reusable for different features
+function ProFeaturePopup({ title = 'Pro Feature', text, onLearnMore, onClose }) {
+  return (
+    <div className="pro-feature-popup-overlay" onClick={onClose}>
+      <div className="pro-feature-popup" onClick={(e) => e.stopPropagation()}>
+        <div className="pro-feature-popup-icon">✨</div>
+        <h4 className="pro-feature-popup-title">{title}</h4>
+        <p className="pro-feature-popup-text">{text}</p>
+        <div className="pro-feature-popup-actions">
+          <button className="pro-feature-learn-btn" onClick={onLearnMore}>
+            Learn more →
+          </button>
+          <button className="pro-feature-later-btn" onClick={onClose}>
+            Maybe later
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Success Toast
+function SuccessToast({ message, onClose }) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 2000)
+    return () => clearTimeout(timer)
+  }, [onClose])
+
+  return (
+    <div className="success-toast">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M20 6L9 17l-5-5" />
+      </svg>
+      {message}
+    </div>
+  )
+}
 
 // Wave Background
 function WaveBackground() {
@@ -92,7 +136,10 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove, onUpdateLabel, isP
   const [error, setError] = useState('')
   const [isAdding, setIsAdding] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
-  const [pendingLabels, setPendingLabels] = useState({}) // Track unsaved label changes
+  const [expandedWallet, setExpandedWallet] = useState(null)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [showProPopup, setShowProPopup] = useState(false)
+  const [successToast, setSuccessToast] = useState(null)
 
   const maxWallets = isPro ? 10 : (limits?.MAX_WALLETS || 1)
   const isAtFreeLimit = !isPro && wallets.length >= maxWallets
@@ -101,6 +148,8 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove, onUpdateLabel, isP
   const normalizedWallets = wallets.map(w =>
     typeof w === 'string' ? { address: w, label: 'Unlabeled' } : w
   )
+
+  const truncateWallet = (addr) => `${addr.slice(0, 4)}...${addr.slice(-4)}`
 
   const handleAdd = async () => {
     if (!newWallet.trim()) {
@@ -125,7 +174,6 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove, onUpdateLabel, isP
       await onAdd(newWallet.trim())
       setNewWallet('')
     } catch (err) {
-      // Handle limit reached error
       if (err.code === 'LIMIT_REACHED') {
         setShowUpgradeModal(true)
       } else {
@@ -139,62 +187,49 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove, onUpdateLabel, isP
   const handleRemove = async (walletAddress) => {
     try {
       await onRemove(walletAddress)
-      // Clear any pending label for this wallet
-      setPendingLabels(prev => {
-        const updated = { ...prev }
-        delete updated[walletAddress]
-        return updated
-      })
     } catch (err) {
       console.error('Failed to remove wallet:', err)
     }
   }
 
-  const handleLabelChange = (walletAddress, newLabel) => {
-    // Track the pending label change
-    setPendingLabels(prev => ({
-      ...prev,
-      [walletAddress]: newLabel
-    }))
-  }
-
-  const handleLabelSave = async (walletAddress) => {
-    const newLabel = pendingLabels[walletAddress]
-    if (!newLabel) return
-
-    // Pro gate on save
+  const handleLabelSelect = async (walletAddress, newLabel) => {
     if (!isPro) {
-      setShowUpgradeModal(true)
+      setExpandedWallet(null)
+      setShowProPopup(true)
       return
     }
 
+    setIsUpdating(true)
     try {
       await onUpdateLabel(walletAddress, newLabel)
-      // Clear the pending label after successful save
-      setPendingLabels(prev => {
-        const updated = { ...prev }
-        delete updated[walletAddress]
-        return updated
-      })
+      setSuccessToast('Label saved!')
     } catch (err) {
       if (err.code === 'PRO_REQUIRED') {
-        setShowUpgradeModal(true)
+        setShowProPopup(true)
       } else {
         setError(err.message || 'Failed to update label')
       }
+    } finally {
+      setIsUpdating(false)
+      setExpandedWallet(null)
     }
   }
 
-  const truncateWallet = (addr) => `${addr.slice(0, 4)}...${addr.slice(-4)}`
-
-  const getDisplayLabel = (wallet) => {
-    // Show pending label if exists, otherwise show saved label
-    return pendingLabels[wallet.address] || wallet.label || 'Unlabeled'
+  const handleProLearnMore = () => {
+    setShowProPopup(false)
+    onOpenPro?.()
   }
 
-  const hasPendingChange = (walletAddress) => {
-    return pendingLabels[walletAddress] !== undefined
-  }
+  // Close expanded wallet when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (expandedWallet && !e.target.closest('.wallet-label-area')) {
+        setExpandedWallet(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [expandedWallet])
 
   return (
     <section className="settings-section">
@@ -211,9 +246,8 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove, onUpdateLabel, isP
         {normalizedWallets.length > 0 ? (
           <div className="wallet-list">
             {normalizedWallets.map((wallet, i) => {
-              const displayLabel = getDisplayLabel(wallet)
-              const hasPending = hasPendingChange(wallet.address)
-              const labelColors = LABEL_COLORS[displayLabel] || LABEL_COLORS['Unlabeled']
+              const isExpanded = expandedWallet === wallet.address
+              const hasLabel = wallet.label && wallet.label !== 'Unlabeled'
 
               return (
                 <div key={i} className="wallet-item wallet-item-with-label">
@@ -221,40 +255,43 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove, onUpdateLabel, isP
                     <span className="wallet-address" title={wallet.address}>
                       {truncateWallet(wallet.address)}
                     </span>
-                    <WalletLabelBadge label={wallet.label} size="small" />
                   </div>
                   <div className="wallet-actions">
-                    <div className="wallet-label-control">
-                      <select
-                        className="wallet-label-select"
-                        value={displayLabel}
-                        onChange={(e) => handleLabelChange(wallet.address, e.target.value)}
-                        style={{
-                          borderColor: labelColors.border,
-                          color: labelColors.text,
-                        }}
-                      >
-                        {WALLET_LABELS.map(label => (
-                          <option key={label} value={label}>{label}</option>
-                        ))}
-                      </select>
-                      {hasPending && (
+                    <div className="wallet-label-area">
+                      {hasLabel ? (
                         <button
-                          className="wallet-label-save-btn"
-                          onClick={() => handleLabelSave(wallet.address)}
-                          title={isPro ? 'Save label' : 'Pro feature - click to upgrade'}
+                          className="wallet-label-badge-btn"
+                          onClick={() => setExpandedWallet(isExpanded ? null : wallet.address)}
+                          disabled={isUpdating}
                         >
-                          {isPro ? (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          ) : (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                            </svg>
-                          )}
+                          <WalletLabelBadge label={wallet.label} size="small" />
                         </button>
+                      ) : (
+                        <button
+                          className="add-label-btn"
+                          onClick={() => setExpandedWallet(isExpanded ? null : wallet.address)}
+                          disabled={isUpdating}
+                        >
+                          <span className="add-label-icon">🏷️</span>
+                          <span>Add Label</span>
+                        </button>
+                      )}
+
+                      {isExpanded && (
+                        <div className="label-options-popup">
+                          {LABEL_OPTIONS.map((opt) => (
+                            <button
+                              key={opt.label}
+                              className="label-option-pill"
+                              style={{ '--pill-color': opt.color }}
+                              onClick={() => handleLabelSelect(wallet.address, opt.label)}
+                              disabled={isUpdating}
+                            >
+                              <span className="label-option-emoji">{opt.emoji}</span>
+                              <span className="label-option-name">{opt.label}</span>
+                            </button>
+                          ))}
+                        </div>
                       )}
                     </div>
                     <button
@@ -323,6 +360,23 @@ function SavedWalletsSection({ wallets = [], onAdd, onRemove, onUpdateLabel, isP
         onClose={() => setShowUpgradeModal(false)}
         onSuccess={() => setShowUpgradeModal(false)}
       />
+
+      {/* Pro Feature Popup */}
+      {showProPopup && (
+        <ProFeaturePopup
+          text="Wallet labels help organize your trading strategy and unlock smarter AI insights."
+          onLearnMore={handleProLearnMore}
+          onClose={() => setShowProPopup(false)}
+        />
+      )}
+
+      {/* Success Toast */}
+      {successToast && (
+        <SuccessToast
+          message={successToast}
+          onClose={() => setSuccessToast(null)}
+        />
+      )}
     </section>
   )
 }

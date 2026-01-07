@@ -333,16 +333,14 @@ const LABEL_OPTIONS = [
   { label: 'Test', emoji: '🧪', color: '#22c55e' },
 ]
 
-// Pro Feature Popup for label selection
-function ProFeaturePopup({ onLearnMore, onClose }) {
+// Pro Feature Popup - reusable for different features
+function ProFeaturePopup({ title = 'Pro Feature', text, onLearnMore, onClose }) {
   return (
     <div className="pro-feature-popup-overlay" onClick={onClose}>
       <div className="pro-feature-popup" onClick={(e) => e.stopPropagation()}>
         <div className="pro-feature-popup-icon">✨</div>
-        <h4 className="pro-feature-popup-title">Pro Feature</h4>
-        <p className="pro-feature-popup-text">
-          Wallet labels help organize your trading strategy and unlock smarter AI insights.
-        </p>
+        <h4 className="pro-feature-popup-title">{title}</h4>
+        <p className="pro-feature-popup-text">{text}</p>
         <div className="pro-feature-popup-actions">
           <button className="pro-feature-learn-btn" onClick={onLearnMore}>
             Learn more →
@@ -379,7 +377,8 @@ function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh }) {
   const [expandedWallet, setExpandedWallet] = useState(null)
   const [isUpdating, setIsUpdating] = useState(false)
   const [copyFeedback, setCopyFeedback] = useState(null)
-  const [showProPopup, setShowProPopup] = useState(false)
+  const [showLabelProPopup, setShowLabelProPopup] = useState(false)
+  const [showAddWalletProPopup, setShowAddWalletProPopup] = useState(false)
   const [successToast, setSuccessToast] = useState(null)
 
   const isPro = user?.isPro || false
@@ -406,7 +405,7 @@ function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh }) {
     if (!isPro) {
       // Show Pro feature popup instead of redirecting
       setExpandedWallet(null)
-      setShowProPopup(true)
+      setShowLabelProPopup(true)
       return
     }
 
@@ -434,8 +433,22 @@ function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh }) {
     }
   }
 
-  const handleProLearnMore = () => {
-    setShowProPopup(false)
+  const handleAddWalletClick = () => {
+    if (atLimit) {
+      // Show Pro popup instead of going to settings
+      setShowAddWalletProPopup(true)
+    } else {
+      onOpenSettings?.()
+    }
+  }
+
+  const handleLabelProLearnMore = () => {
+    setShowLabelProPopup(false)
+    onOpenPro?.()
+  }
+
+  const handleAddWalletProLearnMore = () => {
+    setShowAddWalletProPopup(false)
     onOpenPro?.()
   }
 
@@ -542,8 +555,7 @@ function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh }) {
       <div className="wallets-section-footer">
         <button
           className="add-wallet-btn glass-button"
-          onClick={onOpenSettings}
-          disabled={atLimit}
+          onClick={handleAddWalletClick}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 5v14M5 12h14" />
@@ -556,11 +568,21 @@ function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh }) {
         </button>
       </div>
 
-      {/* Pro Feature Popup */}
-      {showProPopup && (
+      {/* Pro Feature Popup - Labels */}
+      {showLabelProPopup && (
         <ProFeaturePopup
-          onLearnMore={handleProLearnMore}
-          onClose={() => setShowProPopup(false)}
+          text="Wallet labels help organize your trading strategy and unlock smarter AI insights."
+          onLearnMore={handleLabelProLearnMore}
+          onClose={() => setShowLabelProPopup(false)}
+        />
+      )}
+
+      {/* Pro Feature Popup - Add Wallet */}
+      {showAddWalletProPopup && (
+        <ProFeaturePopup
+          text="Track multiple wallets to see your full trading picture and compare strategies."
+          onLearnMore={handleAddWalletProLearnMore}
+          onClose={() => setShowAddWalletProPopup(false)}
         />
       )}
 
