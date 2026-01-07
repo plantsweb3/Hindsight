@@ -4642,44 +4642,249 @@ input, button {
 .wallet-item-right {
   display: flex;
   align-items: center;
+  position: relative;
 }
 
-.wallet-label-btn {
+/* Add Label button */
+.add-label-btn {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
+  background: transparent;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  border-radius: 6px;
+  padding: 0.35rem 0.6rem;
+  color: #c4b5fd;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-label-btn:hover {
+  background: rgba(168, 85, 247, 0.15);
+  border-color: rgba(168, 85, 247, 0.6);
+  color: #e4e4e7;
+}
+
+.add-label-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.add-label-icon {
+  font-size: 0.85rem;
+}
+
+/* Existing label badge button */
+.wallet-label-badge-btn {
   background: none;
   border: none;
-  padding: 0.2rem;
-  margin: -0.2rem;
+  padding: 0.15rem;
+  margin: -0.15rem;
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.15s ease;
 }
 
-.wallet-label-btn:hover {
+.wallet-label-badge-btn:hover {
   background: rgba(255, 255, 255, 0.08);
 }
 
-.pro-lock-icon {
-  color: #f59e0b;
-  opacity: 0.8;
+.wallet-label-badge-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.wallet-label-select {
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
+/* Floating label options popup */
+.label-options-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.6rem;
+  background: rgba(24, 24, 27, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  animation: labelPopupFadeIn 0.15s ease-out;
+  min-width: 180px;
+}
+
+@keyframes labelPopupFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.label-option-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.65rem;
+  background: color-mix(in srgb, var(--pill-color) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pill-color) 40%, transparent);
+  border-radius: 20px;
   color: #e4e4e7;
-  font-size: 0.8rem;
-  padding: 0.35rem 0.5rem;
+  font-size: 0.75rem;
   cursor: pointer;
-  outline: none;
+  transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
-.wallet-label-select:focus {
-  border-color: rgba(168, 85, 247, 0.5);
-  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.15);
+.label-option-pill:hover {
+  background: color-mix(in srgb, var(--pill-color) 35%, transparent);
+  border-color: color-mix(in srgb, var(--pill-color) 60%, transparent);
+  transform: scale(1.02);
+}
+
+.label-option-pill:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.label-option-emoji {
+  font-size: 0.9rem;
+}
+
+.label-option-name {
+  font-weight: 500;
+}
+
+/* Pro Feature Popup */
+.pro-feature-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: overlayFadeIn 0.2s ease-out;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pro-feature-popup {
+  background: linear-gradient(135deg, rgba(24, 24, 27, 0.98) 0%, rgba(39, 39, 42, 0.98) 100%);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 16px;
+  padding: 1.5rem;
+  max-width: 320px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(168, 85, 247, 0.1);
+  animation: popupSlideIn 0.25s ease-out;
+}
+
+@keyframes popupSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.pro-feature-popup-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.pro-feature-popup-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e4e4e7;
+  margin: 0 0 0.5rem;
+}
+
+.pro-feature-popup-text {
+  font-size: 0.85rem;
+  color: #a1a1aa;
+  line-height: 1.5;
+  margin: 0 0 1.25rem;
+}
+
+.pro-feature-popup-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.pro-feature-learn-btn {
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pro-feature-learn-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+}
+
+.pro-feature-later-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  color: #a1a1aa;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pro-feature-later-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e4e4e7;
+}
+
+/* Success Toast */
+.success-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  color: #22c55e;
+  font-size: 0.85rem;
+  font-weight: 500;
+  z-index: 1000;
+  animation: toastSlideUp 0.3s ease-out;
+}
+
+@keyframes toastSlideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 .wallets-section-footer {

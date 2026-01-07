@@ -324,12 +324,63 @@ function QuickActions({ onAnalyze, onOpenJournal, onAddWallet }) {
   )
 }
 
+// Label options with emojis and colors
+const LABEL_OPTIONS = [
+  { label: 'Main', emoji: '🏠', color: '#a855f7' },
+  { label: 'Gamble', emoji: '🎰', color: '#ef4444' },
+  { label: 'Long Hold', emoji: '💎', color: '#3b82f6' },
+  { label: 'Sniper', emoji: '⚡', color: '#eab308' },
+  { label: 'Test', emoji: '🧪', color: '#71717a' },
+]
+
+// Pro Feature Popup for label selection
+function ProFeaturePopup({ onLearnMore, onClose }) {
+  return (
+    <div className="pro-feature-popup-overlay" onClick={onClose}>
+      <div className="pro-feature-popup" onClick={(e) => e.stopPropagation()}>
+        <div className="pro-feature-popup-icon">✨</div>
+        <h4 className="pro-feature-popup-title">Pro Feature</h4>
+        <p className="pro-feature-popup-text">
+          Wallet labels help organize your trading strategy and unlock smarter AI insights.
+        </p>
+        <div className="pro-feature-popup-actions">
+          <button className="pro-feature-learn-btn" onClick={onLearnMore}>
+            Learn more →
+          </button>
+          <button className="pro-feature-later-btn" onClick={onClose}>
+            Maybe later
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Success Toast
+function SuccessToast({ message, onClose }) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 2000)
+    return () => clearTimeout(timer)
+  }, [onClose])
+
+  return (
+    <div className="success-toast">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M20 6L9 17l-5-5" />
+      </svg>
+      {message}
+    </div>
+  )
+}
+
 // Tracked Wallets Section with label management
 function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh }) {
   const { token } = useAuth()
-  const [editingWallet, setEditingWallet] = useState(null)
+  const [expandedWallet, setExpandedWallet] = useState(null)
   const [isUpdating, setIsUpdating] = useState(false)
   const [copyFeedback, setCopyFeedback] = useState(null)
+  const [showProPopup, setShowProPopup] = useState(false)
+  const [successToast, setSuccessToast] = useState(null)
 
   const isPro = user?.isPro || false
   const limits = user?.limits || { MAX_WALLETS: 1 }
@@ -341,8 +392,6 @@ function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh }) {
 
   const truncateAddr = (addr) => `${addr.slice(0, 4)}...${addr.slice(-4)}`
 
-  const labelOptions = ['Unlabeled', 'Main', 'Gamble', 'Long Hold', 'Sniper', 'Test', 'Tracking']
-
   const handleCopyAddress = async (address) => {
     try {
       await navigator.clipboard.writeText(address)
@@ -353,14 +402,15 @@ function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh }) {
     }
   }
 
-  const handleLabelChange = async (address, newLabel) => {
+  const handleLabelSelect = async (address, newLabel) => {
     if (!isPro) {
-      // Show Pro gate
-      onOpenPro?.()
-      setEditingWallet(null)
+      // Show Pro feature popup instead of redirecting
+      setExpandedWallet(null)
+      setShowProPopup(true)
       return
     }
 
+    // Pro user - save the label
     setIsUpdating(true)
     try {
       const response = await fetch(`/api/auth/wallets/${address}/label`, {
@@ -373,20 +423,32 @@ function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh }) {
       })
 
       if (response.ok) {
+        setSuccessToast('Label saved!')
         onRefresh?.()
-      } else {
-        const data = await response.json()
-        if (data.requiresPro) {
-          onOpenPro?.()
-        }
       }
     } catch (err) {
       console.error('Failed to update label:', err)
     } finally {
       setIsUpdating(false)
-      setEditingWallet(null)
+      setExpandedWallet(null)
     }
   }
+
+  const handleProLearnMore = () => {
+    setShowProPopup(false)
+    onOpenPro?.()
+  }
+
+  // Close expanded wallet when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (expandedWallet && !e.target.closest('.wallet-label-area')) {
+        setExpandedWallet(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [expandedWallet])
 
   return (
     <div className="wallets-section glass-card">
@@ -405,59 +467,75 @@ function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh }) {
             <p>No wallets tracked yet</p>
           </div>
         ) : (
-          wallets.map((wallet, i) => (
-            <div key={i} className="wallet-item">
-              <div className="wallet-item-left">
-                <button
-                  className="wallet-address-btn"
-                  onClick={() => handleCopyAddress(wallet.address)}
-                  title="Copy address"
-                >
-                  <span className="wallet-address">{truncateAddr(wallet.address)}</span>
-                  {copyFeedback === wallet.address ? (
-                    <svg className="copy-icon copied" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M20 6L9 17l-5-5" />
-                    </svg>
-                  ) : (
-                    <svg className="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-                    </svg>
-                  )}
-                </button>
-              </div>
+          wallets.map((wallet, i) => {
+            const isExpanded = expandedWallet === wallet.address
+            const hasLabel = wallet.label && wallet.label !== 'Unlabeled'
 
-              <div className="wallet-item-right">
-                {editingWallet === wallet.address ? (
-                  <select
-                    className="wallet-label-select"
-                    value={wallet.label}
-                    onChange={(e) => handleLabelChange(wallet.address, e.target.value)}
-                    onBlur={() => setEditingWallet(null)}
-                    autoFocus
-                    disabled={isUpdating}
-                  >
-                    {labelOptions.map(label => (
-                      <option key={label} value={label}>{label}</option>
-                    ))}
-                  </select>
-                ) : (
+            return (
+              <div key={i} className="wallet-item">
+                <div className="wallet-item-left">
                   <button
-                    className="wallet-label-btn"
-                    onClick={() => setEditingWallet(wallet.address)}
-                    title={isPro ? 'Click to change label' : 'Pro feature - click to upgrade'}
+                    className="wallet-address-btn"
+                    onClick={() => handleCopyAddress(wallet.address)}
+                    title="Copy address"
                   >
-                    <WalletLabelBadge label={wallet.label} size="small" />
-                    {!isPro && (
-                      <svg className="pro-lock-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 1C8.676 1 6 3.676 6 7v2H4v14h16V9h-2V7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4v2H8V7c0-2.276 1.724-4 4-4z"/>
+                    <span className="wallet-address">{truncateAddr(wallet.address)}</span>
+                    {copyFeedback === wallet.address ? (
+                      <svg className="copy-icon copied" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20 6L9 17l-5-5" />
+                      </svg>
+                    ) : (
+                      <svg className="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                       </svg>
                     )}
                   </button>
-                )}
+                </div>
+
+                <div className="wallet-item-right wallet-label-area">
+                  {hasLabel ? (
+                    // Has a label - show badge, click to change
+                    <button
+                      className="wallet-label-badge-btn"
+                      onClick={() => setExpandedWallet(isExpanded ? null : wallet.address)}
+                      disabled={isUpdating}
+                    >
+                      <WalletLabelBadge label={wallet.label} size="small" />
+                    </button>
+                  ) : (
+                    // No label - show "Add Label" button
+                    <button
+                      className="add-label-btn"
+                      onClick={() => setExpandedWallet(isExpanded ? null : wallet.address)}
+                      disabled={isUpdating}
+                    >
+                      <span className="add-label-icon">🏷️</span>
+                      <span>Add Label</span>
+                    </button>
+                  )}
+
+                  {/* Floating label options */}
+                  {isExpanded && (
+                    <div className="label-options-popup">
+                      {LABEL_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.label}
+                          className="label-option-pill"
+                          style={{ '--pill-color': opt.color }}
+                          onClick={() => handleLabelSelect(wallet.address, opt.label)}
+                          disabled={isUpdating}
+                        >
+                          <span className="label-option-emoji">{opt.emoji}</span>
+                          <span className="label-option-name">{opt.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
+            )
+          })
         )}
       </div>
 
@@ -477,6 +555,22 @@ function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh }) {
           Manage in Settings
         </button>
       </div>
+
+      {/* Pro Feature Popup */}
+      {showProPopup && (
+        <ProFeaturePopup
+          onLearnMore={handleProLearnMore}
+          onClose={() => setShowProPopup(false)}
+        />
+      )}
+
+      {/* Success Toast */}
+      {successToast && (
+        <SuccessToast
+          message={successToast}
+          onClose={() => setSuccessToast(null)}
+        />
+      )}
     </div>
   )
 }
