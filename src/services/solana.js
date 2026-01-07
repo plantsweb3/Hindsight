@@ -10,7 +10,7 @@ export async function analyzeWallet(walletAddress, onProgress) {
     throw new Error('Invalid Solana wallet address')
   }
 
-  onProgress?.('Fetching transactions...')
+  onProgress?.('Fetching full trade history (this may take 30-60 seconds)...')
 
   const response = await fetch(`${API_URL}/analyze`, {
     method: 'POST',

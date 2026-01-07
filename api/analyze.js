@@ -497,37 +497,111 @@ export default async function handler(req, res) {
   try {
     const connection = new Connection(RPC_URL, 'confirmed')
     const pubkey = new PublicKey(walletAddress)
-    const signatures = await connection.getSignaturesForAddress(pubkey, { limit: 100 })
-    console.log(`Found ${signatures.length} transactions`)
 
-    if (!signatures.length) {
+    // Fetch transaction history with pagination
+    // Default to fetching up to 1000 transactions (10 pages of 100)
+    const MAX_SIGNATURES = 1000
+    const PAGE_SIZE = 100
+    let allSignatures = []
+    let lastSignature = null
+    let pageCount = 0
+
+    console.log(`Fetching transaction history (up to ${MAX_SIGNATURES} transactions)...`)
+
+    while (allSignatures.length < MAX_SIGNATURES) {
+      const options = { limit: PAGE_SIZE }
+      if (lastSignature) {
+        options.before = lastSignature
+      }
+
+      const signatures = await connection.getSignaturesForAddress(pubkey, options)
+
+      if (signatures.length === 0) {
+        console.log(`No more transactions found after page ${pageCount}`)
+        break
+      }
+
+      allSignatures = [...allSignatures, ...signatures]
+      lastSignature = signatures[signatures.length - 1].signature
+      pageCount++
+
+      console.log(`Page ${pageCount}: fetched ${signatures.length} sigs, total: ${allSignatures.length}`)
+
+      // If we got fewer than PAGE_SIZE, we've reached the end
+      if (signatures.length < PAGE_SIZE) {
+        console.log(`Reached end of history (got ${signatures.length} < ${PAGE_SIZE})`)
+        break
+      }
+
+      // Small delay to avoid rate limiting
+      if (allSignatures.length < MAX_SIGNATURES) {
+        await new Promise(r => setTimeout(r, 100))
+      }
+    }
+
+    console.log(`Found ${allSignatures.length} total transactions across ${pageCount} pages`)
+
+    // Calculate date range of history
+    let oldestDate = null
+    let newestDate = null
+    if (allSignatures.length > 0) {
+      newestDate = allSignatures[0].blockTime ? new Date(allSignatures[0].blockTime * 1000) : null
+      oldestDate = allSignatures[allSignatures.length - 1].blockTime
+        ? new Date(allSignatures[allSignatures.length - 1].blockTime * 1000)
+        : null
+    }
+
+    const historyDays = oldestDate && newestDate
+      ? Math.ceil((newestDate - oldestDate) / (1000 * 60 * 60 * 24))
+      : 0
+
+    console.log(`History spans ${historyDays} days`)
+
+    if (!allSignatures.length) {
       return res.json({
         walletAddress,
-        stats: { totalTransactions: 0, dexTrades: 0 },
+        stats: { totalTransactions: 0, dexTrades: 0, historyDays: 0 },
         trades: []
       })
     }
 
     const trades = []
 
-    for (let i = 0; i < signatures.length; i++) {
-      try {
-        const tx = await connection.getParsedTransaction(signatures[i].signature, {
-          maxSupportedTransactionVersion: 0,
-        })
+    // Process transactions in batches to avoid overwhelming the RPC
+    const BATCH_SIZE = 20
+    for (let i = 0; i < allSignatures.length; i += BATCH_SIZE) {
+      const batch = allSignatures.slice(i, i + BATCH_SIZE)
+      const batchPromises = batch.map(async (sig, idx) => {
+        try {
+          const tx = await connection.getParsedTransaction(sig.signature, {
+            maxSupportedTransactionVersion: 0,
+          })
 
-        if (tx && isDexTx(tx)) {
-          const swap = parseSwap(tx, walletAddress)
-          if (swap) {
-            trades.push(swap)
+          if (tx && isDexTx(tx)) {
+            const swap = parseSwap(tx, walletAddress)
+            if (swap) {
+              return swap
+            }
           }
+        } catch (err) {
+          console.warn(`Error fetching tx ${i + idx}: ${err.message}`)
         }
-      } catch (err) {
-        console.warn(`Error fetching tx ${i}: ${err.message}`)
+        return null
+      })
+
+      const results = await Promise.all(batchPromises)
+      trades.push(...results.filter(Boolean))
+
+      if (i + BATCH_SIZE < allSignatures.length) {
+        // Progress log every 100 txs
+        if ((i + BATCH_SIZE) % 100 === 0) {
+          console.log(`Processed ${i + BATCH_SIZE}/${allSignatures.length} transactions, found ${trades.length} trades`)
+        }
+        await new Promise(r => setTimeout(r, 50))
       }
     }
 
-    console.log(`Found ${trades.length} DEX trades`)
+    console.log(`Found ${trades.length} DEX trades from ${allSignatures.length} transactions (${historyDays} days)`)
 
     // Resolve token names
     const allMints = trades.flatMap(t => t.changes.map(c => c.mint))
@@ -553,10 +627,13 @@ export default async function handler(req, res) {
     const result = {
       walletAddress,
       stats: {
-        totalTransactions: signatures.length,
+        totalTransactions: allSignatures.length,
         dexTrades: trades.length,
         buys: trades.filter(t => t.type === 'buy').length,
         sells: trades.filter(t => t.type === 'sell').length,
+        historyDays,
+        oldestTradeDate: oldestDate?.toISOString() || null,
+        newestTradeDate: newestDate?.toISOString() || null,
         ...pnlStats,
         ...openPositions.summary,
       },

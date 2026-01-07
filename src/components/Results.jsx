@@ -374,6 +374,16 @@ export default function Results({ analysis, stats, onReset, isAuthenticated, onS
             <StatCard label="Sells" value={stats.sells} />
             <StatCard label="Win Rate" value={analysis.winRate} highlight />
           </div>
+          {/* History Depth Indicator */}
+          {stats.historyDays > 0 && (
+            <div className="history-indicator">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" />
+              </svg>
+              Analyzed {stats.totalTransactions} transactions from {stats.historyDays} days of history
+            </div>
+          )}
         </section>
 
         {/* Hold Time Card */}

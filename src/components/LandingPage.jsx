@@ -447,7 +447,7 @@ function FAQSection() {
     },
     {
       question: 'How accurate is the analysis?',
-      answer: 'The PnL calculations are 100% accurate—they\'re based on actual on-chain data. The behavioral analysis uses AI pattern matching which is highly accurate for common patterns, though interpretation may vary for edge cases.',
+      answer: 'Each analysis pulls your last 1,000 transactions directly from on-chain data. PnL calculations are based on actual blockchain transactions. Pro accounts get regular analysis with history saved over time, building a more complete picture of your trading patterns. The behavioral analysis uses AI pattern matching which is highly accurate for common patterns, though interpretation may vary for edge cases.',
     },
   ]
 
