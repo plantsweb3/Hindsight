@@ -1156,7 +1156,11 @@ input, button {
     padding: 4rem 1.5rem;
   }
 
-  /* Hero logo mobile */
+  /* Hero section mobile */
+  .hero-section {
+    padding-top: 100px;
+  }
+
   .hero-logo {
     margin-bottom: 1.5rem;
   }
