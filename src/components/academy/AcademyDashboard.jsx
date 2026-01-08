@@ -2,6 +2,167 @@ import { useState, useEffect } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 
+// Tab configuration
+const ACADEMY_TABS = [
+  { id: 'trading-101', label: 'Trading 101' },
+  { id: 'by-archetype', label: 'Learn by Archetype' }
+]
+
+// Archetype modules data (ordered by trading frequency, low to high)
+const ARCHETYPE_MODULES = [
+  {
+    id: 'diamond-hands',
+    slug: 'archetype-diamond-hands',
+    title: 'Diamond Hands',
+    subtitle: 'CONVICTION TRADING',
+    description: 'Master the art of holding through volatility and knowing when conviction is justified',
+    icon: '💎',
+    lessonCount: 5,
+    lessons: [
+      'When Conviction Becomes Copium',
+      'Setting Invalidation Points',
+      'Partial Profit-Taking Strategies',
+      'Research Deep Dive Methods',
+      'Case Studies: Hold vs Fold'
+    ]
+  },
+  {
+    id: 'narrative-front-runner',
+    slug: 'archetype-narrative-front-runner',
+    title: 'Narrative Front-Runner',
+    subtitle: 'TREND PREDICTION',
+    description: 'Spot narratives early and time your entries for maximum upside',
+    icon: '🔮',
+    lessonCount: 5,
+    lessons: [
+      'Narrative Lifecycle: Early, Peak, Decay',
+      'Catalyst Timing Strategies',
+      'Building a Narrative Watchlist',
+      'Meta Analysis: Predicting Themes',
+      'Position Sizing for Speculation'
+    ]
+  },
+  {
+    id: 'loss-averse',
+    slug: 'archetype-loss-averse',
+    title: 'Loss Averse',
+    subtitle: 'CAPITAL PROTECTION',
+    description: 'Protect your capital while learning to let winners run',
+    icon: '🛡️',
+    lessonCount: 5,
+    lessons: [
+      'Letting Winners Run',
+      'Trailing Stop Strategies',
+      'Balancing Risk and Reward',
+      'When to Hold Through Volatility',
+      'Building Conviction to Override Fear'
+    ]
+  },
+  {
+    id: 'copy-trader',
+    slug: 'archetype-copy-trader',
+    title: 'Copy Trader',
+    subtitle: 'SMART MONEY FOLLOWING',
+    description: 'Level up from follower to independent thinker with your own edge',
+    icon: '👀',
+    lessonCount: 5,
+    lessons: [
+      'Finding Consistent Winners to Track',
+      'Exit Timing for Copy Trades',
+      'Building Independent Conviction',
+      'Diversifying Your Copy Sources',
+      'From Follower to Leader'
+    ]
+  },
+  {
+    id: 'technical-analyst',
+    slug: 'archetype-technical-analyst',
+    title: 'Technical Analyst',
+    subtitle: 'CHART MASTERY',
+    description: 'Blend TA with memecoin dynamics for better entries and exits',
+    icon: '📊',
+    lessonCount: 5,
+    lessons: [
+      'TA in Memecoins: What Works',
+      'Volume Profile Analysis',
+      'Blending Technical and Narrative',
+      'Support and Resistance in Low-Caps',
+      'Recognizing Manipulation on Charts'
+    ]
+  },
+  {
+    id: 'fomo-trader',
+    slug: 'archetype-fomo-trader',
+    title: 'FOMO Trader',
+    subtitle: 'IMPULSE CONTROL',
+    description: 'Transform fear of missing out into disciplined opportunity selection',
+    icon: '😰',
+    lessonCount: 5,
+    lessons: [
+      'The Psychology of FOMO',
+      'Building a Pre-Entry Checklist',
+      'Opportunity Cost Analysis',
+      'Patience Pays: Waiting for Your Setup',
+      'FOMO vs Conviction: The Difference'
+    ]
+  },
+  {
+    id: 'impulse-trader',
+    slug: 'archetype-impulse-trader',
+    title: 'Impulse Trader',
+    subtitle: 'STRUCTURED INTUITION',
+    description: 'Channel your gut instincts into a systematic edge',
+    icon: '⚡',
+    lessonCount: 5,
+    lessons: [
+      'Building a Pre-Trade Routine',
+      'The 5-Minute Cooling Off Rule',
+      'When Gut Feeling Actually Works',
+      'Finding Patterns in Your Chaos',
+      'From Reactive to Proactive'
+    ]
+  },
+  {
+    id: 'scalper',
+    slug: 'archetype-scalper',
+    title: 'Scalper',
+    subtitle: 'HIGH FREQUENCY',
+    description: 'Maximize your quick-trade edge while avoiding overtrading',
+    icon: '⚔️',
+    lessonCount: 5,
+    lessons: [
+      'Quality Over Quantity',
+      'Fee Optimization Strategies',
+      'Perfect Entry Timing',
+      'Identifying Low-Probability Setups',
+      'Scaling Your Scalping System'
+    ]
+  }
+]
+
+// Map archetype names to module IDs (handle variations)
+function normalizeArchetypeId(archetype) {
+  if (!archetype) return null
+  const normalized = archetype.toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+
+  // Handle common variations
+  const mapping = {
+    'diamondhands': 'diamond-hands',
+    'narrativefrontrunner': 'narrative-front-runner',
+    'lossaverse': 'loss-averse',
+    'copytrader': 'copy-trader',
+    'technicalanalyst': 'technical-analyst',
+    'fomotrader': 'fomo-trader',
+    'impulsetrader': 'impulse-trader',
+    'fomo': 'fomo-trader',
+    'impulse': 'impulse-trader'
+  }
+
+  return mapping[normalized.replace(/-/g, '')] || normalized
+}
+
 function ModuleCard({ module, completedLessons = 0 }) {
   const progress = module.lesson_count > 0
     ? Math.round((completedLessons / module.lesson_count) * 100)
@@ -47,6 +208,32 @@ function ModuleCard({ module, completedLessons = 0 }) {
   )
 }
 
+function ArchetypeCard({ archetype, isUserArchetype = false }) {
+  return (
+    <Link
+      to={`/academy/${archetype.slug}`}
+      className={`module-card archetype-card glass-card ${isUserArchetype ? 'user-archetype' : ''}`}
+    >
+      {isUserArchetype && (
+        <div className="user-archetype-badge">
+          YOUR ARCHETYPE
+        </div>
+      )}
+      <div className="module-card-header">
+        <div className="module-card-icon">
+          <span>{archetype.icon}</span>
+        </div>
+      </div>
+      <h3 className="module-card-title">{archetype.title}</h3>
+      <p className="archetype-card-subtitle">{archetype.subtitle}</p>
+      <p className="module-card-desc">{archetype.description}</p>
+      <div className="module-card-meta">
+        <span className="module-lesson-count">{archetype.lessonCount} lessons</span>
+      </div>
+    </Link>
+  )
+}
+
 function RecommendedLesson({ lesson }) {
   return (
     <Link
@@ -74,6 +261,17 @@ export default function AcademyDashboard() {
   const [progress, setProgress] = useState({})
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+
+  // Tab state with localStorage persistence
+  const [activeTab, setActiveTab] = useState(() => {
+    const saved = localStorage.getItem('academy_active_tab')
+    return saved && ACADEMY_TABS.some(t => t.id === saved) ? saved : 'trading-101'
+  })
+
+  // Update localStorage when tab changes
+  useEffect(() => {
+    localStorage.setItem('academy_active_tab', activeTab)
+  }, [activeTab])
 
   useEffect(() => {
     fetchData()
@@ -125,6 +323,19 @@ export default function AcademyDashboard() {
     }
   }
 
+  // Get user's archetype
+  const userArchetypeId = normalizeArchetypeId(user?.primaryArchetype || user?.primary_archetype)
+
+  // Reorder archetype modules to put user's archetype first
+  const orderedArchetypeModules = [...ARCHETYPE_MODULES]
+  if (userArchetypeId) {
+    const userIndex = orderedArchetypeModules.findIndex(m => m.id === userArchetypeId)
+    if (userIndex > 0) {
+      const [userModule] = orderedArchetypeModules.splice(userIndex, 1)
+      orderedArchetypeModules.unshift(userModule)
+    }
+  }
+
   // Calculate overall progress
   const totalLessons = modules.reduce((sum, m) => sum + (m.lesson_count || 0), 0)
   const completedLessons = Object.values(progress).reduce((sum, count) => sum + count, 0)
@@ -170,45 +381,111 @@ export default function AcademyDashboard() {
         )}
       </section>
 
-      {/* Recommended Section (if authenticated with recommendations) */}
-      {isAuthenticated && recommended.length > 0 && (
-        <section className="academy-section">
-          <h2 className="academy-section-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
-            Recommended for You
-          </h2>
-          <p className="academy-section-desc">
-            Based on your {user?.primaryArchetype ? `${user.primaryArchetype} archetype` : 'trading style'}
-          </p>
-          <div className="recommended-grid">
-            {recommended.slice(0, 3).map(lesson => (
-              <RecommendedLesson key={lesson.id} lesson={lesson} />
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Tab Navigation */}
+      <div className="academy-tabs">
+        {ACADEMY_TABS.map(tab => (
+          <button
+            key={tab.id}
+            className={`academy-tab ${activeTab === tab.id ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-      {/* All Modules */}
-      <section className="academy-section">
-        <h2 className="academy-section-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-            <path d="M6 12v5c3 3 9 3 12 0v-5" />
-          </svg>
-          All Modules
-        </h2>
-        <div className="modules-grid">
-          {modules.map(module => (
-            <ModuleCard
-              key={module.id}
-              module={module}
-              completedLessons={progress[module.id] || 0}
-            />
-          ))}
-        </div>
-      </section>
+      {/* Tab Content */}
+      <div className="academy-tab-content">
+        {/* Trading 101 Tab */}
+        {activeTab === 'trading-101' && (
+          <>
+            {/* Recommended Section (if authenticated with recommendations) */}
+            {isAuthenticated && recommended.length > 0 && (
+              <section className="academy-section">
+                <h2 className="academy-section-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                  Recommended for You
+                </h2>
+                <p className="academy-section-desc">
+                  Based on your {user?.primaryArchetype || user?.primary_archetype ? `${user.primaryArchetype || user.primary_archetype} archetype` : 'trading style'}
+                </p>
+                <div className="recommended-grid">
+                  {recommended.slice(0, 3).map(lesson => (
+                    <RecommendedLesson key={lesson.id} lesson={lesson} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Trading 101 Modules */}
+            <section className="academy-section">
+              <div className="modules-grid">
+                {modules.map(module => (
+                  <ModuleCard
+                    key={module.id}
+                    module={module}
+                    completedLessons={progress[module.id] || 0}
+                  />
+                ))}
+              </div>
+            </section>
+          </>
+        )}
+
+        {/* Learn by Archetype Tab */}
+        {activeTab === 'by-archetype' && (
+          <section className="academy-section">
+            {/* Quiz CTA for users without archetype */}
+            {isAuthenticated && !userArchetypeId && (
+              <div className="archetype-quiz-cta glass-card">
+                <div className="quiz-cta-content">
+                  <span className="quiz-cta-icon">🎯</span>
+                  <div className="quiz-cta-text">
+                    <h3>Discover Your Trading Personality</h3>
+                    <p>Take the archetype quiz to get personalized learning recommendations</p>
+                  </div>
+                </div>
+                <Link to="/" className="quiz-cta-btn">
+                  Take the Quiz
+                </Link>
+              </div>
+            )}
+
+            {!isAuthenticated && (
+              <div className="archetype-quiz-cta glass-card">
+                <div className="quiz-cta-content">
+                  <span className="quiz-cta-icon">🎯</span>
+                  <div className="quiz-cta-text">
+                    <h3>Get Personalized Recommendations</h3>
+                    <p>Sign in and take the personality quiz to highlight your archetype</p>
+                  </div>
+                </div>
+                <Link to="/" className="quiz-cta-btn">
+                  Sign In
+                </Link>
+              </div>
+            )}
+
+            {/* Archetype description */}
+            <p className="archetype-section-desc">
+              Deep-dive lessons tailored to your trading personality. Each archetype module addresses specific strengths to leverage and weaknesses to overcome.
+            </p>
+
+            {/* Archetype Modules Grid */}
+            <div className="modules-grid archetype-grid">
+              {orderedArchetypeModules.map(archetype => (
+                <ArchetypeCard
+                  key={archetype.id}
+                  archetype={archetype}
+                  isUserArchetype={archetype.id === userArchetypeId}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
 
       {/* CTA for non-authenticated users */}
       {!isAuthenticated && (

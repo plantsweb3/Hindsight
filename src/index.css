@@ -9125,6 +9125,164 @@ input, button {
   opacity: 0.9;
 }
 
+/* Academy Tabs */
+.academy-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.academy-tab {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #a1a1aa;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.academy-tab:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.academy-tab.active {
+  color: #fff;
+  border-bottom-color: #8b5cf6;
+}
+
+.academy-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+}
+
+.academy-tab-content {
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Archetype Cards */
+.archetype-grid {
+  margin-top: 1rem;
+}
+
+.archetype-card {
+  position: relative;
+}
+
+.archetype-card-subtitle {
+  font-size: 0.7rem;
+  color: #22c55e;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.1em;
+}
+
+/* User's Archetype Highlight */
+.archetype-card.user-archetype {
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.15),
+              inset 0 0 30px rgba(34, 197, 94, 0.03);
+}
+
+.archetype-card.user-archetype:hover {
+  border-color: rgba(34, 197, 94, 0.6);
+  box-shadow: 0 0 30px rgba(34, 197, 94, 0.25),
+              inset 0 0 30px rgba(34, 197, 94, 0.05);
+}
+
+.user-archetype-badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2));
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  border-radius: 4px;
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: #22c55e;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Archetype Section Description */
+.archetype-section-desc {
+  color: #a1a1aa;
+  font-size: 0.9375rem;
+  margin-bottom: 1rem;
+  max-width: 600px;
+}
+
+/* Archetype Quiz CTA */
+.archetype-quiz-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.quiz-cta-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.quiz-cta-icon {
+  font-size: 2rem;
+}
+
+.quiz-cta-text h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.quiz-cta-text p {
+  font-size: 0.875rem;
+  color: #a1a1aa;
+}
+
+.quiz-cta-btn {
+  flex-shrink: 0;
+  padding: 0.625rem 1.25rem;
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.quiz-cta-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
 /* Recommended Cards */
 .recommended-grid {
   display: grid;
@@ -9698,6 +9856,31 @@ input, button {
   .modules-grid,
   .recommended-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Tabs Mobile */
+  .academy-tabs {
+    margin-bottom: 1.5rem;
+  }
+
+  .academy-tab {
+    padding: 0.875rem 0.5rem;
+    font-size: 0.9375rem;
+  }
+
+  /* Archetype Quiz CTA Mobile */
+  .archetype-quiz-cta {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.25rem 1rem;
+  }
+
+  .quiz-cta-content {
+    flex-direction: column;
+  }
+
+  .quiz-cta-btn {
+    width: 100%;
   }
 
   .module-header {
