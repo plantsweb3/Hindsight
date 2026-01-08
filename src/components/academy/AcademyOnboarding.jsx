@@ -5,104 +5,104 @@ import { useAuth } from '../../contexts/AuthContext'
 // Placement test questions
 const PLACEMENT_QUESTIONS = [
   {
-    question: "What does it mean when a token has 'liquidity locked'?",
+    question: "What happens when a pump.fun token 'graduates'?",
     options: [
-      "The developer can't remove trading liquidity",
-      "You can't sell the token",
-      "The price is fixed",
-      "Trading is paused"
+      "The developer gets paid out",
+      "Trading is disabled for 24 hours",
+      "The token gets verified on Solscan",
+      "It migrates to Raydium with a real liquidity pool"
+    ],
+    correct: 3
+  },
+  {
+    question: "What's a 'bonding curve' on pump.fun?",
+    options: [
+      "Pricing mechanism where price increases as supply is bought",
+      "A chart pattern showing reversal",
+      "The max supply of a token",
+      "A type of limit order"
     ],
     correct: 0
   },
   {
-    question: "What is 'market cap' in crypto?",
+    question: "You see a token where the top 10 wallets hold 40% of supply. This is:",
     options: [
-      "The maximum price a token can reach",
-      "Total value of all circulating tokens",
-      "The amount of money in the liquidity pool",
-      "The developer's profit"
+      "A great sign of distribution",
+      "A potential red flag for coordinated dumps",
+      "Required for pump.fun graduation",
+      "Impossible on Solana"
     ],
     correct: 1
   },
   {
-    question: "What's a common red flag for a potential rug pull?",
+    question: "What does it mean when wallets are 'bundled'?",
     options: [
-      "Active GitHub repository",
-      "Doxxed team members",
-      "Unlocked team tokens with no vesting",
-      "Multiple exchange listings"
+      "Wallets that are staking together",
+      "A type of airdrop distribution",
+      "Multiple wallets controlled by the same person, often the dev",
+      "Wallets connected to an exchange"
     ],
     correct: 2
   },
   {
-    question: "What does 'DYOR' stand for?",
+    question: "A coin starts pumping right after 3 mid-tier CT accounts post about it simultaneously. Most likely explanation:",
     options: [
-      "Do Your Own Research",
-      "Double Your Own Returns",
-      "Decide Your Own Risk",
-      "Download Your Own Records"
+      "They all found it organically",
+      "It's definitely going higher",
+      "The dev is doxxed and trusted",
+      "Paid promotion or coordinated pump, be cautious on entry"
+    ],
+    correct: 3
+  },
+  {
+    question: "What's the main advantage of using Photon or Bullx over Jupiter?",
+    options: [
+      "Speed, wallet tracking, and advanced order types",
+      "Lower fees",
+      "They have more tokens listed",
+      "Better customer support"
     ],
     correct: 0
   },
   {
-    question: "If a token drops 50%, how much gain do you need to break even?",
+    question: "You find a wallet that's hit 5 coins in a row early. Best move is:",
     options: [
-      "50%",
-      "75%",
-      "100%",
-      "150%"
+      "Copy every trade they make immediately",
+      "DM them for alpha",
+      "Track them but verify their entries make sense for your strategy",
+      "Assume they're an insider and avoid"
     ],
     correct: 2
   },
   {
-    question: "What is a 'stop loss'?",
+    question: "A narrative is 'cooked' when:",
     options: [
-      "A fee for selling too quickly",
-      "An automatic sell order at a preset price",
-      "The maximum amount you can lose in a day",
-      "A type of trading bot"
+      "It's brand new and untested",
+      "It's been overplayed and most gains have been extracted",
+      "The main token rugged",
+      "CT influencers are ignoring it"
     ],
     correct: 1
   },
   {
-    question: "What does high trading volume usually indicate?",
+    question: "You're up 5x on a position. Best risk management practice:",
     options: [
-      "The token is about to crash",
-      "Strong interest and liquidity",
-      "The developer is selling",
-      "A bug in the smart contract"
+      "Sell some to secure profits, let the rest ride",
+      "Hold everything for 100x",
+      "Add more since it's clearly going higher",
+      "Set a stop loss at your entry"
     ],
-    correct: 1
+    correct: 0
   },
   {
-    question: "What's 'slippage' in a DEX trade?",
+    question: "What's the most reliable way to find coins before they pump?",
     options: [
-      "The fee taken by the exchange",
-      "Price difference between expected and actual execution",
-      "The time delay in transaction confirmation",
-      "A type of trading error"
+      "Following CT influencers' calls",
+      "Buying everything on pump.fun trending",
+      "Waiting for Dexscreener trending",
+      "Tracking smart wallets and understanding why they're buying"
     ],
-    correct: 1
-  },
-  {
-    question: "What's the purpose of taking partial profits?",
-    options: [
-      "To pay lower taxes",
-      "To reduce risk while maintaining upside exposure",
-      "To confuse other traders",
-      "It's required by most exchanges"
-    ],
-    correct: 1
-  },
-  {
-    question: "What does 'diamond hands' typically mean?",
-    options: [
-      "Selling at the first sign of profit",
-      "Only buying expensive tokens",
-      "Holding through volatility without selling",
-      "A type of wallet security"
-    ],
-    correct: 2
+    correct: 3
   }
 ]
 
