@@ -396,24 +396,35 @@ export default async function handler(req, res) {
         }
       }
 
-      // Update streak on quiz activity
-      await updateStreak(user.id)
+      // Wrap DB operations in try-catch for better error messages
+      let bestScoreResult, xpToAward, xpResult, updatedProgress
+      try {
+        // Update streak on quiz activity
+        await updateStreak(user.id)
 
-      // Get XP to award (handles retakes - only awards difference)
-      const bestScoreResult = await updateQuizBestScore(user.id, quizId, score, potentialXp)
-      const xpToAward = bestScoreResult.xpToAward
+        // Get XP to award (handles retakes - only awards difference)
+        bestScoreResult = await updateQuizBestScore(user.id, quizId, score, potentialXp)
+        xpToAward = bestScoreResult.xpToAward
 
-      // Record the attempt
-      await recordQuizAttempt(user.id, quizId, score, totalQuestions, passed, perfect, xpToAward, answers)
+        // Record the attempt
+        await recordQuizAttempt(user.id, quizId, score, totalQuestions, passed, perfect, xpToAward, answers)
 
-      // Award XP if any
-      let xpResult = null
-      if (xpToAward > 0) {
-        xpResult = await addUserXp(user.id, xpToAward, LEVEL_THRESHOLDS)
+        // Award XP if any
+        xpResult = null
+        if (xpToAward > 0) {
+          xpResult = await addUserXp(user.id, xpToAward, LEVEL_THRESHOLDS)
+        }
+
+        // Get updated progress
+        updatedProgress = await getUserXpProgress(user.id)
+      } catch (dbError) {
+        console.error('Quiz submission DB error:', dbError)
+        return res.status(500).json({
+          error: 'Database error during quiz submission',
+          details: dbError.message,
+          hint: 'Try force reseeding the database at /salveregina'
+        })
       }
-
-      // Get updated progress
-      const updatedProgress = await getUserXpProgress(user.id)
 
       return res.status(200).json({
         score,

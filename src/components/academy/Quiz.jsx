@@ -87,11 +87,11 @@ export default function Quiz({ quiz, onComplete, onClose, isModuleTest = false }
         }),
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to submit quiz')
-      }
-
       const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.details || data.error || 'Failed to submit quiz')
+      }
       setResults(data)
 
       if (onComplete) {
