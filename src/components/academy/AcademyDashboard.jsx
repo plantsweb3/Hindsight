@@ -596,6 +596,7 @@ export default function AcademyDashboard() {
 
   const [modules, setModules] = useState([])
   const [archetypeModule, setArchetypeModule] = useState(null)
+  const [recommendedLessons, setRecommendedLessons] = useState([])
   const [progress, setProgress] = useState({})
   const [xpProgress, setXpProgress] = useState(null)
   const [levelInfo, setLevelInfo] = useState(null)
@@ -639,7 +640,8 @@ export default function AcademyDashboard() {
         const fetchPromises = [
           fetch('/api/academy/progress', { headers }),
           fetch('/api/academy/xp-progress', { headers }),
-          fetch('/api/academy/achievements', { headers })
+          fetch('/api/academy/achievements', { headers }),
+          fetch('/api/academy/recommended', { headers })
         ]
 
         // Fetch archetype module if user has an archetype
@@ -648,7 +650,7 @@ export default function AcademyDashboard() {
         }
 
         const results = await Promise.all(fetchPromises)
-        const [progressRes, xpProgressRes, achievementsRes, archetypeModuleRes] = results
+        const [progressRes, xpProgressRes, achievementsRes, recommendedRes, archetypeModuleRes] = results
 
         if (progressRes.ok) {
           const progressData = await progressRes.json()
@@ -674,6 +676,11 @@ export default function AcademyDashboard() {
         if (achievementsRes.ok) {
           const achievementsData = await achievementsRes.json()
           setAchievements(achievementsData.achievements || [])
+        }
+
+        if (recommendedRes.ok) {
+          const recommendedData = await recommendedRes.json()
+          setRecommendedLessons(recommendedData.lessons || [])
         }
 
         // Set archetype module data
@@ -709,6 +716,10 @@ export default function AcademyDashboard() {
     // Fall back to first archetype lesson if available
     if (archetypeModule?.lessons?.[0]) {
       return { module_slug: archetypeModule.slug, slug: archetypeModule.lessons[0].slug }
+    }
+    // Fall back to recommended lessons
+    if (recommendedLessons?.[0]) {
+      return { module_slug: recommendedLessons[0].module_slug, slug: recommendedLessons[0].slug }
     }
     return null
   }
@@ -853,7 +864,7 @@ export default function AcademyDashboard() {
                 />
 
                 {/* Recommended for Your Archetype */}
-                {archetypeModule && archetypeModule.lessons?.length > 0 && (
+                {archetypeModule && archetypeModule.lessons?.length > 0 ? (
                   <section className="archetype-recommended-section">
                     <h3 className="section-header">
                       Recommended for {userArchetypeDisplay}s
@@ -872,6 +883,21 @@ export default function AcademyDashboard() {
                         lessonCount={archetypeModule.lessons.length}
                         icon={archetypeModule.icon || '📚'}
                       />
+                    </div>
+                  </section>
+                ) : recommendedLessons.length > 0 && (
+                  <section className="archetype-recommended-section">
+                    <h3 className="section-header">
+                      Recommended for {userArchetypeDisplay}s
+                    </h3>
+                    <div className="archetype-lessons-grid">
+                      {recommendedLessons.slice(0, 3).map(lesson => (
+                        <ArchetypeLessonCard
+                          key={lesson.id}
+                          lesson={lesson}
+                          moduleSlug={lesson.module_slug}
+                        />
+                      ))}
                     </div>
                   </section>
                 )}
