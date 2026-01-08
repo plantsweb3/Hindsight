@@ -18,80 +18,57 @@ export const narrativeFrontRunnerModule = {
       order: 1,
       content: `# What Is Narrative Trading?
 
-## Why Stories Move Markets
+In crypto, narratives move markets. A narrative is a story that captures attention and drives capital flow - it's the "why" behind why people ape into a token.
 
-In memecoins, fundamentals don't matter the way they do in traditional markets. There's no revenue, no earnings reports, no P/E ratios. What moves these markets is **narrative** - the stories people tell themselves about why a token will go up.
+## Why Narratives Matter More Than Fundamentals
 
-## The Power of Collective Belief
+Traditional markets care about revenue, P/E ratios, and earnings. Crypto - especially memecoins - runs on stories, memes, and collective belief.
 
-When enough people believe in a story, it becomes a self-fulfilling prophecy. The belief creates buying pressure, which creates price action, which attracts more believers.
-
-This isn't irrational - it's how all markets work at some level. The difference with memecoins is that narrative is the *only* thing that matters.
+Consider: Dogecoin has no utility, no roadmap, no revenue. Yet it reached a $90B market cap. Why? The narrative: "The people's crypto," Elon tweets, the underdog story.
 
 ## The Narrative Lifecycle
 
 Every narrative follows a predictable pattern:
 
-### Phase 1: Emergence
-- Small group discovers something interesting
-- Whispers in private chats
-- Smart money starts positioning
+1. **Emergence** - A new idea surfaces (AI agents, political tokens, animal metas)
+2. **Early Adoption** - Smart money and degens find it first
+3. **Viral Spread** - CT picks it up, threads get written, influencers shill
+4. **Peak Hype** - Everyone's talking about it, your Uber driver asks about it
+5. **Exhaustion** - Attention moves on, bagholders are made
 
-### Phase 2: Early Adoption
-- Narrative starts spreading to wider circles
-- First wave of Twitter threads
-- Price begins moving
-
-### Phase 3: Viral Spread
-- Mainstream Crypto Twitter catches on
-- FOMO kicks in
-- Parabolic price action
-
-### Phase 4: Peak Hype
-- Everyone talking about it
-- Your non-crypto friends asking about it
-- Media coverage
-
-### Phase 5: Exhaustion
-- Narrative fatigue sets in
-- Smart money exits
-- Bag holders created
+Your edge as a Narrative Front Runner: Catch phases 1-2, ride through 3, exit before 5.
 
 ## Types of Narratives
 
-### Macro Narratives (Weeks to Months)
-- AI tokens meta
-- Gaming/metaverse seasons
-- L1/L2 rotation
+**Macro Narratives** (last weeks to months)
+- AI tokens
+- Real World Assets (RWA)
+- Political/election tokens
+- Chain ecosystems (Solana summer, Base season)
 
-### Micro Narratives (Days to Weeks)
-- Specific project launches
-- Partnership announcements
-- Ecosystem developments
+**Micro Narratives** (last days to weeks)
+- Specific metas (dog coins, cat coins, food tokens)
+- Event-driven (Elon tweets, regulatory news)
+- Copycat plays (every AI launch after GOAT)
 
-### Flash Narratives (Hours to Days)
-- Elon tweets
-- Breaking news
-- Viral moments
+**Flash Narratives** (last hours)
+- Breaking news plays
+- Viral tweet responses
+- Celebrity mentions
 
-## Your Edge as a Narrative Front Runner
+## The Narrative Front Runner's Advantage
 
-Your archetype is built for this. You:
-- Spot patterns before others see them
-- Understand what makes narratives spread
-- Can time entries at optimal phases
+You're naturally good at:
+- Pattern recognition across markets
+- Connecting dots others miss
+- Moving fast when you see signal
 
-But your weakness is **FOMO** - entering narratives too late when you feel you're missing out. We'll address this throughout the module.
+Your challenge:
+- Not every narrative plays out
+- Being early can mean being wrong
+- FOMO into late-stage narratives
 
-## Key Takeaway
-
-Narrative trading isn't about predicting which stories will emerge. It's about:
-1. Recognizing narratives early
-2. Evaluating their strength
-3. Timing your entry correctly
-4. Knowing when to exit
-
-Master these four skills, and you'll consistently capture the best moves.`
+The rest of this module will teach you to refine these instincts into a systematic edge.`
     },
     {
       id: 'nfr-2',
@@ -103,114 +80,89 @@ Master these four skills, and you'll consistently capture the best moves.`
       order: 2,
       content: `# Finding Narratives Before They Trend
 
+The money is made by being early. But how do you find narratives before everyone else? You need to know where to look and what signals matter.
+
 ## The Information Hierarchy
 
-Not all information sources are created equal. There's a clear hierarchy in terms of when you'll hear about narratives:
+Not all sources are equal. Here's the pecking order:
 
-### Tier 1: First to Know (Hours/Days Early)
-- On-chain data (whale wallet movements)
-- Private Telegram/Discord alpha groups
-- Developer channels and GitHub activity
-- Smart money Twitter accounts (the ones that don't shill)
+**Tier 1: Primary Sources (First to know)**
+- On-chain data (new token deploys, whale wallets moving)
+- Telegram alpha groups (paid and private)
+- Discord servers of builders
+- Direct relationships with devs/KOLs
 
-### Tier 2: Early but Not First (Days Early)
-- Quality CT (Crypto Twitter) researchers
-- Smaller Discord communities
-- Niche newsletters
+**Tier 2: Fast Followers (Minutes to hours behind)**
+- Crypto Twitter lists of smart accounts
+- Dexscreener/Birdeye trending (filtered properly)
+- Telegram channel aggregators
 
-### Tier 3: Already Moving (You're Late)
-- Mainstream CT timeline
-- Reddit frontpage
-- YouTube crypto channels
+**Tier 3: Mass Awareness (Hours to days behind)**
+- Main CT timeline
+- YouTube videos
 - News articles
+- Reddit frontpage
 
-**Rule of thumb**: By the time you see it on your timeline without looking for it, the easy money is gone.
+By the time something hits Tier 3, the early move is done. You're either taking profit or becoming exit liquidity.
 
-## Building Your Information Edge
+## Building Your Radar
 
-### 1. On-Chain Monitoring
+### Twitter Lists (Essential)
 
-Smart money leaves tracks. Set up alerts for:
-- Wallets with good track records buying new tokens
-- Sudden volume spikes on low-cap tokens
-- New liquidity being added to pools
-- Unusual token transfers from known wallets
+Create separate lists:
+- **Smart Money** - Wallets/accounts that are consistently early
+- **Builders** - Devs who ship and announce projects
+- **Meta Callers** - People who identify trends early (not shillers)
+- **Counter-Signals** - Accounts that mark tops (when they shill, you sell)
 
-Tools: Nansen, Arkham, Cielo, custom Dune dashboards
+### On-Chain Tools
 
-### 2. Social Listening
+- **Birdeye/DexScreener** - New pairs, but filter heavily
+- **Cielo/Nansen** - Whale wallet tracking
+- **Pump.fun** - Watch what's graduating, not what's launching
+- **Bubblemaps** - Check holder distribution before aping
 
-Follow people who find things early, not people who comment on things late.
+### Telegram
 
-**Green flags for accounts to follow:**
-- Posts about tokens BEFORE they pump
-- Shares thesis, not just "this will moon"
-- Has a track record you can verify
-- Doesn't constantly shill (selectivity matters)
+- Join 3-5 quality alpha groups (paid is usually better signal)
+- Mute notifications, check 3x daily at set times
+- Note: 90% of calls are garbage, you're looking for pattern recognition
 
-**Red flags:**
-- Only posts after pumps
-- Paid promotions
-- No thesis, just price targets
-- Deletes wrong calls
+## Signal vs. Noise
 
-### 3. Community Immersion
+**Strong Signals (Pay Attention)**
+- Multiple smart wallets buying the same token
+- A narrative connecting to real-world events
+- Organic community forming (not bought engagement)
+- Dev has track record of successful launches
+- Token surviving multiple dips with holder count growing
 
-Join communities where narratives emerge:
-- Project-specific Discords (especially emerging projects)
-- Alpha Telegram groups (be selective)
-- Developer-focused communities
-
-The key is **listening, not talking**. You're there to absorb information, not to contribute noise.
+**Weak Signals (Usually Noise)**
+- Single influencer shill
+- "Next 100x" claims
+- Airdrop farming activity
+- High follower accounts with low engagement
+- Paid promotion/sponsored content
 
 ## The 3-Source Rule
 
-Before entering any narrative trade, confirm across three sources:
+Before entering any narrative play, confirm with 3 independent sources:
 
-1. **On-chain**: Is smart money actually buying?
-2. **Social**: Is organic discussion growing (not just paid shills)?
-3. **Logical**: Does this narrative make sense? Is there a real catalyst?
+1. **On-chain** - Smart wallets are actually buying
+2. **Social** - Organic discussion happening (not just paid shills)
+3. **Logical** - The narrative makes sense and has room to grow
 
-If you can't confirm all three, reduce size or skip the trade.
+If you can't check all 3 boxes, reduce size or skip entirely.
 
-## Pattern Recognition
+## Timing Your Radar Checks
 
-Narratives often follow similar patterns:
+Narratives don't wait. Build a routine:
 
-### The "Next [Successful Thing]" Pattern
-- "Next PEPE"
-- "Next BONK"
-- "Solana's version of X"
+- **Morning** (15 min): Check overnight CT, Telegram, new Pump.fun graduates
+- **Midday** (10 min): Dexscreener trending, any breaking news
+- **Evening** (15 min): Deeper research on anything flagged during day
 
-These can work but are often traps. Evaluate whether there's genuine differentiation or just copycatting.
-
-### The External Catalyst Pattern
-- Celebrity involvement
-- News events
-- Technological developments (like ChatGPT launch sparking AI narrative)
-
-### The Rotation Pattern
-- Capital flows between sectors
-- One narrative exhausts, money moves to next
-- Often follows a logical progression
-
-## Timing Your Research
-
-Set specific times to check for narratives rather than constantly scrolling:
-- Morning scan: On-chain alerts, overnight developments
-- Midday check: Social sentiment, emerging discussions
-- Evening review: What gained traction today?
-
-This prevents information overload while keeping you informed.
-
-## Key Takeaway
-
-Finding narratives early is a skill you develop through:
-1. Building the right information sources
-2. Pattern recognition over time
-3. Disciplined research routines
-
-You don't need to catch every narrative - you need to catch the ones that fit your style and have the best risk/reward.`
+This isn't about being glued to screens 24/7. It's about structured information gathering.`
     },
     {
       id: 'nfr-3',
@@ -222,99 +174,89 @@ You don't need to catch every narrative - you need to catch the ones that fit yo
       order: 3,
       content: `# Evaluating Narrative Strength
 
+Finding a narrative early is only half the battle. You need to evaluate whether it has legs or will fizzle out. Here's a framework for grading narrative strength.
+
 ## The Narrative Strength Framework
 
-Not every narrative deserves your capital. Use this framework to evaluate strength on a 1-5 scale for each factor:
+Rate each factor 1-5, then total the score:
 
-### 1. Simplicity (1-5)
-Can you explain it in one sentence?
-- 5: "Dog coin on Solana" - instantly understandable
-- 3: "AI-powered DeFi aggregator with novel tokenomics"
-- 1: Requires a 10-minute explanation
+### 1. Relatability (Can normies understand it?)
 
-**Why it matters**: Simple narratives spread faster. Complexity creates friction.
+- **5** - Instantly understandable (dogs, AI, Elon)
+- **3** - Needs some explanation but clicks
+- **1** - Only crypto natives get it
 
-### 2. Memeability (1-5)
-How easily can people create content around it?
-- 5: Natural meme potential, easy to remix
-- 3: Some creative potential
-- 1: Hard to visualize or make fun
+Example: "Dog coin" = 5. "Decentralized perpetuals aggregator" = 1.
 
-**Why it matters**: Memes are free marketing. Memeability = organic spread.
+### 2. Memeability (Can it spread?)
 
-### 3. Timing (1-5)
-Is the market ready for this narrative?
-- 5: Perfect timing (relevant event, market sentiment aligned)
-- 3: Good but not perfect timing
-- 1: Too early or narrative already exhausted
+- **5** - Endless meme potential, easy to remix
+- **3** - Some meme angles but limited
+- **1** - Hard to meme, too serious
 
-**Why it matters**: Even great narratives fail with wrong timing.
+Example: PEPE = 5. A governance token = 1.
 
-### 4. Catalyst Strength (1-5)
-How strong is the trigger?
-- 5: Major catalyst (celebrity involvement, massive news)
-- 3: Moderate catalyst (ecosystem development, partnership)
-- 1: No clear catalyst
+### 3. Timeliness (Is there a catalyst?)
 
-**Why it matters**: Catalysts provide entry points and price targets.
+- **5** - Connected to current events/trending topics
+- **3** - Generally relevant but no specific catalyst
+- **1** - No clear reason for "why now"
 
-### 5. Smart Money Interest (1-5)
-Are sophisticated traders buying?
-- 5: Multiple known smart wallets accumulating
-- 3: Some smart money interest
-- 1: Only retail FOMO
+Example: Election tokens during election season = 5.
 
-**Why it matters**: Smart money validates the narrative and provides exit liquidity later.
+### 4. Freshness (Is it new?)
 
-## Scoring Your Narratives
+- **5** - First of its kind, new meta
+- **3** - Fresh take on existing concept
+- **1** - Copy of a copy, derivative
 
-**20-25 points**: Strong conviction play - size up
-**15-19 points**: Good trade - standard position
-**10-14 points**: Weak - small position only
-**Below 10**: Skip or tiny moonbag at best
+Example: First AI agent token = 5. 50th AI agent token = 1.
+
+### 5. Community Potential (Can people identify with it?)
+
+- **5** - Tribal identity, people want to "be" this
+- **3** - Interesting but not identity-forming
+- **1** - No community angle
+
+Example: "Degen" tokens = 5. Generic animal #47 = 1.
+
+## Scoring
+
+- **20-25**: Strong narrative - size up, conviction play
+- **15-19**: Decent narrative - standard position
+- **10-14**: Weak narrative - small size or skip
+- **Below 10**: Skip entirely
+
+## Case Study: Why GOAT Worked
+
+Let's score the GOAT/AI agent narrative when it emerged:
+
+- **Relatability**: 4 - AI is mainstream, "AI making its own crypto" is wild but understandable
+- **Memeability**: 5 - Endless AI memes, "the machines are taking over" jokes
+- **Timeliness**: 5 - AI was the biggest tech narrative of 2024
+- **Freshness**: 5 - First major AI agent token, completely new concept
+- **Community**: 4 - "AI believers" became an identity
+
+**Total: 23/25** - Textbook strong narrative
 
 ## Red Flags That Kill Narratives
 
-Even strong scores can be negated by red flags:
+Even strong-scoring narratives can fail if:
 
-### Instant Disqualifiers
-- Dev has history of rugging
-- Token contract has dangerous functions
-- Top 10 wallets hold 30%+ of supply
-- All early promotion appears to be paid
-
-### Warning Signs (Reduce Size)
-- Narrative already 3+ days old with big pump
-- Only one major promoter pushing it
-- Community seems inorganic (bot activity)
-- Similar narrative failed recently
+- **Rug history** - Dev or team has rugged before
+- **Concentrated supply** - Top 10 wallets hold 30%+
+- **Paid shilling** - All early "organic" posts are bought
+- **No staying power** - Pump and dump with no community forming
+- **Legal risk** - Securities issues, impersonation, copyright
 
 ## The "Explain It To Your Friend" Test
 
-Before entering, try to explain the narrative to an imaginary friend who doesn't follow crypto closely:
+If you can't explain why a narrative matters in one sentence to a non-crypto friend, it's probably too niche.
 
-**Good sign**: "It's a dog-themed coin that's becoming the mascot of Solana"
-**Bad sign**: "It's a fork of a fork with a modified bonding curve that..."
+Good: "It's a memecoin for the election - people are betting on who wins."
+Bad: "It's a decentralized prediction market aggregator with ve-tokenomics."
 
-If you can't explain it simply, it probably won't spread simply.
-
-## Case Study: Evaluating a Real Narrative
-
-Let's score a hypothetical "AI Agent" narrative:
-
-- **Simplicity**: 4/5 (AI is mainstream, "AI Agent" is understandable)
-- **Memeability**: 3/5 (Good but not natural meme material)
-- **Timing**: 5/5 (AI is peak zeitgeist, ChatGPT just launched)
-- **Catalyst**: 4/5 (Clear tech development driving interest)
-- **Smart Money**: 4/5 (Multiple known wallets accumulating)
-
-**Total: 20/25** - Strong conviction play
-
-## Key Takeaway
-
-Systematic evaluation prevents emotional decisions. When you're excited about a narrative, the framework forces you to think critically.
-
-Your edge isn't finding more narratives - it's being more selective about which ones deserve your capital.`
+Simple narratives spread. Complex narratives stay niche.`
     },
     {
       id: 'nfr-4',
@@ -326,118 +268,102 @@ Your edge isn't finding more narratives - it's being more selective about which 
       order: 4,
       content: `# Timing Your Entry
 
-## The Entry Paradox
+You found a narrative early. You've evaluated it as strong. Now the hardest part: when exactly do you buy?
 
-Being early to a narrative is only half the battle. Enter too early and you might:
-- Sit in a position that goes nowhere for weeks
-- Watch it dump before the narrative catches
-- Tie up capital that could be used elsewhere
+## The Entry Timing Spectrum
 
-Enter too late and you:
-- Become exit liquidity for early buyers
-- Experience the worst risk/reward
-- Buy the top
+**Too Early**
+- Narrative hasn't caught attention yet
+- Token is illiquid, high spread
+- Risk: It never catches, you're stuck
 
-## Phase-Based Entry Strategy
+**Perfect Timing**
+- Narrative showing first signs of spread
+- Smart money entering but CT hasn't picked up
+- Liquidity is buildable, still early
 
-Remember the narrative lifecycle? Here's how to think about entries at each phase:
+**Too Late**
+- Everyone's talking about it
+- "Easy money" discourse everywhere
+- You're exit liquidity for early buyers
 
-### Phase 1: Emergence (Highest Risk, Highest Reward)
-**Who's here**: Insiders, on-chain detectives
-**Entry strategy**: Small "scout" positions only
-**Why**: Most narratives die here - you're essentially venture betting
+## Entry Signals by Narrative Phase
 
-### Phase 2: Early Adoption (Sweet Spot)
-**Who's here**: Smart money, alpha groups
-**Entry strategy**: This is where you SIZE UP
-**Why**: Narrative is validated but hasn't gone mainstream
+### Phase 1: Emergence
+**When to enter:** Only with small, speculative positions
+**Signals:**
+- New token/concept you haven't seen before
+- 1-2 smart wallets making first buys
+- No CT discussion yet
 
-### Phase 3: Viral Spread (Still Okay)
-**Who's here**: Wider CT, early mainstream
-**Entry strategy**: Only if you have strong conviction, smaller size
-**Why**: Good moves still possible but risk/reward declining
+**Risk:** High - most phase 1 plays go to zero
 
-### Phase 4+: Peak Hype & Beyond (Danger Zone)
-**Who's here**: Everyone
-**Entry strategy**: NO NEW ENTRIES - look for exits
-**Why**: You're buying from people who want to sell to you
+### Phase 2: Early Adoption
+**When to enter:** This is your sweet spot - size up here
+**Signals:**
+- Multiple smart wallets accumulating
+- First quality CT posts appearing (not shills)
+- Organic community starting to form
+- Token has survived 24-48 hours and held
 
-## Practical Entry Techniques
+**Risk:** Medium - narrative is validated but still early
 
-### The Scaling Strategy
+### Phase 3: Viral Spread
+**When to enter:** Only for momentum trades with tight stops
+**Signals:**
+- CT timeline full of discussion
+- Multiple influencers posting
+- "Why didn't I ape" posts appearing
+- Rapid price discovery
 
-Don't go all-in at once. For a planned $1000 position:
+**Risk:** Medium-high - easy to buy the top
 
-1. **Scout entry** (20% / $200): When you first identify the narrative
-2. **Confirmation entry** (40% / $400): When narrative strength is confirmed
-3. **Conviction entry** (40% / $400): On a healthy pullback or breakout
+### Phase 4+: Peak and Beyond
+**When to enter:** Don't. You're exit liquidity.
 
-This approach:
-- Gives you skin in the game early
-- Lets you average into strength
-- Prevents FOMO from forcing bad entries
+## The Dip Entry Strategy
 
-### The Dip Entry
+Even in strong narratives, don't chase green candles. Wait for:
 
-Narratives don't go straight up. Look for:
-- 20-40% pullbacks from local highs
-- Support levels being tested and holding
-- Volume declining on the dip (exhausted sellers)
-- Renewed buying interest
+1. **First major dip** - Usually 20-40% from local high
+2. **Support hold** - Price bounces and holds a level
+3. **Volume confirmation** - Buyers stepping in, not just falling knife
 
-**Caution**: Not every dip is a buying opportunity. Confirm the narrative is still intact.
+Set alerts at key levels instead of watching charts constantly.
 
-### The Breakout Entry
+## Position Building (Scaling In)
 
-Sometimes waiting for confirmation is smarter:
-- Price breaks previous resistance
-- Volume confirms the move
-- Social sentiment supports continuation
+Don't go all-in at once. Build your position:
 
-You pay a higher price but get higher probability.
+**Example: $1000 total allocation**
+- Entry 1: $300 at first signal (phase 2 confirmation)
+- Entry 2: $400 on first dip that holds
+- Entry 3: $300 reserved for major dip or never used
 
-## What to Avoid
+This way:
+- If it pumps immediately, you're in
+- If it dips, you get better average
+- If it dies, you didn't go all-in at the top
 
-### The FOMO Entry
-**Signs you're FOMO'ing**:
-- Token is already up 100%+ today
-- You feel panicked about missing it
-- You haven't done your evaluation
-- You're sizing up because "it's going higher"
+## The FOMO Override
 
-**Solution**: If you feel FOMO, you're probably too late. Wait for a pullback or move on.
+Your biggest enemy is FOMO. Create rules:
 
-### The "Just a Small Bag" Trap
-Entering with tiny size on late-stage narratives because "what if?"
+1. **No chasing 100%+ moves** - If it's up 100%+ in a day, wait for a dip or skip
+2. **Set a max price** - "I'll enter below $X market cap, otherwise I skip"
+3. **Time delay** - Wait 10 minutes after feeling the urge to ape
 
-**Problem**: These small losses add up. Ten "small bags" that go to zero = one big loss.
+FOMO entries are almost always your worst entries.
 
-**Solution**: If it's not worth a real position, it's not worth any position.
+## Journal Your Entries
 
-### The Average Down Death Spiral
-Your thesis was wrong, price is crashing, but you keep buying.
+After each trade, note:
+- What phase was the narrative in?
+- What signal triggered your entry?
+- Did you chase or wait for your setup?
+- What would you do differently?
 
-**Solution**: Only average down if:
-1. Your thesis is intact
-2. The narrative is still valid
-3. You're not already overexposed
-
-## Entry Checklist
-
-Before every entry, confirm:
-
-- [ ] Narrative strength score is 15+
-- [ ] You can identify which phase you're entering
-- [ ] Position size is appropriate for the phase
-- [ ] You have a thesis written down
-- [ ] You know your invalidation point
-- [ ] You're not feeling FOMO
-
-## Key Takeaway
-
-The best narrative traders aren't the ones who find the most narratives - they're the ones who enter at the right time with the right size.
-
-Patience is your edge. Let others FOMO in at the top while you wait for optimal entries.`
+Pattern recognition from your own trades > any alpha call.`
     },
     {
       id: 'nfr-5',
@@ -449,128 +375,92 @@ Patience is your edge. Let others FOMO in at the top while you wait for optimal 
       order: 5,
       content: `# Managing Narrative Positions
 
-## The Volatility Reality
+You've entered a narrative play. Now what? Narrative trades are volatile - 50% swings are normal. Here's how to manage without going insane.
 
-Narrative tokens are volatile. A 20-30% dip is **normal** even in a strong uptrend. If you panic sell every dip, you'll:
-- Lock in losses
-- Miss the bigger moves
-- Exhaust yourself emotionally
+## The Narrative Volatility Reality
 
-But if you hold through everything, you'll eventually ride a winner back to zero.
+Accept this upfront: narrative tokens swing hard.
 
-The skill is knowing the difference.
+**Normal volatility:**
+- 20-30% dips during uptrends
+- 40-50% dips on broader market red days
+- 2-5x on breakout days
 
-## Position Management Framework
+If you can't stomach this, reduce position size until you can.
 
-### Split Your Position Mentally
+## Position Management Rules
 
-Think of every position as two parts:
+### Rule 1: Define Your Thesis
 
-**Core Position (60-70%)**
-- This is your "thesis" position
-- You hold this as long as your thesis is valid
-- Don't trade around it unless thesis breaks
+Before entering, write down:
+- Why is this narrative strong?
+- What would make me wrong?
+- What's my target?
 
-**Trading Position (30-40%)**
-- This is for taking profits into strength
-- And rebuying on dips
-- Reduces your cost basis over time
+If your thesis is intact, dips are noise. If your thesis breaks, exit regardless of price.
 
-### The "Check Your Thesis" Protocol
-
-When your position dips significantly, ask:
-
-1. **Is the narrative still valid?**
-   - Are people still talking about it?
-   - Is attention growing or fading?
-
-2. **Is this a market-wide dip?**
-   - Did SOL/BTC dump?
-   - Are other narrative plays also down?
-
-3. **Has anything fundamentally changed?**
-   - Dev activity?
-   - Red flags emerged?
-   - Smart money exiting?
-
-If thesis is intact and it's a market dip: **Hold or add**
-If narrative is fading or red flags appeared: **Cut position**
-
-## Handling Common Scenarios
-
-### Scenario 1: Slow Bleed (Down 20-30% Over Days)
-
-**What's happening**: Could be profit-taking, could be dying narrative
-**Action**: Check social sentiment and smart wallet activity
-- If attention fading: Start scaling out
-- If attention stable: Hold core, consider adding
-
-### Scenario 2: Flash Crash (Down 40%+ in Hours)
-
-**What's happening**: Likely a whale dump or market-wide event
-**Action**:
-- Don't panic sell immediately
-- Check what caused it
-- If just whale taking profit: Often a buying opportunity
-- If dev dumping: EXIT EVERYTHING
-
-### Scenario 3: Slow Grind Up (Small Daily Gains)
-
-**What's happening**: Healthy accumulation, narrative building
-**Action**:
-- This is ideal - let it ride
-- Don't try to trade around it
-- Add on any significant dips
-
-### Scenario 4: Parabolic Move (100%+ in a Day)
-
-**What's happening**: Viral spread phase, peak attention
-**Action**:
-- Take some profit (at least initial investment)
-- Tighten your exit strategy
-- Don't add new positions
-
-## The Emotional Management Side
-
-### Signs You're Overexposed
-- Checking price every few minutes
-- Can't focus on other things
-- Feeling anxious about dips
-- Making excuses for red flags
-
-**Solution**: Reduce position to a size where you can think clearly.
-
-### Signs You're Being Shaken Out
-- Selling because of short-term price action
-- Ignoring your original thesis
-- Reacting to FUD without verifying
-- Selling because others are selling
-
-**Solution**: Return to your thesis. If it's still valid, the price doesn't matter.
-
-## Position Sizing Reality Check
+### Rule 2: Size for Survival
 
 Your position size should allow you to:
-- Hold through 50% dips without panic
-- Sleep without checking your phone
-- Make decisions from logic, not emotion
+- Hold through a 50% dip without panic
+- Not check the chart every 5 minutes
+- Sleep at night
 
-If you can't do these things, you're too big.
+If you're anxious, you're oversized.
 
-## The "Would I Buy Here?" Test
+### Rule 3: Separate Your Bags
 
-If you're holding and unsure, ask:
-"If I had cash instead of this position, would I buy at this price?"
+Split your position mentally:
 
-- **Yes**: Hold or add
-- **No**: Why are you holding?
-- **I don't know**: Time to re-evaluate your thesis
+**Core Position (50-70%)**
+- This is your long-term narrative bet
+- Only sell if thesis breaks or target hit
+- Ignore daily volatility
 
-## Key Takeaway
+**Trading Position (30-50%)**
+- Trade around the core
+- Sell some on big pumps
+- Buy back on dips
+- Take profits into strength
 
-Position management is about having rules BEFORE you need them. When you're in the moment, emotions cloud judgment.
+### Rule 4: Set Alerts, Not Watches
 
-Write down your management rules when you enter. Then follow them mechanically.`
+Chart-watching leads to emotional decisions. Instead:
+- Set alerts at key support/resistance levels
+- Set alerts for major % moves (up or down)
+- Check 2-3x per day max
+
+The charts will notify you when action is needed.
+
+## What To Do During Dips
+
+When your narrative token dips:
+
+1. **Check the thesis** - Has anything changed fundamentally?
+2. **Check the market** - Is everything dipping or just this token?
+3. **Check the narrative** - Are people still talking about it?
+
+**If thesis intact:** Consider adding (if you have reserved capital)
+**If thesis breaking:** Exit, don't hope
+
+## Signs Your Thesis Is Breaking
+
+Time to reassess or exit:
+- Dev rugs or goes silent
+- Smart wallets selling (not just taking profit)
+- Narrative attention shifting to new thing
+- Major red flag revealed (fake team, etc.)
+- Token keeps making lower lows with no bounce
+
+## The Mental Game
+
+Narrative positions mess with your head. Remember:
+- You don't have to be right every time
+- One big winner covers many small losses
+- Paper losses aren't real until you sell
+- The goal is asymmetric bets, not 100% win rate
+
+When in doubt, reduce size until you can think clearly.`
     },
     {
       id: 'nfr-6',
@@ -582,135 +472,106 @@ Write down your management rules when you enter. Then follow them mechanically.`
       order: 6,
       content: `# Exit Strategies for Narratives
 
-## The Exit Problem
+The hardest part of narrative trading isn't entry - it's exit. Most traders turn winners into losers by holding too long. Here's how to take profits systematically.
 
-Most traders focus on entries and ignore exits. But exits determine your actual profits.
+## Why Exits Are Harder Than Entries
 
-**The uncomfortable truth**: You will almost never sell at the exact top. The goal is to sell into strength while others are still buying, not to catch the peak.
+- **Greed:** "It could go higher"
+- **Ego:** "I'll sell the exact top"
+- **FOMO:** "What if it 10x after I sell?"
+- **Anchoring:** "I'm not selling until it hits $X"
 
-## The Scaled Exit Strategy
+Accept now: You will never sell the top. The goal is to sell while it's still going up.
 
-Don't sell everything at once. Use a systematic approach:
+## The Narrative Exit Framework
 
-### The 25-25-25-25 Method
+### Strategy 1: Scaled Exit (Recommended)
 
-For a winning position:
+Sell in chunks as price rises:
+- Sell 25% at 2x (you've recovered your initial)
+- Sell 25% at 3-4x (guaranteed profit)
+- Sell 25% at 5-7x (big win locked in)
+- Let 25% ride (your "moonbag")
 
-**First 25%**: Sell at 2x (recover your initial investment)
-- Now you're playing with house money
-- Reduces emotional attachment
-- Ensures you don't give everything back
+Example: $1000 position
+- $250 out at 2x = $500
+- $250 out at 4x = $1000
+- $250 out at 6x = $1500
+- $250 moonbag = let it ride
 
-**Second 25%**: Sell at 3-4x
-- Lock in meaningful profit
-- Still have exposure if it keeps running
+You've pulled $3000 on a $1000 investment, with exposure remaining.
 
-**Third 25%**: Sell at target or signs of weakness
-- Your original price target
-- Or when narrative shows exhaustion signs
+### Strategy 2: Target-Based Exit
 
-**Final 25% (Moonbag)**: Let it ride or trail stop
-- This is for the "what if it does 100x" scenario
-- Be prepared to give it all back
-- Eliminates regret either way
+Set a market cap target based on comparable narratives:
+- "If similar narrative X hit $50M, I'll exit 80% at $40M"
+- Set sell orders in advance
+- Remove emotion from the decision
 
-### Why This Works
+### Strategy 3: Time-Based Exit
 
-- **Guarantees profit**: First sell ensures you can't lose
-- **Captures upside**: Remaining position benefits from further moves
-- **Manages regret**: Moonbag handles "what if" psychology
-- **Removes emotion**: Rules-based, not feelings-based
+Narratives have lifecycles:
+- Most narrative pumps last 3-7 days
+- Set a deadline: "If thesis hasn't played out in 2 weeks, exit"
+- Don't marry bags hoping for a revival
 
-## Exit Signals to Watch
+## Exit Signals (Time to Sell)
 
-### Strong Sell Signals
-- Your non-crypto friends are asking about the token
-- It's trending on mainstream platforms
-- Multiple "this is going to $X billion" posts
-- Volume declining while price rises (exhaustion)
-- Smart money wallets exiting
+**Strong sell signals:**
+- Your 2x, 3x, 4x targets hit (take profit!)
+- "This is going to 100x" posts from random accounts
+- Your non-crypto friends ask about it
+- Influencers who usually mark tops are shilling
+- Volume declining while price rises
+- New narrative emerging and taking attention
 
-### Warning Signals (Start Scaling Out)
-- Narrative attention clearly peaking
-- Dev team activity declining
-- New, stronger narrative emerging
-- Price action becoming erratic
-- Unable to hold support levels
+**Consider selling signals:**
+- Dev dumping tokens
+- Major whale taking profits
+- Similar competing token launching
+- You're checking charts every 10 minutes
 
-### Don't Sell Just Because
-- Price dipped 20% (normal volatility)
-- One negative comment (FUD happens)
-- You're "up enough" (let winners run)
-- Someone else sold (not your thesis)
+## The Moonbag Strategy
 
-## Price Target Setting
+Always keep 10-25% as a "moonbag" - a small position you hold long-term.
 
-### Market Cap Based Targets
+Why:
+- Narratives sometimes have second waves
+- Eliminates "what if it kept going" regret
+- It's house money, let it ride
 
-Set targets based on realistic market caps:
-- "I'll sell half if this reaches $50M MC"
-- "Full exit at $100M MC"
+Rules for moonbags:
+- Only with profits, never with initial capital
+- Set and forget (don't watch it daily)
+- Accept it could go to zero
 
-This is more rational than dollar-based thinking.
+## Avoiding Exit Mistakes
 
-### Comparable Based Targets
+**Mistake 1: Moving targets**
+- "I'll sell at 5x" becomes "I'll sell at 10x" when you hit 5x
+- Solution: Write targets down BEFORE you enter
 
-"If this reaches 50% of [similar successful token]'s peak MC, I'm taking significant profit."
+**Mistake 2: Waiting for even numbers**
+- "I'll sell at exactly $1M market cap"
+- Solution: Markets don't care about round numbers, sell into strength
 
-This grounds your expectations in reality.
+**Mistake 3: Revenge trading after selling**
+- You sell, it pumps, you buy back higher
+- Solution: Once you exit, you're done. Move on.
 
-### Time Based Targets
+**Mistake 4: Holding through breakdown**
+- Token down 60%, "waiting for recovery"
+- Solution: Have a stop loss, accept small losses
 
-"If this hasn't moved significantly in 2 weeks, I'll reassess."
+## The Exit Journal
 
-Prevents capital from being stuck in dead positions.
+After every exit, record:
+- Where in the narrative cycle you sold
+- Whether you hit your targets
+- How you felt (greedy, scared, calm?)
+- What you'd do differently
 
-## Common Exit Mistakes
-
-### The Moving Target
-
-**What happens**: Token hits your target, you move it higher.
-"I was going to sell at 3x, but now it might do 10x..."
-
-**Why it's dangerous**: You never lock in profits. Eventually you ride it back down.
-
-**Solution**: Set targets BEFORE entering and stick to them. Your exit plan shouldn't change based on price action.
-
-### The All-or-Nothing Exit
-
-**What happens**: Waiting for the perfect moment to sell everything.
-
-**Why it's dangerous**: Perfect moment rarely comes. You either sell too early or too late.
-
-**Solution**: Scaled exits remove the need to time perfectly.
-
-### The Profit Giveback
-
-**What happens**: Position goes 5x, you don't sell, it goes back to 1x.
-
-**Why it's dangerous**: You had life-changing profits and gave them back.
-
-**Solution**: Take the first 25% at 2x religiously. No exceptions.
-
-## The Moonbag Philosophy
-
-Your final 25% (or 10-20% for larger positions) is your moonbag.
-
-**Rules for moonbags**:
-- Write it off mentally - it's already "gone"
-- Set a trailing stop or forget about it
-- Never add to a moonbag
-- If it goes to zero, you already won
-
-Moonbags let you participate in the "what if" without risking your profits.
-
-## Key Takeaway
-
-Exits are where profits are made. Most people know when to buy but not when to sell.
-
-Your scaled exit strategy should be written down BEFORE you enter. Then execute it without emotion.
-
-Remember: No one goes broke taking profits. Plenty of people go broke giving them back.`
+This data is gold for improving future exits.`
     },
     {
       id: 'nfr-7',
@@ -722,132 +583,115 @@ Remember: No one goes broke taking profits. Plenty of people go broke giving the
       order: 7,
       content: `# Narrative Failures - Learning From Misses
 
-## The Uncomfortable Truth
-
-Even with perfect analysis, you will have losing trades. Narratives fail for reasons you couldn't predict.
-
-**Your goal isn't to avoid all losses - it's to make your losses small and your wins big.**
+Not every narrative plays out. Even strong-looking setups fail. What separates good traders from broke traders is how they handle losses.
 
 ## Why Narratives Fail
 
-### 1. Timing Mismatch
-The narrative is real but the market isn't ready.
-- AI tokens in 2022 (too early)
-- Gaming tokens after the crash (wrong environment)
+### Reason 1: Wrong Timing
+- Narrative was real but you were too early
+- Market conditions weren't right
+- Another narrative sucked up attention
 
-**Lesson**: Even valid narratives need the right timing.
+### Reason 2: Weak Execution
+- Great idea, bad token (dev rugged, bad tokenomics)
+- Too many competing tokens split attention
+- Poor memetics - couldn't spread
 
-### 2. Execution Failures
-Good narrative, bad token.
-- Dev team delivers poorly
-- Technical issues
-- Gets beaten by a competitor
+### Reason 3: External Shocks
+- Market crashed and took everything down
+- Negative news killed the narrative
+- Regulatory threat emerged
 
-**Lesson**: Narrative strength doesn't guarantee token success.
+### Reason 4: You Misread It
+- What looked like signal was noise
+- Paid shills fooled you
+- Confirmation bias made you ignore red flags
 
-### 3. Narrative Exhaustion
-The market simply moves on.
-- Attention shifts to new shiny thing
-- Everyone who wanted to buy already did
-- No new catalysts to drive interest
+## The 3 Types of Losses
 
-**Lesson**: Narratives have a shelf life.
+**Type 1: Small Loss (Good)**
+- You entered, thesis broke quickly, you exited
+- Lost 10-25%
+- This is the goal for losses
 
-### 4. External Shocks
-Factors outside the narrative.
-- Market-wide crash
-- Regulatory news
-- Black swan events
+**Type 2: Medium Loss (Acceptable)**
+- You gave it time, it didn't work
+- Lost 40-60%
+- Hurts but survivable
 
-**Lesson**: Some losses aren't your fault.
+**Type 3: Catastrophic Loss (Avoid)**
+- You held hoping for recovery
+- Lost 80-95%
+- Position is now nearly worthless
 
-## The Anatomy of a Good Loss vs. Bad Loss
+Your job: Keep losses in Type 1-2. Never let losses become Type 3.
 
-### Good Loss (10-25%)
-- You entered based on solid thesis
-- Thesis broke or red flags appeared
-- You cut quickly and moved on
-- Lesson learned for next time
+## When To Cut Losses
 
-### Bad Loss (60-90%)
-- You entered on FOMO
-- Ignored warning signs
-- Averaged down hoping for recovery
-- Held because "already down too much"
+Cut immediately if:
+- Dev rugs or shows rug behavior
+- Smart wallets dump, not just take profit
+- Red flag you missed is revealed
+- Your thesis is objectively broken
 
-**The difference isn't the loss itself - it's how you managed it.**
-
-## When to Cut Losses
-
-### Cut Immediately If:
-- Dev shows rug behavior (dumping, going silent)
-- Fundamental red flag you missed is revealed
-- Smart money is dumping, not just taking profit
-- Your original thesis is clearly broken
-
-### Cut After Evaluation If:
-- Price down 30-40% with no recovery
-- Narrative attention clearly dying
-- Better opportunities exist for your capital
-
-### Don't Cut Just Because:
-- Price is down with the broader market
-- Short-term FUD (verify first)
-- You're impatient with sideways action
+Cut after time limit if:
+- Position has done nothing for 1-2 weeks
+- Attention has moved elsewhere
+- Opportunity cost of holding > potential upside
 
 ## The Sunk Cost Trap
 
-**The thought**: "I'm already down 50%, might as well hold. What's another 50%?"
+"I'm down 50%, I might as well hold"
 
-**The reality**: That thinking turns 50% losses into 90% losses.
+This is wrong. Every day you hold a dying token, you're choosing it over cash. Ask yourself:
 
-**The fix**: Ask "If I had cash right now, would I buy this token at this price?"
-- If no: You shouldn't hold it either
-- The price you paid is irrelevant to future returns
+"If I had cash instead of this position, would I buy this token right now?"
 
-## Post-Mortem Protocol
+If no, sell.
 
-After every failed trade, document:
+## Post-Mortem Analysis
 
-1. **What was your thesis?**
-2. **What phase did you enter?**
-3. **What warning signs did you miss?**
-4. **Where did you exit (or should have)?**
-5. **What would you do differently?**
+After every failed narrative trade, answer:
+1. What was my thesis?
+2. Why was I wrong?
+3. What signals did I miss or ignore?
+4. How could I have exited earlier?
+5. What's the lesson for next time?
 
-This isn't to beat yourself up - it's to improve. The traders who succeed are the ones who learn from losses.
+Be brutally honest. Write it down. This is how you improve.
 
-## Emotional Recovery
+## Common Lessons From Failures
 
-Failed trades hurt. Give yourself permission to:
-- Feel frustrated (briefly)
-- Take a break from trading
-- Review what happened objectively
-- Return when you're thinking clearly
+**"I ignored red flags because I wanted it to work"**
+→ Write down red flags BEFORE you enter
 
-**What not to do**:
-- Revenge trade to "make it back"
-- Double down on the next trade
-- Abandon your system
-- Ignore the loss and repeat the mistake
+**"I held too long hoping for recovery"**
+→ Set hard stop losses or time limits
 
-## Reframing Failure
+**"I chased after it already pumped"**
+→ Create FOMO rules (no chasing 100%+ moves)
 
-Every loss is tuition for the education you're getting.
+**"I oversized and couldn't think clearly"**
+→ Reduce size until emotions are manageable
 
-The best narrative traders:
-- Lose on ~40-50% of trades
-- Keep losses small (10-25% average)
-- Make wins big (100%+ average)
-- Learn something from every trade
+**"Everyone I follow was wrong too"**
+→ Don't outsource thinking, do your own research
 
-One big win can cover many small losses. But one big loss can wipe out many small wins.
+## Building a Loss Tolerance
 
-## Key Takeaway
+Losses are part of the game. To survive long-term:
+- Never risk more than 2-5% of portfolio on one narrative
+- Expect 50% of narrative trades to be losers
+- One 5-10x winner covers many 50% losses
+- Losses are tuition, not failure
 
-Losses are inevitable. The question is: will they be small lessons or catastrophic mistakes?
+## The Recovery Mindset
 
-Cut quickly when your thesis breaks. Document and learn from every failure. And never let one bad trade turn into a portfolio destroyer.`
+After a loss:
+- Don't revenge trade
+- Don't immediately ape something else
+- Take a breath, review what happened
+- Come back with fresh eyes tomorrow`
     },
     {
       id: 'nfr-8',
@@ -859,152 +703,153 @@ Cut quickly when your thesis breaks. Document and learn from every failure. And 
       order: 8,
       content: `# Building Your Narrative Edge
 
-## From Theory to System
+You've learned the theory. Now let's build a systematic approach that works for YOUR style. This lesson ties everything together.
 
-You've learned the concepts. Now it's time to build YOUR system - one that fits your schedule, risk tolerance, and personality.
+## Your Narrative Playbook
 
-## Your Pre-Trade Checklist
+Create a personal playbook that defines:
+1. Where you source information
+2. How you evaluate narratives
+3. Your entry rules
+4. Your position sizing
+5. Your exit rules
+6. Your review process
 
-Before entering ANY narrative trade, run through this:
+Write it down. A system beats gut instinct over time.
 
-### Information Check
-- [ ] Identified from Tier 1 or Tier 2 source
-- [ ] Confirmed across 3 sources (on-chain, social, logical)
-- [ ] Smart money interest verified
-- [ ] No disqualifying red flags
+## The Daily Routine
 
-### Evaluation Check
-- [ ] Narrative strength score calculated (15+ to proceed)
-- [ ] Phase of narrative identified
-- [ ] Entry timing appropriate for phase
-- [ ] Similar past narratives analyzed
+Consistency matters more than intensity. Here's a template:
 
-### Position Check
-- [ ] Position size appropriate (not overexposed)
-- [ ] Entry price and method determined
-- [ ] Thesis written in one sentence
-- [ ] Invalidation point defined
+**Morning (15-20 min)**
+- Scan Twitter lists for overnight narratives
+- Check Telegram groups for any early calls
+- Glance at DexScreener for notable movers
+- Note anything interesting in your watchlist
 
-### Exit Check
-- [ ] Profit targets set (2x, 3-4x, final)
-- [ ] Stop loss or invalidation level set
-- [ ] Moonbag strategy determined
-- [ ] Time limit set (if applicable)
+**Midday (5-10 min)**
+- Quick check on open positions
+- Any breaking narratives?
+- Only act if your rules say to act
 
-**If you can't check all boxes, don't enter.**
+**Evening (20-30 min)**
+- Deeper research on watchlist items
+- Review any trades from the day
+- Prep for tomorrow
 
-## Your Daily Routine
+**Weekly (30-60 min)**
+- Review all trades from the week
+- Update your trading journal
+- Adjust system based on learnings
 
-### Morning (15-30 min)
-- Check on-chain alerts from overnight
-- Scan Tier 1 sources for new developments
-- Review any positions you hold
-- Identify 1-3 potential narratives to research
+## The Watchlist System
 
-### Midday (10-15 min)
-- Social sentiment check on watch list
-- Any new developments on positions?
-- Execute any planned entries/exits
+Don't ape everything. Maintain a structured watchlist:
 
-### Evening (20-30 min)
-- Review day's narrative movements
-- Update your thesis on current positions
-- Prepare watchlist for tomorrow
-- Journal any trades made
+**Tier 1: Active Positions**
+- Tokens you own
+- Clear thesis, targets, and stops written
 
-**Total time**: ~1 hour/day
-**Benefit**: You'll catch most opportunities without burning out
+**Tier 2: Ready to Enter**
+- Narratives you've researched and validated
+- Waiting for your entry setup
+- Alerts set at key levels
 
-## Risk Management Rules
+**Tier 3: Watching**
+- Interesting but not ready
+- Needs more research or development
+- Check back weekly
 
-### Position Sizing
-- Max 3-5% of portfolio on any single narrative
-- Max 15-20% total in narrative plays
-- Rest in more stable positions or cash
+If it's not on your watchlist, you don't trade it.
 
-### Loss Limits
-- Cut at -25% if thesis weakening
-- Cut at -15% if thesis clearly broken
-- Max daily loss: 5% of portfolio (then stop for the day)
+## Position Sizing Framework
 
-### Profit Rules
-- Always take something at 2x
-- Never add to a winning position after 3x
-- Trail stops on moonbags
+Standardize your sizing:
 
-## Building Your Track Record
+**Conviction Tiers:**
+- High conviction (20-25 score): 3-5% of portfolio
+- Medium conviction (15-19 score): 1-2% of portfolio
+- Low conviction/speculation: 0.5% of portfolio
 
-Start tracking every trade in a simple spreadsheet:
+**Portfolio Limits:**
+- Max 5 active narrative positions
+- Max 15-20% of portfolio in narrative plays
+- Keep 30%+ in stable assets (SOL, stables)
 
-| Date | Token | Entry Phase | Score | Entry Price | Exit Price | Result | Lesson |
-|------|-------|-------------|-------|-------------|------------|--------|--------|
+## The Pre-Trade Checklist
 
-After 20-30 trades, you'll see patterns:
-- What phase do you enter best?
-- What's your win rate?
-- What's your average win vs average loss?
-- What mistakes do you repeat?
+Before any narrative trade, confirm:
 
-This data is gold. Use it to refine your system.
+- [ ] Thesis written down (why this, why now)
+- [ ] Narrative score calculated (15+ minimum)
+- [ ] 3-source rule confirmed (on-chain, social, logical)
+- [ ] No red flags found
+- [ ] Entry price/range defined
+- [ ] Position size set (within limits)
+- [ ] Exit targets set (2x, 4x, moonbag)
+- [ ] Stop loss / invalidation level set
+- [ ] Written in trading journal
 
-## Your Strengths and Weaknesses
+No trade without completing this checklist.
 
-As a Narrative Front Runner, you naturally:
+## Tracking Your Performance
 
-**Strengths**:
-- Spot patterns early
-- Connect dots others miss
-- Understand what makes narratives spread
-- Time entries well when disciplined
+What to track:
+- Win rate (what % of narrative trades profit?)
+- Average win vs average loss
+- Best entries vs worst entries (what phase?)
+- Time held vs outcome
+- Total return on narrative trades
 
-**Weaknesses**:
-- FOMO into late-stage narratives
-- Overtrade when excited
-- Hold too long hoping for more
-- Chase multiple narratives at once
+Review monthly. Look for patterns:
+- "I always enter too late"
+- "I hold losers too long"
+- "My best trades are X type"
 
-**Build guardrails for your weaknesses**:
-- Hard rule: No entries in Phase 4+
-- Maximum 3 active narrative positions
-- Scaled exits are mandatory, not optional
-- Cool-down period after losses
+## Continuous Improvement
+
+The market evolves. Your system must too.
+
+**Monthly:**
+- Review all trades
+- Update rules that aren't working
+- Add new sources if old ones decay
+
+**Quarterly:**
+- Bigger review of what's working
+- Adjust position sizing based on results
+- Update watchlist criteria
+
+**Yearly:**
+- Complete system audit
+- Are you improving?
+- What's the next level?
+
+## Your Narrative Front Runner Identity
+
+You're naturally good at:
+- Spotting patterns early
+- Moving fast when you see signal
+- Connecting narratives to catalysts
+
+Double down on these strengths. Build systems that enhance them.
+
+Watch out for:
+- FOMO'ing into late stage narratives
+- Overtrading (not every narrative needs action)
+- Ego (wanting to be "right" vs making money)
+
+Build guardrails for your weaknesses.
 
 ## The Compound Effect
 
-Narrative trading success isn't about one big win. It's about:
+Narrative trading isn't about one big win. It's about:
+- Consistent small edges
+- Avoiding catastrophic losses
+- Learning from every trade
+- Compounding over months and years
 
-1. **Consistent small edges** (entering earlier than average)
-2. **Avoiding big losses** (cutting quickly when wrong)
-3. **Letting winners run** (scaled exits, moonbags)
-4. **Learning from every trade** (getting better over time)
-
-Over 100 trades, if you:
-- Win 50% with average 100% gain
-- Lose 50% with average 20% loss
-
-You're massively profitable. That's the math that matters.
-
-## Your Next Steps
-
-1. **Create your tracking spreadsheet**
-2. **Set up your daily routine**
-3. **Paper trade 5 narratives** using the system
-4. **Start small** when you go live
-5. **Review and refine** after every 10 trades
-
-## Final Thought
-
-You have a natural gift for seeing narratives early. The system you've learned helps you harness that gift without falling into the traps that destroy other traders.
-
-Trust your pattern recognition, but verify with your framework.
-
-Enter with conviction, but manage with discipline.
-
-Take profits systematically, but always leave a moonbag.
-
-This is how Narrative Front Runners build lasting edge.
-
-Now go find some narratives. 🔮`
+Focus on the process. The results will follow.`
     }
   ]
 }

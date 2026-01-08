@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useOutletContext, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { getArchetypeModule, hasArchetypeModule } from '../../data/academy/archetypes'
 
 // Tab configuration
 const ACADEMY_TABS = [
@@ -533,9 +534,10 @@ function ArchetypeLessonCard({ lesson, moduleSlug }) {
 }
 
 // View All Lessons Card
-function ViewAllLessonsCard({ moduleSlug, moduleTitle, lessonCount, icon }) {
+function ViewAllLessonsCard({ moduleSlug, moduleTitle, lessonCount, icon, isArchetype = false }) {
+  const linkPath = isArchetype ? `/academy/archetype/${moduleSlug}` : `/academy/${moduleSlug}`
   return (
-    <Link to={`/academy/${moduleSlug}`} className="view-all-lessons-card glass-card">
+    <Link to={linkPath} className="view-all-lessons-card glass-card">
       <div className="view-all-icon">{icon}</div>
       <div className="view-all-content">
         <span className="view-all-label">See all {lessonCount} lessons</span>
@@ -683,8 +685,22 @@ export default function AcademyDashboard() {
           setRecommendedLessons(recommendedData.lessons || [])
         }
 
-        // Set archetype module data
-        if (archetypeModuleRes?.ok) {
+        // Set archetype module data from local files first, fallback to API
+        if (userArchetypeSlug && hasArchetypeModule(userArchetypeSlug)) {
+          const localModule = getArchetypeModule(userArchetypeSlug)
+          if (localModule) {
+            // Transform local module format to match API format
+            setArchetypeModule({
+              ...localModule,
+              title: localModule.name,
+              lessons: localModule.lessons.map(lesson => ({
+                ...lesson,
+                reading_time: lesson.readTime,
+                difficulty: 'beginner' // Default difficulty for archetype lessons
+              }))
+            })
+          }
+        } else if (archetypeModuleRes?.ok) {
           const archetypeData = await archetypeModuleRes.json()
           setArchetypeModule(archetypeData.module || null)
         }
@@ -874,7 +890,7 @@ export default function AcademyDashboard() {
                         <ArchetypeLessonCard
                           key={lesson.id}
                           lesson={lesson}
-                          moduleSlug={archetypeModule.slug}
+                          moduleSlug={`archetype/${archetypeModule.slug}`}
                         />
                       ))}
                       <ViewAllLessonsCard
@@ -882,6 +898,7 @@ export default function AcademyDashboard() {
                         moduleTitle={archetypeModule.title}
                         lessonCount={archetypeModule.lessons.length}
                         icon={archetypeModule.icon || '📚'}
+                        isArchetype={true}
                       />
                     </div>
                   </section>
