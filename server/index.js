@@ -23,6 +23,27 @@ app.use('/api/auth', authRoutes)
 // Journal routes
 app.use('/api/journal', journalRoutes)
 
+// Academy seed endpoint (for local dev)
+const ADMIN_PASSWORD = 'DeusVult777!'
+app.post('/api/academy/seed', async (req, res) => {
+  const adminPassword = req.headers['x-admin-password']
+  if (adminPassword !== ADMIN_PASSWORD) {
+    return res.status(403).json({ error: 'Admin access required' })
+  }
+
+  const force = req.query.force === 'true'
+  try {
+    // Dynamic import to avoid module resolution issues
+    const dbModule = await import('../api/lib/db.js')
+    await dbModule.initDb()
+    await dbModule.seedAcademyContent(force)
+    res.json({ success: true, message: force ? 'Academy content reseeded' : 'Academy content seeded' })
+  } catch (err) {
+    console.error('Seed failed:', err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // Helius RPC
 const HELIUS_KEY = process.env.HELIUS_API_KEY
 const RPC_URL = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`

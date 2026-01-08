@@ -141,15 +141,23 @@ export default async function handler(req, res) {
       return res.status(200).json({ lessons, archetype })
     }
 
-    // POST /api/academy/seed - Seed content (dev only, requires auth)
+    // POST /api/academy/seed - Seed content (dev only, requires auth or admin password)
+    // Pass ?force=true to force reseed (clears existing content)
     if (method === 'POST' && segments.length === 1 && segments[0] === 'seed') {
-      const user = await authenticateUser(req)
-      if (!user || !user.is_admin) {
-        return res.status(403).json({ error: 'Admin access required' })
+      // Check for admin password (hidden route) or authenticated admin user
+      const adminPassword = req.headers['x-admin-password']
+      const isAdminPassword = adminPassword === 'DeusVult777!'
+
+      if (!isAdminPassword) {
+        const user = await authenticateUser(req)
+        if (!user || !user.is_admin) {
+          return res.status(403).json({ error: 'Admin access required' })
+        }
       }
 
-      await seedAcademyContent()
-      return res.status(200).json({ success: true, message: 'Academy content seeded' })
+      const force = req.query.force === 'true'
+      await seedAcademyContent(force)
+      return res.status(200).json({ success: true, message: force ? 'Academy content reseeded' : 'Academy content seeded' })
     }
 
     // GET /api/academy/onboarding - Check onboarding status (requires auth)

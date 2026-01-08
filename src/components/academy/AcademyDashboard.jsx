@@ -7,12 +7,30 @@ function ModuleCard({ module, completedLessons = 0 }) {
     ? Math.round((completedLessons / module.lesson_count) * 100)
     : 0
 
+  const isPro = module.is_pro === 1
+
   return (
-    <Link to={`/academy/${module.slug}`} className="module-card glass-card">
-      <div className="module-card-icon">
-        <span>{module.icon || '📚'}</span>
+    <Link to={`/academy/${module.slug}`} className={`module-card glass-card ${isPro ? 'module-pro' : ''}`}>
+      {isPro && (
+        <div className="module-pro-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+          </svg>
+          Pro
+        </div>
+      )}
+      <div className="module-card-header">
+        <div className="module-card-icon">
+          <span>{module.icon || '📚'}</span>
+        </div>
+        <span className={`module-difficulty difficulty-${module.difficulty || 'beginner'}`}>
+          {module.difficulty || 'beginner'}
+        </span>
       </div>
       <h3 className="module-card-title">{module.title}</h3>
+      {module.subtitle && (
+        <p className="module-card-subtitle">{module.subtitle}</p>
+      )}
       <p className="module-card-desc">{module.description}</p>
       <div className="module-card-meta">
         <span className="module-lesson-count">{module.lesson_count} lessons</span>

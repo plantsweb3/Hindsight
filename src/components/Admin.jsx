@@ -66,6 +66,8 @@ export default function Admin({ onBack, isHiddenRoute = false }) {
   const [passwordInput, setPasswordInput] = useState('')
   const [isUnlocked, setIsUnlocked] = useState(!isHiddenRoute) // Already unlocked if not hidden route
   const [passwordError, setPasswordError] = useState('')
+  const [isReseeding, setIsReseeding] = useState(false)
+  const [reseedMessage, setReseedMessage] = useState('')
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault()
@@ -162,6 +164,39 @@ export default function Admin({ onBack, isHiddenRoute = false }) {
     } catch (err) {
       console.error('Failed to update status:', err)
       setError('Failed to update status')
+    }
+  }
+
+  const handleReseedAcademy = async () => {
+    if (!confirm('This will delete all existing academy modules/lessons and reseed with the new content. User progress will be reset. Continue?')) {
+      return
+    }
+
+    setIsReseeding(true)
+    setReseedMessage('')
+
+    try {
+      const headers = { 'Content-Type': 'application/json' }
+      if (isHiddenRoute && isUnlocked) {
+        headers['X-Admin-Password'] = ADMIN_PASSWORD
+      }
+
+      const response = await fetch('/api/academy/seed?force=true', {
+        method: 'POST',
+        headers,
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to reseed academy content')
+      }
+
+      const data = await response.json()
+      setReseedMessage(data.message || 'Academy content reseeded successfully!')
+    } catch (err) {
+      console.error('Failed to reseed:', err)
+      setReseedMessage('Error: ' + err.message)
+    } finally {
+      setIsReseeding(false)
     }
   }
 
@@ -297,6 +332,66 @@ export default function Admin({ onBack, isHiddenRoute = false }) {
               </table>
             </div>
           )}
+        </div>
+
+        {/* Academy Management Section */}
+        <div className="admin-section" style={{ marginTop: '2rem' }}>
+          <div className="admin-section-header">
+            <h1 className="admin-title">Academy Management</h1>
+          </div>
+          <div className="admin-academy-actions glass-card" style={{ padding: '1.5rem' }}>
+            <div style={{ marginBottom: '1rem' }}>
+              <h3 style={{ margin: '0 0 0.5rem 0', color: '#fff' }}>Reseed Academy Content</h3>
+              <p style={{ margin: 0, color: '#a1a1aa', fontSize: '0.875rem' }}>
+                Delete all existing modules/lessons and repopulate with the latest content.
+                This will reset all user progress.
+              </p>
+            </div>
+            <button
+              onClick={handleReseedAcademy}
+              disabled={isReseeding}
+              className="admin-reseed-btn"
+              style={{
+                padding: '0.75rem 1.5rem',
+                background: isReseeding ? '#374151' : 'linear-gradient(135deg, #dc2626, #b91c1c)',
+                border: 'none',
+                borderRadius: '8px',
+                color: '#fff',
+                fontWeight: '600',
+                cursor: isReseeding ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
+            >
+              {isReseeding ? (
+                <>
+                  <div className="spinner" style={{ width: '16px', height: '16px' }} />
+                  Reseeding...
+                </>
+              ) : (
+                <>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M23 4v6h-6M1 20v-6h6" />
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                  </svg>
+                  Force Reseed Academy
+                </>
+              )}
+            </button>
+            {reseedMessage && (
+              <div style={{
+                marginTop: '1rem',
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                background: reseedMessage.startsWith('Error') ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+                color: reseedMessage.startsWith('Error') ? '#ef4444' : '#22c55e',
+                fontSize: '0.875rem',
+              }}>
+                {reseedMessage}
+              </div>
+            )}
+          </div>
         </div>
       </main>
 
