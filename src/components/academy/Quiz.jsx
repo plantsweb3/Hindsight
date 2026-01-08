@@ -90,6 +90,11 @@ export default function Quiz({ quiz, onComplete, onClose, isModuleTest = false }
       const data = await response.json()
 
       if (!response.ok) {
+        // If authentication failed, the token is likely invalid
+        if (response.status === 401) {
+          localStorage.removeItem('hindsight_token')
+          throw new Error('Session expired. Please sign in again.')
+        }
         throw new Error(data.details || data.error || 'Failed to submit quiz')
       }
       setResults(data)
