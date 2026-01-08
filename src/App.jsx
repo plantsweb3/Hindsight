@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { analyzeWallet, analyzeBehavior, isValidSolanaAddress, convertTradesToJournalEntries, createJournalEntriesBatch, getJournalPatterns, getCrossWalletStats } from './services/solana'
@@ -22,6 +22,17 @@ import ModuleView from './components/academy/ModuleView'
 import LessonView from './components/academy/LessonView'
 import ArchetypeModuleView from './components/academy/ArchetypeModuleView'
 import ArchetypeLessonView from './components/academy/ArchetypeLessonView'
+
+// Scroll to top on route change
+function ScrollToTop() {
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+
+  return null
+}
 
 function AppContent() {
   const { user, token, isAuthenticated, isLoading: authLoading, saveArchetype, saveAnalysis } = useAuth()
@@ -493,6 +504,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           {/* Academy - URL-based routing */}
           <Route path="/academy" element={<AcademyLayout />}>
