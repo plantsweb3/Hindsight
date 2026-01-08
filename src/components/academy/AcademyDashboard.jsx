@@ -507,16 +507,14 @@ export default function AcademyDashboard() {
 
         if (progressRes.ok) {
           const progressData = await progressRes.json()
-          // Convert to map of moduleId -> completed count
+          // The API returns { moduleProgress: [...], totalLessons, completedLessons, recentlyCompleted }
           const progressMap = {}
-          progressData.progress?.forEach(p => {
-            if (!progressMap[p.module_id]) {
-              progressMap[p.module_id] = 0
-            }
-            progressMap[p.module_id]++
+          const moduleProgressArray = progressData.progress?.moduleProgress || []
+          moduleProgressArray.forEach(m => {
+            progressMap[m.id] = m.completed_lessons || 0
           })
           setProgress(progressMap)
-          setLessonProgress(progressData.progress || [])
+          setLessonProgress(progressData.progress?.recentlyCompleted || [])
         }
 
         if (recommendedRes.ok) {
