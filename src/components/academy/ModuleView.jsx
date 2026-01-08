@@ -78,7 +78,8 @@ export default function ModuleView() {
         })
         if (progressRes.ok) {
           const progressData = await progressRes.json()
-          const completedIds = new Set(progressData.progress?.map(p => p.lesson_id) || [])
+          // completedLessonIds is an array of lesson IDs
+          const completedIds = new Set(progressData.progress?.completedLessonIds || [])
           setCompletedLessonIds(completedIds)
         }
       }

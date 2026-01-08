@@ -1001,11 +1001,18 @@ export async function getUserAcademyProgress(userId) {
     args: [userId],
   })
 
+  // All completed lesson IDs (for ModuleView)
+  const completedIdsResult = await getDb().execute({
+    sql: `SELECT lesson_id FROM user_academy_progress WHERE user_id = ?`,
+    args: [userId],
+  })
+
   return {
     totalLessons: Number(totalResult.rows[0]?.total || 0),
     completedLessons: Number(completedResult.rows[0]?.completed || 0),
     moduleProgress: moduleProgress.rows,
     recentlyCompleted: recentResult.rows,
+    completedLessonIds: completedIdsResult.rows.map(r => r.lesson_id),
   }
 }
 

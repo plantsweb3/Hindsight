@@ -314,8 +314,49 @@ function HeroSection({ user, xpProgress, levelInfo, totalLessons, completedLesso
   )
 }
 
+// Locked Module Popup Component
+function LockedModulePopup({ module, onClose, onGoToNextLesson, onPlacementTest }) {
+  return (
+    <div className="locked-popup-overlay" onClick={onClose}>
+      <div className="locked-popup glass-card" onClick={e => e.stopPropagation()}>
+        <button className="locked-popup-close" onClick={onClose}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+        <div className="locked-popup-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+        </div>
+        <h3 className="locked-popup-title">Module Locked</h3>
+        <p className="locked-popup-message">
+          Complete <strong>{module?.prevModuleTitle || 'previous modules'}</strong> to unlock <strong>{module?.title}</strong>
+        </p>
+        <div className="locked-popup-actions">
+          <button className="locked-popup-btn primary" onClick={onGoToNextLesson}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            Continue Learning
+          </button>
+          <button className="locked-popup-btn secondary" onClick={onPlacementTest}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+            </svg>
+            Take Placement Test
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Enhanced Module Card Component
-function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent = false, isComplete = false }) {
+function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent = false, isComplete = false, onLockedClick }) {
   const navigate = useNavigate()
   const totalLessons = module.lesson_count || 0
   const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
@@ -332,6 +373,7 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
   const handleClick = (e) => {
     if (isLocked) {
       e.preventDefault()
+      if (onLockedClick) onLockedClick(module)
       return
     }
     navigate(`/academy/${module.slug}`)
@@ -541,6 +583,7 @@ export default function AcademyDashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [expandedArchetype, setExpandedArchetype] = useState(null)
+  const [lockedModulePopup, setLockedModulePopup] = useState(null)
 
   // Tab state with localStorage persistence
   const [activeTab, setActiveTab] = useState(() => {
@@ -644,11 +687,13 @@ export default function AcademyDashboard() {
 
     // Check if previous modules are complete for locking
     let prevComplete = true
+    let prevModuleTitle = null
     for (let i = 0; i < index; i++) {
       const prevModule = modules[i]
       const prevProgress = progress[prevModule.id] || 0
       if (prevProgress < (prevModule.lesson_count || 0)) {
         prevComplete = false
+        prevModuleTitle = prevModule.title
         break
       }
     }
@@ -656,7 +701,27 @@ export default function AcademyDashboard() {
     const isLocked = index > 0 && !prevComplete && !isComplete
     const isCurrent = !isComplete && !isLocked && prevComplete
 
-    return { isComplete, isLocked, isCurrent }
+    return { isComplete, isLocked, isCurrent, prevModuleTitle }
+  }
+
+  // Handle locked module click
+  const handleLockedModuleClick = (module, prevModuleTitle) => {
+    setLockedModulePopup({ ...module, prevModuleTitle })
+  }
+
+  // Handle "Continue Learning" from popup
+  const handleContinueLearning = () => {
+    setLockedModulePopup(null)
+    if (nextLesson) {
+      navigate(`/academy/${nextLesson.module_slug}/${nextLesson.slug}`)
+    }
+  }
+
+  // Handle "Take Placement Test" from popup
+  const handlePlacementTest = () => {
+    setLockedModulePopup(null)
+    // TODO: Implement placement test - for now navigate to quiz or first module
+    navigate('/academy')
   }
 
   // Filter archetypes for "Explore Other Archetypes" section
@@ -717,7 +782,7 @@ export default function AcademyDashboard() {
             <section className="modules-section">
               <div className="modules-grid">
                 {modules.map((module, index) => {
-                  const { isComplete, isLocked, isCurrent } = getModuleState(module, index)
+                  const { isComplete, isLocked, isCurrent, prevModuleTitle } = getModuleState(module, index)
                   return (
                     <ModuleCard
                       key={module.id}
@@ -726,6 +791,7 @@ export default function AcademyDashboard() {
                       isComplete={isComplete}
                       isLocked={isLocked}
                       isCurrent={isCurrent}
+                      onLockedClick={() => handleLockedModuleClick(module, prevModuleTitle)}
                     />
                   )
                 })}
@@ -829,6 +895,16 @@ export default function AcademyDashboard() {
           </>
         )}
       </div>
+
+      {/* Locked Module Popup */}
+      {lockedModulePopup && (
+        <LockedModulePopup
+          module={lockedModulePopup}
+          onClose={() => setLockedModulePopup(null)}
+          onGoToNextLesson={handleContinueLearning}
+          onPlacementTest={handlePlacementTest}
+        />
+      )}
     </div>
   )
 }
