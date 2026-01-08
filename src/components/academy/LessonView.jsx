@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate, useOutletContext } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import Quiz from './Quiz'
+import { NEWCOMER_QUIZZES, getQuizByLessonSlug } from '../../data/quizzes/newcomer'
 
 function MarkdownContent({ content }) {
   // Simple markdown-to-html conversion for basic formatting
@@ -57,10 +59,23 @@ export default function LessonView() {
   const [isMarking, setIsMarking] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [showQuiz, setShowQuiz] = useState(false)
+  const [quizScore, setQuizScore] = useState(null)
+  const [xpEarned, setXpEarned] = useState(0)
+
+  // Get quiz for this lesson if it exists
+  const quiz = getQuizByLessonSlug(lessonSlug)
 
   useEffect(() => {
     fetchLesson()
   }, [moduleSlug, lessonSlug, token])
+
+  // Fetch quiz scores when lesson loads
+  useEffect(() => {
+    if (token && quiz) {
+      fetchQuizScore()
+    }
+  }, [token, lessonSlug])
 
   const fetchLesson = async () => {
     setIsLoading(true)
@@ -97,23 +112,63 @@ export default function LessonView() {
     }
   }
 
+  const fetchQuizScore = async () => {
+    try {
+      const res = await fetch('/api/academy/quiz/scores', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        const score = data.scores?.find(s => s.quiz_id === lessonSlug)
+        if (score) {
+          setQuizScore(score)
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch quiz score:', err)
+    }
+  }
+
   const handleMarkComplete = async () => {
     if (!token || !lesson) return
 
     setIsMarking(true)
     try {
-      const res = await fetch(`/api/academy/progress/${lesson.id}`, {
+      // Use new XP-enabled endpoint
+      const res = await fetch('/api/academy/lesson/complete', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ lessonId: lesson.id })
       })
       if (res.ok) {
+        const data = await res.json()
         setIsCompleted(true)
+        if (data.xpEarned > 0) {
+          setXpEarned(data.xpEarned)
+        }
       }
     } catch (err) {
       console.error('Failed to mark lesson complete:', err)
     } finally {
       setIsMarking(false)
     }
+  }
+
+  const handleQuizComplete = (results) => {
+    setQuizScore({
+      best_score: results.score,
+      best_xp_earned: results.xpEarned
+    })
+    if (results.xpEarned > 0) {
+      setXpEarned(prev => prev + results.xpEarned)
+    }
+  }
+
+  const handleQuizClose = () => {
+    setShowQuiz(false)
   }
 
   const navigateToLesson = (slug) => {
@@ -192,7 +247,55 @@ export default function LessonView() {
       {/* Lesson Content */}
       <article className="lesson-content glass-card">
         <MarkdownContent content={lesson.content} />
+
+        {/* Quiz Section */}
+        {quiz && isAuthenticated && (
+          <div className="lesson-quiz-section">
+            <div className="lesson-quiz-prompt">
+              <div className="lesson-quiz-info">
+                <span className="lesson-quiz-title">Test Your Knowledge</span>
+                <span className="lesson-quiz-desc">
+                  {quizScore
+                    ? `Best score: ${quizScore.best_score}/5 - ${quizScore.best_xp_earned} XP earned`
+                    : '5 questions - Pass with 80% to earn XP'}
+                </span>
+              </div>
+              <button
+                onClick={() => setShowQuiz(true)}
+                className={`lesson-quiz-btn ${quizScore?.best_score === 5 ? 'completed' : ''}`}
+              >
+                {quizScore ? (
+                  quizScore.best_score === 5 ? (
+                    <>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      Perfect!
+                    </>
+                  ) : (
+                    'Retake Quiz'
+                  )
+                ) : (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 11l3 3L22 4" />
+                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                    </svg>
+                    Take Quiz
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
       </article>
+
+      {/* XP Earned Notification */}
+      {xpEarned > 0 && (
+        <div className="xp-earned-notification">
+          <span className="xp-earned-badge">+{xpEarned} XP</span>
+        </div>
+      )}
 
       {/* Actions */}
       <div className="lesson-actions">
@@ -265,6 +368,21 @@ export default function LessonView() {
           </Link>
         )}
       </nav>
+
+      {/* Quiz Modal */}
+      {showQuiz && quiz && (
+        <div className="quiz-modal-overlay" onClick={(e) => {
+          if (e.target === e.currentTarget) handleQuizClose()
+        }}>
+          <div className="quiz-modal-content">
+            <Quiz
+              quiz={quiz}
+              onComplete={handleQuizComplete}
+              onClose={handleQuizClose}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

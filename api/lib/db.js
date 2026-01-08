@@ -220,6 +220,93 @@ export async function initDb() {
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_academy_lessons_slug ON academy_lessons(slug)`)
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_academy_progress_user_id ON user_academy_progress(user_id)`)
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_academy_progress_lesson_id ON user_academy_progress(lesson_id)`)
+
+  // ============================================
+  // Quiz and XP System Tables
+  // ============================================
+
+  // User XP and progression
+  await getDb().execute(`
+    CREATE TABLE IF NOT EXISTS user_xp_progress (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL UNIQUE,
+      total_xp INTEGER DEFAULT 0,
+      current_level INTEGER DEFAULT 1,
+      current_streak INTEGER DEFAULT 0,
+      longest_streak INTEGER DEFAULT 0,
+      last_activity_date TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `)
+
+  // Quiz attempts and scores
+  await getDb().execute(`
+    CREATE TABLE IF NOT EXISTS quiz_attempts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      quiz_id TEXT NOT NULL,
+      score INTEGER NOT NULL,
+      total_questions INTEGER NOT NULL,
+      passed INTEGER NOT NULL,
+      perfect INTEGER NOT NULL,
+      xp_earned INTEGER NOT NULL,
+      answers_json TEXT,
+      attempted_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `)
+
+  // Track best quiz scores (for retakes)
+  await getDb().execute(`
+    CREATE TABLE IF NOT EXISTS quiz_best_scores (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      quiz_id TEXT NOT NULL,
+      best_score INTEGER NOT NULL,
+      best_xp_earned INTEGER NOT NULL,
+      attempts INTEGER DEFAULT 1,
+      first_passed_at TEXT,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      UNIQUE(user_id, quiz_id)
+    )
+  `)
+
+  // Achievements/badges earned
+  await getDb().execute(`
+    CREATE TABLE IF NOT EXISTS user_achievements (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      achievement_id TEXT NOT NULL,
+      earned_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      UNIQUE(user_id, achievement_id)
+    )
+  `)
+
+  // Module completion tracking
+  await getDb().execute(`
+    CREATE TABLE IF NOT EXISTS module_completions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      module_id TEXT NOT NULL,
+      completed_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      final_test_score INTEGER,
+      final_test_xp INTEGER,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      UNIQUE(user_id, module_id)
+    )
+  `)
+
+  // Quiz/XP indexes
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_user_xp_progress_user_id ON user_xp_progress(user_id)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_quiz_attempts_user_id ON quiz_attempts(user_id)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_quiz_attempts_quiz_id ON quiz_attempts(quiz_id)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_quiz_best_scores_user_id ON quiz_best_scores(user_id)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_user_achievements_user_id ON user_achievements(user_id)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_module_completions_user_id ON module_completions(user_id)`)
 }
 
 // User functions
@@ -1848,6 +1935,261 @@ export async function saveAcademyOnboarding(userId, data) {
     args: [experienceLevel, tradingGoal, placementScore, startSection, userId],
   })
   return true
+}
+
+// ============================================
+// Quiz and XP System Functions
+// ============================================
+
+// Get or create user XP progress
+export async function getUserXpProgress(userId) {
+  let result = await getDb().execute({
+    sql: `SELECT * FROM user_xp_progress WHERE user_id = ?`,
+    args: [userId],
+  })
+
+  if (!result.rows.length) {
+    // Create new progress record
+    await getDb().execute({
+      sql: `INSERT INTO user_xp_progress (user_id) VALUES (?)`,
+      args: [userId],
+    })
+    result = await getDb().execute({
+      sql: `SELECT * FROM user_xp_progress WHERE user_id = ?`,
+      args: [userId],
+    })
+  }
+
+  return result.rows[0]
+}
+
+// Update user XP and check for level up
+export async function addUserXp(userId, xpAmount, levelThresholds) {
+  const progress = await getUserXpProgress(userId)
+  const newTotalXp = progress.total_xp + xpAmount
+
+  // Calculate new level
+  let newLevel = 1
+  for (const threshold of levelThresholds) {
+    if (newTotalXp >= threshold.xpRequired) {
+      newLevel = threshold.level
+    } else {
+      break
+    }
+  }
+
+  const leveledUp = newLevel > progress.current_level
+
+  await getDb().execute({
+    sql: `UPDATE user_xp_progress SET
+            total_xp = ?,
+            current_level = ?,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE user_id = ?`,
+    args: [newTotalXp, newLevel, userId],
+  })
+
+  return {
+    previousXp: progress.total_xp,
+    newTotalXp,
+    xpEarned: xpAmount,
+    previousLevel: progress.current_level,
+    newLevel,
+    leveledUp,
+  }
+}
+
+// Update streak (call on any activity)
+export async function updateStreak(userId) {
+  const progress = await getUserXpProgress(userId)
+  const today = new Date().toISOString().split('T')[0]
+  const lastActivity = progress.last_activity_date
+
+  let newStreak = progress.current_streak
+  let streakMilestone = null
+
+  if (!lastActivity) {
+    // First activity ever
+    newStreak = 1
+  } else if (lastActivity === today) {
+    // Already logged activity today, no change
+    return { streak: newStreak, isNewDay: false }
+  } else {
+    // Check if yesterday
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    const yesterdayStr = yesterday.toISOString().split('T')[0]
+
+    if (lastActivity === yesterdayStr) {
+      // Streak continues
+      newStreak = progress.current_streak + 1
+    } else {
+      // Streak broken, start fresh
+      newStreak = 1
+    }
+  }
+
+  const newLongest = Math.max(newStreak, progress.longest_streak)
+
+  // Check for streak milestones
+  if (newStreak === 7) streakMilestone = 'STREAK_7_DAY'
+  else if (newStreak === 30) streakMilestone = 'STREAK_30_DAY'
+  else if (newStreak === 100) streakMilestone = 'STREAK_100_DAY'
+
+  await getDb().execute({
+    sql: `UPDATE user_xp_progress SET
+            current_streak = ?,
+            longest_streak = ?,
+            last_activity_date = ?,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE user_id = ?`,
+    args: [newStreak, newLongest, today, userId],
+  })
+
+  return { streak: newStreak, longestStreak: newLongest, isNewDay: true, streakMilestone }
+}
+
+// Record quiz attempt
+export async function recordQuizAttempt(userId, quizId, score, totalQuestions, passed, perfect, xpEarned, answers) {
+  await getDb().execute({
+    sql: `INSERT INTO quiz_attempts (user_id, quiz_id, score, total_questions, passed, perfect, xp_earned, answers_json)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [userId, quizId, score, totalQuestions, passed ? 1 : 0, perfect ? 1 : 0, xpEarned, JSON.stringify(answers)],
+  })
+}
+
+// Get or update best quiz score (returns XP to award - only difference if improvement)
+export async function updateQuizBestScore(userId, quizId, score, potentialXp) {
+  const result = await getDb().execute({
+    sql: `SELECT * FROM quiz_best_scores WHERE user_id = ? AND quiz_id = ?`,
+    args: [userId, quizId],
+  })
+
+  if (!result.rows.length) {
+    // First attempt
+    await getDb().execute({
+      sql: `INSERT INTO quiz_best_scores (user_id, quiz_id, best_score, best_xp_earned, first_passed_at)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+      args: [userId, quizId, score, potentialXp],
+    })
+    return { xpToAward: potentialXp, isFirstAttempt: true, previousBest: 0 }
+  }
+
+  const current = result.rows[0]
+  const newAttempts = current.attempts + 1
+
+  if (potentialXp > current.best_xp_earned) {
+    // Improved! Award the difference
+    const xpDifference = potentialXp - current.best_xp_earned
+    await getDb().execute({
+      sql: `UPDATE quiz_best_scores SET
+              best_score = ?,
+              best_xp_earned = ?,
+              attempts = ?,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = ? AND quiz_id = ?`,
+      args: [score, potentialXp, newAttempts, userId, quizId],
+    })
+    return { xpToAward: xpDifference, isFirstAttempt: false, previousBest: current.best_score, improved: true }
+  }
+
+  // No improvement, just increment attempts
+  await getDb().execute({
+    sql: `UPDATE quiz_best_scores SET attempts = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND quiz_id = ?`,
+    args: [newAttempts, userId, quizId],
+  })
+  return { xpToAward: 0, isFirstAttempt: false, previousBest: current.best_score, improved: false }
+}
+
+// Get user's quiz history for a specific quiz
+export async function getQuizHistory(userId, quizId) {
+  const result = await getDb().execute({
+    sql: `SELECT * FROM quiz_attempts WHERE user_id = ? AND quiz_id = ? ORDER BY attempted_at DESC LIMIT 10`,
+    args: [userId, quizId],
+  })
+  return result.rows
+}
+
+// Get user's best scores for all quizzes
+export async function getAllQuizBestScores(userId) {
+  const result = await getDb().execute({
+    sql: `SELECT * FROM quiz_best_scores WHERE user_id = ?`,
+    args: [userId],
+  })
+  return result.rows
+}
+
+// Award achievement
+export async function awardAchievement(userId, achievementId) {
+  try {
+    await getDb().execute({
+      sql: `INSERT INTO user_achievements (user_id, achievement_id) VALUES (?, ?)`,
+      args: [userId, achievementId],
+    })
+    return { awarded: true, isNew: true }
+  } catch (e) {
+    // Already has achievement
+    return { awarded: false, isNew: false }
+  }
+}
+
+// Get user's achievements
+export async function getUserAchievements(userId) {
+  const result = await getDb().execute({
+    sql: `SELECT * FROM user_achievements WHERE user_id = ?`,
+    args: [userId],
+  })
+  return result.rows
+}
+
+// Record module completion
+export async function recordModuleCompletion(userId, moduleId, finalTestScore, finalTestXp) {
+  try {
+    await getDb().execute({
+      sql: `INSERT INTO module_completions (user_id, module_id, final_test_score, final_test_xp)
+            VALUES (?, ?, ?, ?)`,
+      args: [userId, moduleId, finalTestScore, finalTestXp],
+    })
+    return { completed: true, isNew: true }
+  } catch (e) {
+    // Already completed
+    return { completed: false, isNew: false }
+  }
+}
+
+// Get user's module completions
+export async function getModuleCompletions(userId) {
+  const result = await getDb().execute({
+    sql: `SELECT * FROM module_completions WHERE user_id = ?`,
+    args: [userId],
+  })
+  return result.rows
+}
+
+// Get comprehensive progress for a user (for dashboard display)
+export async function getFullUserProgress(userId) {
+  const xpProgress = await getUserXpProgress(userId)
+  const achievements = await getUserAchievements(userId)
+  const quizScores = await getAllQuizBestScores(userId)
+  const moduleCompletions = await getModuleCompletions(userId)
+  const academyProgress = await getUserAcademyProgress(userId)
+
+  return {
+    xp: {
+      total: xpProgress.total_xp,
+      level: xpProgress.current_level,
+      streak: xpProgress.current_streak,
+      longestStreak: xpProgress.longest_streak,
+      lastActivity: xpProgress.last_activity_date,
+    },
+    achievements: achievements.map(a => a.achievement_id),
+    quizScores: quizScores.reduce((acc, q) => {
+      acc[q.quiz_id] = { score: q.best_score, xp: q.best_xp_earned, attempts: q.attempts }
+      return acc
+    }, {}),
+    moduleCompletions: moduleCompletions.map(m => m.module_id),
+    lessonProgress: academyProgress,
+  }
 }
 
 export default getDb

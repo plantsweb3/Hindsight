@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react'
 import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import AcademyOnboarding from './AcademyOnboarding'
+import XPBar from './XPBar'
 
 function AcademyHeader() {
+  const { isAuthenticated } = useAuth()
+
   return (
     <header className="academy-header">
       <div className="academy-header-left">
@@ -12,6 +15,9 @@ function AcademyHeader() {
           <span className="academy-logo-text">hindsight</span>
         </Link>
         <span className="academy-badge">Academy</span>
+      </div>
+      <div className="academy-header-center">
+        {isAuthenticated && <XPBar compact />}
       </div>
       <nav className="academy-nav">
         <Link to="/academy" className="academy-nav-link">

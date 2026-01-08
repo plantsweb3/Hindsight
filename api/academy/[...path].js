@@ -9,9 +9,53 @@ import {
   getUserById,
   seedAcademyContent,
   getAcademyOnboardingStatus,
-  saveAcademyOnboarding
+  saveAcademyOnboarding,
+  // Quiz and XP functions
+  getUserXpProgress,
+  addUserXp,
+  updateStreak,
+  recordQuizAttempt,
+  updateQuizBestScore,
+  getAllQuizBestScores,
+  getUserAchievements,
+  awardAchievement,
+  getModuleCompletions,
+  recordModuleCompletion,
+  getFullUserProgress,
 } from '../lib/db.js'
 import jwt from 'jsonwebtoken'
+
+// XP Configuration (duplicated from frontend for server-side calculations)
+const XP_CONFIG = {
+  LESSON_READ: 10,
+  QUIZ_PASS: 15,
+  QUIZ_PERFECT: 25,
+  MODULE_FINAL_PASS: 40,
+  MODULE_FINAL_PERFECT: 60,
+  MODULE_COMPLETION_BONUS: 50,
+  STREAK_7_DAY: 25,
+  STREAK_30_DAY: 100,
+  STREAK_100_DAY: 500,
+  PASS_THRESHOLD: 0.8,
+}
+
+const LEVEL_THRESHOLDS = [
+  { level: 1, xpRequired: 0, title: 'Newcomer' },
+  { level: 2, xpRequired: 50, title: 'Newcomer' },
+  { level: 3, xpRequired: 125, title: 'Newcomer' },
+  { level: 4, xpRequired: 225, title: 'Apprentice' },
+  { level: 5, xpRequired: 375, title: 'Apprentice' },
+  { level: 6, xpRequired: 575, title: 'Apprentice' },
+  { level: 7, xpRequired: 825, title: 'Journeyman' },
+  { level: 8, xpRequired: 1125, title: 'Journeyman' },
+  { level: 9, xpRequired: 1525, title: 'Journeyman' },
+  { level: 10, xpRequired: 2025, title: 'Expert' },
+  { level: 11, xpRequired: 2625, title: 'Expert' },
+  { level: 12, xpRequired: 3375, title: 'Expert' },
+  { level: 13, xpRequired: 4275, title: 'Master' },
+  { level: 14, xpRequired: 5275, title: 'Master' },
+  { level: 15, xpRequired: 6475, title: 'Legend' },
+]
 
 const JWT_SECRET = process.env.JWT_SECRET || 'hindsight-dev-secret-change-in-production'
 
@@ -200,6 +244,249 @@ export default async function handler(req, res) {
       })
 
       return res.status(200).json({ success: true, message: 'Onboarding complete' })
+    }
+
+    // ============================================
+    // Quiz and XP System Endpoints
+    // ============================================
+
+    // GET /api/academy/xp-progress - Get user's full XP progress (requires auth)
+    if (method === 'GET' && segments.length === 1 && segments[0] === 'xp-progress') {
+      const user = await authenticateUser(req)
+      if (!user) {
+        return res.status(401).json({ error: 'Authentication required' })
+      }
+
+      const fullProgress = await getFullUserProgress(user.id)
+
+      // Calculate level info
+      let currentLevelInfo = LEVEL_THRESHOLDS[0]
+      let nextLevelInfo = LEVEL_THRESHOLDS[1]
+      for (let i = 0; i < LEVEL_THRESHOLDS.length; i++) {
+        if (fullProgress.xp.total >= LEVEL_THRESHOLDS[i].xpRequired) {
+          currentLevelInfo = LEVEL_THRESHOLDS[i]
+          nextLevelInfo = LEVEL_THRESHOLDS[i + 1] || null
+        } else {
+          break
+        }
+      }
+
+      const xpInCurrentLevel = fullProgress.xp.total - currentLevelInfo.xpRequired
+      const xpForNextLevel = nextLevelInfo ? nextLevelInfo.xpRequired - currentLevelInfo.xpRequired : 0
+      const progressPercent = nextLevelInfo ? Math.round((xpInCurrentLevel / xpForNextLevel) * 100) : 100
+
+      return res.status(200).json({
+        ...fullProgress,
+        levelInfo: {
+          level: currentLevelInfo.level,
+          title: currentLevelInfo.title,
+          xpInCurrentLevel,
+          xpForNextLevel,
+          xpToNextLevel: nextLevelInfo ? nextLevelInfo.xpRequired - fullProgress.xp.total : 0,
+          progressPercent,
+          isMaxLevel: !nextLevelInfo,
+        }
+      })
+    }
+
+    // POST /api/academy/lesson/complete - Mark lesson complete and award XP (requires auth)
+    if (method === 'POST' && segments.length === 2 && segments[0] === 'lesson' && segments[1] === 'complete') {
+      const user = await authenticateUser(req)
+      if (!user) {
+        return res.status(401).json({ error: 'Authentication required' })
+      }
+
+      const { lessonId } = req.body
+      if (!lessonId) {
+        return res.status(400).json({ error: 'Lesson ID required' })
+      }
+
+      // Mark lesson complete
+      const wasNewCompletion = await markLessonComplete(user.id, lessonId)
+
+      // Update streak
+      const streakResult = await updateStreak(user.id)
+
+      let xpResult = null
+      let streakXpResult = null
+
+      // Only award XP if this was a new completion
+      if (wasNewCompletion) {
+        xpResult = await addUserXp(user.id, XP_CONFIG.LESSON_READ, LEVEL_THRESHOLDS)
+
+        // Check for streak milestone bonus
+        if (streakResult.streakMilestone) {
+          const streakXp = XP_CONFIG[streakResult.streakMilestone] || 0
+          if (streakXp > 0) {
+            streakXpResult = await addUserXp(user.id, streakXp, LEVEL_THRESHOLDS)
+          }
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        wasNewCompletion,
+        xpEarned: wasNewCompletion ? XP_CONFIG.LESSON_READ : 0,
+        totalXp: xpResult?.newTotalXp || (await getUserXpProgress(user.id)).total_xp,
+        leveledUp: xpResult?.leveledUp || false,
+        newLevel: xpResult?.newLevel || null,
+        streak: streakResult.streak,
+        streakMilestone: streakResult.streakMilestone,
+        streakXpEarned: streakXpResult?.xpEarned || 0,
+      })
+    }
+
+    // POST /api/academy/quiz/submit - Submit quiz answers and get results (requires auth)
+    if (method === 'POST' && segments.length === 2 && segments[0] === 'quiz' && segments[1] === 'submit') {
+      const user = await authenticateUser(req)
+      if (!user) {
+        return res.status(401).json({ error: 'Authentication required' })
+      }
+
+      const { quizId, answers, questions, isModuleTest } = req.body
+
+      if (!quizId || !answers || !questions) {
+        return res.status(400).json({ error: 'Quiz ID, answers, and questions required' })
+      }
+
+      // Score the quiz
+      let correctCount = 0
+      const questionResults = []
+
+      for (const question of questions) {
+        const userAnswer = answers[question.id]
+        let isCorrect = false
+
+        if (question.type === 'multiple-choice') {
+          isCorrect = userAnswer === question.correctAnswer
+        } else if (question.type === 'true-false') {
+          isCorrect = userAnswer === question.correctAnswer
+        } else if (question.type === 'select-all') {
+          // For select-all: must have all correct and no incorrect
+          const userAnswers = Array.isArray(userAnswer) ? userAnswer : []
+          const correctAnswers = question.correctAnswers || []
+          const hasAllCorrect = correctAnswers.every(a => userAnswers.includes(a))
+          const hasNoIncorrect = userAnswers.every(a => correctAnswers.includes(a))
+          isCorrect = hasAllCorrect && hasNoIncorrect
+        }
+
+        if (isCorrect) correctCount++
+        questionResults.push({
+          questionId: question.id,
+          isCorrect,
+          userAnswer,
+          correctAnswer: question.correctAnswer || question.correctAnswers,
+          explanation: question.explanation,
+        })
+      }
+
+      const totalQuestions = questions.length
+      const score = correctCount
+      const percent = score / totalQuestions
+      const passed = percent >= XP_CONFIG.PASS_THRESHOLD
+      const perfect = score === totalQuestions
+
+      // Calculate potential XP
+      let potentialXp = 0
+      if (passed) {
+        if (isModuleTest) {
+          potentialXp = perfect ? XP_CONFIG.MODULE_FINAL_PERFECT : XP_CONFIG.MODULE_FINAL_PASS
+        } else {
+          potentialXp = perfect ? XP_CONFIG.QUIZ_PERFECT : XP_CONFIG.QUIZ_PASS
+        }
+      }
+
+      // Update streak on quiz activity
+      await updateStreak(user.id)
+
+      // Get XP to award (handles retakes - only awards difference)
+      const bestScoreResult = await updateQuizBestScore(user.id, quizId, score, potentialXp)
+      const xpToAward = bestScoreResult.xpToAward
+
+      // Record the attempt
+      await recordQuizAttempt(user.id, quizId, score, totalQuestions, passed, perfect, xpToAward, answers)
+
+      // Award XP if any
+      let xpResult = null
+      if (xpToAward > 0) {
+        xpResult = await addUserXp(user.id, xpToAward, LEVEL_THRESHOLDS)
+      }
+
+      // Get updated progress
+      const updatedProgress = await getUserXpProgress(user.id)
+
+      return res.status(200).json({
+        score,
+        totalQuestions,
+        percent: Math.round(percent * 100),
+        passed,
+        perfect,
+        xpEarned: xpToAward,
+        potentialXp,
+        wasImprovement: bestScoreResult.improved || bestScoreResult.isFirstAttempt,
+        previousBest: bestScoreResult.previousBest,
+        totalXp: updatedProgress.total_xp,
+        level: updatedProgress.current_level,
+        leveledUp: xpResult?.leveledUp || false,
+        newLevel: xpResult?.newLevel || null,
+        questionResults,
+      })
+    }
+
+    // GET /api/academy/quiz/scores - Get user's quiz scores (requires auth)
+    if (method === 'GET' && segments.length === 2 && segments[0] === 'quiz' && segments[1] === 'scores') {
+      const user = await authenticateUser(req)
+      if (!user) {
+        return res.status(401).json({ error: 'Authentication required' })
+      }
+
+      const scores = await getAllQuizBestScores(user.id)
+      return res.status(200).json({ scores })
+    }
+
+    // GET /api/academy/achievements - Get user's achievements (requires auth)
+    if (method === 'GET' && segments.length === 1 && segments[0] === 'achievements') {
+      const user = await authenticateUser(req)
+      if (!user) {
+        return res.status(401).json({ error: 'Authentication required' })
+      }
+
+      const achievements = await getUserAchievements(user.id)
+      return res.status(200).json({ achievements: achievements.map(a => a.achievement_id) })
+    }
+
+    // POST /api/academy/module/complete - Record module completion (requires auth)
+    if (method === 'POST' && segments.length === 2 && segments[0] === 'module' && segments[1] === 'complete') {
+      const user = await authenticateUser(req)
+      if (!user) {
+        return res.status(401).json({ error: 'Authentication required' })
+      }
+
+      const { moduleId, finalTestScore, finalTestXp } = req.body
+      if (!moduleId) {
+        return res.status(400).json({ error: 'Module ID required' })
+      }
+
+      const result = await recordModuleCompletion(user.id, moduleId, finalTestScore, finalTestXp)
+
+      // Award module completion bonus if new
+      let xpResult = null
+      if (result.isNew) {
+        xpResult = await addUserXp(user.id, XP_CONFIG.MODULE_COMPLETION_BONUS, LEVEL_THRESHOLDS)
+
+        // Award first_steps achievement for completing newcomer
+        if (moduleId === 'newcomer') {
+          await awardAchievement(user.id, 'first_steps')
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        isNew: result.isNew,
+        bonusXp: result.isNew ? XP_CONFIG.MODULE_COMPLETION_BONUS : 0,
+        totalXp: xpResult?.newTotalXp || (await getUserXpProgress(user.id)).total_xp,
+        leveledUp: xpResult?.leveledUp || false,
+      })
     }
 
     // 404 for unmatched routes
