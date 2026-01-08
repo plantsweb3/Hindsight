@@ -190,7 +190,7 @@ function RecommendedLesson({ lesson }) {
 }
 
 export default function AcademyDashboard() {
-  const { isAuthenticated, user } = useOutletContext()
+  const { isAuthenticated, user, openAuthModal } = useOutletContext()
   const { token } = useAuth()
   const [modules, setModules] = useState([])
   const [recommended, setRecommended] = useState([])
@@ -398,9 +398,9 @@ export default function AcademyDashboard() {
                     <p>Sign in and take the personality quiz to highlight your archetype</p>
                   </div>
                 </div>
-                <Link to="/" className="quiz-cta-btn">
+                <button onClick={() => openAuthModal('signup')} className="quiz-cta-btn">
                   Sign In
-                </Link>
+                </button>
               </div>
             )}
 
@@ -430,9 +430,9 @@ export default function AcademyDashboard() {
           <p className="cta-desc">
             Sign in to save your progress, get personalized recommendations based on your trading archetype, and unlock your full learning potential.
           </p>
-          <Link to="/" className="cta-btn">
+          <button onClick={() => openAuthModal('signup')} className="cta-btn">
             Sign In to Get Started
-          </Link>
+          </button>
         </section>
       )}
     </div>
