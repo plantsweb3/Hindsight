@@ -55,7 +55,7 @@ const PLACEMENT_QUESTIONS = [
     correct: 3
   },
   {
-    question: "What's the main advantage of using Photon or Bullx over Jupiter?",
+    question: "What's the main advantage of using a terminal like Padre or Axiom over Jupiter?",
     options: [
       "Speed, wallet tracking, and advanced order types",
       "Lower fees",
