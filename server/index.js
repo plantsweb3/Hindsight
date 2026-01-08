@@ -24,7 +24,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/journal', journalRoutes)
 
 // Academy seed endpoint (for local dev)
-const ADMIN_PASSWORD = 'DeusVult777!'
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'change-admin-password-in-env'
 app.post('/api/academy/seed', async (req, res) => {
   const adminPassword = req.headers['x-admin-password']
   if (adminPassword !== ADMIN_PASSWORD) {

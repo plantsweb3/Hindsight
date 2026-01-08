@@ -2,7 +2,7 @@ import { initDb } from './lib/db.js'
 import { cors, json, error } from './lib/auth.js'
 
 export default async function handler(req, res) {
-  cors(res)
+  cors(res, req)
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()

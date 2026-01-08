@@ -1,11 +1,11 @@
 import { getBugReports, updateBugReportStatus } from '../lib/db.js'
 import { cors, json, error, authenticateRequest } from '../lib/auth.js'
 
-const ADMIN_PASSWORD = 'DeusVult777!'
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'change-admin-password-in-env'
 const VALID_STATUSES = ['new', 'reviewing', 'resolved']
 
 export default async function handler(req, res) {
-  cors(res)
+  cors(res, req)
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()

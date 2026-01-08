@@ -44,9 +44,26 @@ export function error(res, message, status = 400) {
 }
 
 // CORS headers for API routes
-export function cors(res) {
+// In production, set ALLOWED_ORIGINS env var to restrict origins
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : null // null means allow all (development mode)
+
+export function cors(res, req) {
   res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Authorization,Content-Type')
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization,Content-Type,X-Admin-Password')
+
+  // Get the request origin
+  const origin = req?.headers?.origin
+
+  if (ALLOWED_ORIGINS) {
+    // Production: only allow configured origins
+    if (origin && ALLOWED_ORIGINS.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin)
+    }
+  } else {
+    // Development: allow all origins
+    res.setHeader('Access-Control-Allow-Origin', origin || '*')
+  }
 }

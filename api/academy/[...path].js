@@ -23,6 +23,7 @@ import {
   recordModuleCompletion,
   getFullUserProgress,
 } from '../lib/db.js'
+import { cors } from '../lib/auth.js'
 import jwt from 'jsonwebtoken'
 
 // XP Configuration (duplicated from frontend for server-side calculations)
@@ -92,7 +93,7 @@ async function authenticateUser(req) {
   try {
     const token = authHeader.split(' ')[1]
     const decoded = jwt.verify(token, JWT_SECRET)
-    const user = await getUserById(decoded.userId)
+    const user = await getUserById(decoded.id)
     return user
   } catch (err) {
     return null
@@ -108,9 +109,7 @@ function parsePath(path) {
 
 export default async function handler(req, res) {
   // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  cors(res, req)
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
@@ -198,7 +197,8 @@ export default async function handler(req, res) {
     if (method === 'POST' && segments.length === 1 && segments[0] === 'seed') {
       // Check for admin password (hidden route) or authenticated admin user
       const adminPassword = req.headers['x-admin-password']
-      const isAdminPassword = adminPassword === 'DeusVult777!'
+      const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'change-admin-password-in-env'
+      const isAdminPassword = adminPassword === ADMIN_PASSWORD
 
       if (!isAdminPassword) {
         const user = await authenticateUser(req)

@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { cors } from './lib/auth.js'
 
 // Anthropic client
 const anthropic = new Anthropic({
@@ -8,9 +9,7 @@ const anthropic = new Anthropic({
 // Vercel serverless handler
 export default async function handler(req, res) {
   // Handle CORS
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  cors(res, req)
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()

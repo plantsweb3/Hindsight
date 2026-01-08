@@ -1,4 +1,5 @@
 import { Connection, PublicKey } from '@solana/web3.js'
+import { cors } from './lib/auth.js'
 
 // Helius RPC
 const HELIUS_KEY = process.env.HELIUS_API_KEY
@@ -468,9 +469,7 @@ async function analyzeOpenPositions(walletAddress, trades) {
 // Vercel serverless handler
 export default async function handler(req, res) {
   // Handle CORS
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  cors(res, req)
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()

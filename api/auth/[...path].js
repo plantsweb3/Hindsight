@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs'
+import { PublicKey } from '@solana/web3.js'
 import {
   createUser,
   getUserByUsername,
@@ -21,6 +22,16 @@ import {
 } from '../lib/db.js'
 import { signToken, authenticateRequest, json, error, cors } from '../lib/auth.js'
 
+// Validate Solana wallet address
+function isValidWalletAddress(address) {
+  try {
+    new PublicKey(address)
+    return true
+  } catch {
+    return false
+  }
+}
+
 // Ensure tables exist
 let dbInitialized = false
 async function ensureDb() {
@@ -32,7 +43,7 @@ async function ensureDb() {
 
 export default async function handler(req, res) {
   // Handle CORS
-  cors(res)
+  cors(res, req)
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
   }
@@ -233,6 +244,10 @@ export default async function handler(req, res) {
         return error(res, 'Wallet address required', 400)
       }
 
+      if (!isValidWalletAddress(walletAddress)) {
+        return error(res, 'Invalid Solana wallet address', 400)
+      }
+
       // Check if user can add more wallets
       const canAdd = await canAddWallet(decoded.id)
       if (!canAdd.allowed) {
@@ -302,6 +317,10 @@ export default async function handler(req, res) {
         return error(res, 'Analysis data required', 400)
       }
 
+      if (!isValidWalletAddress(walletAddress)) {
+        return error(res, 'Invalid Solana wallet address', 400)
+      }
+
       const analysisId = await saveAnalysis(decoded.id, walletAddress, analysis, stats)
       await addSavedWallet(decoded.id, walletAddress)
 
@@ -341,6 +360,10 @@ export default async function handler(req, res) {
       const { walletAddress } = req.body || {}
       if (!walletAddress) {
         return error(res, 'Wallet address required', 400)
+      }
+
+      if (!isValidWalletAddress(walletAddress)) {
+        return error(res, 'Invalid Solana wallet address', 400)
       }
 
       console.log('[API] verify-sight: Checking wallet', walletAddress, 'for user', decoded.id)

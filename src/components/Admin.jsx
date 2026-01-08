@@ -54,8 +54,6 @@ function truncate(text, maxLength = 100) {
   return text.substring(0, maxLength) + '...'
 }
 
-const ADMIN_PASSWORD = 'DeusVult777!'
-
 export default function Admin({ onBack, isHiddenRoute = false }) {
   const { token } = useAuth()
   const [reports, setReports] = useState([])
@@ -64,6 +62,7 @@ export default function Admin({ onBack, isHiddenRoute = false }) {
   const [selectedReport, setSelectedReport] = useState(null)
   const [filter, setFilter] = useState('all')
   const [passwordInput, setPasswordInput] = useState('')
+  const [adminPassword, setAdminPassword] = useState('') // Store validated password for API calls
   const [isUnlocked, setIsUnlocked] = useState(!isHiddenRoute) // Already unlocked if not hidden route
   const [passwordError, setPasswordError] = useState('')
   const [isReseeding, setIsReseeding] = useState(false)
@@ -71,27 +70,29 @@ export default function Admin({ onBack, isHiddenRoute = false }) {
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault()
-    if (passwordInput === ADMIN_PASSWORD) {
-      setIsUnlocked(true)
-      setPasswordError('')
-      // Fetch reports immediately after unlocking
-      setIsLoading(true)
-      try {
-        const response = await fetch('/api/admin/bugs', {
-          headers: { 'X-Admin-Password': ADMIN_PASSWORD }
-        })
-        if (response.ok) {
-          const data = await response.json()
-          setReports(data.reports || [])
-        }
-      } catch (err) {
-        console.error('Failed to fetch reports:', err)
-      } finally {
-        setIsLoading(false)
+    // Validate password against backend
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/admin/bugs', {
+        headers: { 'X-Admin-Password': passwordInput }
+      })
+      if (response.ok) {
+        // Password validated by backend
+        setAdminPassword(passwordInput)
+        setIsUnlocked(true)
+        setPasswordError('')
+        const data = await response.json()
+        setReports(data.reports || [])
+      } else if (response.status === 401) {
+        setPasswordError('Invalid admin password')
+      } else {
+        setPasswordError('Server error, please try again')
       }
-    } else {
-      setPasswordError('Incorrect password')
-      setPasswordInput('')
+    } catch (err) {
+      console.error('Failed to validate password:', err)
+      setPasswordError('Connection error, please try again')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -113,8 +114,8 @@ export default function Admin({ onBack, isHiddenRoute = false }) {
       const headers = {}
       if (token) {
         headers['Authorization'] = `Bearer ${token}`
-      } else if (isHiddenRoute && isUnlocked) {
-        headers['X-Admin-Password'] = ADMIN_PASSWORD
+      } else if (isHiddenRoute && isUnlocked && adminPassword) {
+        headers['X-Admin-Password'] = adminPassword
       }
 
       const response = await fetch('/api/admin/bugs', { headers })
@@ -138,8 +139,8 @@ export default function Admin({ onBack, isHiddenRoute = false }) {
       const headers = { 'Content-Type': 'application/json' }
       if (token) {
         headers['Authorization'] = `Bearer ${token}`
-      } else if (isHiddenRoute && isUnlocked) {
-        headers['X-Admin-Password'] = ADMIN_PASSWORD
+      } else if (isHiddenRoute && isUnlocked && adminPassword) {
+        headers['X-Admin-Password'] = adminPassword
       }
 
       const response = await fetch('/api/admin/bugs', {
@@ -177,8 +178,8 @@ export default function Admin({ onBack, isHiddenRoute = false }) {
 
     try {
       const headers = { 'Content-Type': 'application/json' }
-      if (isHiddenRoute && isUnlocked) {
-        headers['X-Admin-Password'] = ADMIN_PASSWORD
+      if (isHiddenRoute && isUnlocked && adminPassword) {
+        headers['X-Admin-Password'] = adminPassword
       }
 
       const response = await fetch('/api/academy/seed?force=true', {

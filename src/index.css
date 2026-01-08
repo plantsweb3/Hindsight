@@ -9401,6 +9401,521 @@ input, button {
   box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
 }
 
+/* ================================
+   GAMIFICATION ELEMENTS
+   ================================ */
+
+/* Welcome Banner */
+.welcome-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.1));
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.welcome-content {
+  flex: 1;
+}
+
+.welcome-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #fff;
+}
+
+.welcome-message {
+  font-size: 0.875rem;
+  color: #a1a1aa;
+  margin: 0;
+}
+
+.continue-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 500;
+  font-size: 0.875rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.continue-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+}
+
+/* Gamification Row - Stats + Daily Goal */
+.gamification-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Stats Bar */
+.stats-bar {
+  display: flex;
+  flex: 1;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(24, 24, 27, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.stat-icon.streak-active {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.1); filter: brightness(1.3); }
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.stat-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* XP Progress in Stats Bar */
+.xp-progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+  min-width: 80px;
+}
+
+.xp-progress-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.xp-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+  border-radius: 3px;
+  transition: width 0.5s ease-out;
+}
+
+.xp-progress-text {
+  font-size: 0.7rem;
+  color: #a1a1aa;
+}
+
+/* Daily Goal Widget */
+.daily-goal-widget {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(24, 24, 27, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  min-width: 140px;
+}
+
+.daily-goal-widget.goal-complete {
+  border-color: rgba(34, 197, 94, 0.4);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(24, 24, 27, 0.8));
+}
+
+.goal-ring-container {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+}
+
+.goal-ring {
+  width: 100%;
+  height: 100%;
+}
+
+.goal-progress-ring {
+  transition: stroke-dashoffset 0.5s ease-out;
+}
+
+.goal-ring-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.goal-xp {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #8b5cf6;
+}
+
+.goal-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.goal-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.goal-progress {
+  font-size: 0.7rem;
+  color: #71717a;
+}
+
+/* Achievement Showcase */
+.achievement-showcase {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  background: rgba(24, 24, 27, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.achievement-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.achievement-title svg {
+  color: #eab308;
+}
+
+.achievement-scroll {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.achievement-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.achievement-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.achievement-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.achievement-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  min-width: 80px;
+  cursor: default;
+  transition: all 0.2s;
+}
+
+.achievement-badge.earned {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.1));
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.achievement-badge.earned:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.achievement-badge.locked {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+
+.achievement-icon {
+  font-size: 1.5rem;
+}
+
+.achievement-name {
+  font-size: 0.65rem;
+  color: #a1a1aa;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.achievement-badge.earned .achievement-name {
+  color: #fff;
+}
+
+.achievement-empty {
+  color: #71717a;
+  font-size: 0.875rem;
+  padding: 1rem;
+}
+
+/* Enhanced Module Cards */
+.module-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.module-card-link {
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+}
+
+.module-card.module-active {
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+}
+
+.module-card.module-locked {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.module-lock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: inherit;
+  z-index: 10;
+  color: #71717a;
+  font-size: 0.75rem;
+}
+
+.module-lock-overlay svg {
+  color: #71717a;
+}
+
+.module-complete-check {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  background: #22c55e;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.module-complete-check svg {
+  color: #fff;
+}
+
+.module-card-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.module-lesson-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.lesson-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transition: all 0.2s;
+}
+
+.lesson-dot.completed {
+  background: #22c55e;
+}
+
+.lesson-dot-more {
+  font-size: 0.625rem;
+  color: #71717a;
+  margin-left: 2px;
+}
+
+.module-progress-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.module-progress-section .module-progress-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.module-progress-section .module-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #3b82f6);
+  border-radius: 2px;
+  transition: width 0.3s ease-out;
+}
+
+.module-progress-section .module-progress-text {
+  font-size: 0.7rem;
+  color: #71717a;
+  white-space: nowrap;
+}
+
+.module-continue-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.module-continue-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.module-complete-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 6px;
+  color: #22c55e;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Responsive Gamification */
+@media (max-width: 768px) {
+  .welcome-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .continue-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .gamification-row {
+    flex-direction: column;
+  }
+
+  .stats-bar {
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    flex: 0 0 calc(50% - 0.25rem);
+  }
+
+  .daily-goal-widget {
+    justify-content: center;
+  }
+
+  .achievement-scroll {
+    padding-left: 1rem;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-item {
+    flex: 0 0 100%;
+    justify-content: center;
+  }
+
+  .stats-bar {
+    gap: 0.25rem;
+    padding: 0.5rem;
+  }
+
+  .stat-value {
+    font-size: 0.85rem;
+  }
+}
+
 /* Module View */
 .module-view {
   display: flex;
