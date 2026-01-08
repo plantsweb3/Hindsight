@@ -5,7 +5,7 @@ import { getArchetypeLesson, getArchetypeModule } from './archetypeData'
 export default function ArchetypeLessonView() {
   const { archetypeId, lessonSlug } = useParams()
   const navigate = useNavigate()
-  const { isAuthenticated } = useOutletContext()
+  const { isAuthenticated, openAuthModal } = useOutletContext()
   const [isCompleted, setIsCompleted] = useState(false)
   const [isMarking, setIsMarking] = useState(false)
 
@@ -147,9 +147,9 @@ export default function ArchetypeLessonView() {
             )}
           </button>
         ) : (
-          <Link to="/" className="lesson-login-prompt">
+          <button onClick={() => openAuthModal('login')} className="lesson-login-prompt">
             Sign in to track your progress
-          </Link>
+          </button>
         )}
       </div>
 

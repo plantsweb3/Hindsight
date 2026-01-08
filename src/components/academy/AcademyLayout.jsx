@@ -3,6 +3,7 @@ import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import AcademyOnboarding from './AcademyOnboarding'
 import XPBar from './XPBar'
+import AuthModal from '../AuthModal'
 
 function AcademyHeader() {
   const { isAuthenticated } = useAuth()
@@ -57,6 +58,13 @@ export default function AcademyLayout() {
   const { isAuthenticated, user, token } = useAuth()
   const [isOnboarded, setIsOnboarded] = useState(null) // null = loading, true/false = status
   const [onboardingData, setOnboardingData] = useState(null)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [authModalMode, setAuthModalMode] = useState('login')
+
+  const openAuthModal = (mode = 'login') => {
+    setAuthModalMode(mode)
+    setShowAuthModal(true)
+  }
 
   useEffect(() => {
     checkOnboardingStatus()
@@ -145,8 +153,13 @@ export default function AcademyLayout() {
       <RippleBackground />
       <AcademyHeader />
       <main className="academy-main">
-        <Outlet context={{ isAuthenticated, user, onboardingData }} />
+        <Outlet context={{ isAuthenticated, user, onboardingData, openAuthModal }} />
       </main>
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        initialMode={authModalMode}
+      />
     </div>
   )
 }

@@ -52,7 +52,7 @@ function MarkdownContent({ content }) {
 export default function LessonView() {
   const { moduleSlug, lessonSlug } = useParams()
   const navigate = useNavigate()
-  const { isAuthenticated } = useOutletContext()
+  const { isAuthenticated, openAuthModal } = useOutletContext()
   const { token } = useAuth()
   const [lesson, setLesson] = useState(null)
   const [isCompleted, setIsCompleted] = useState(false)
@@ -328,9 +328,9 @@ export default function LessonView() {
             )}
           </button>
         ) : (
-          <Link to="/" className="lesson-login-prompt">
+          <button onClick={() => openAuthModal('login')} className="lesson-login-prompt">
             Sign in to track your progress
-          </Link>
+          </button>
         )}
       </div>
 
