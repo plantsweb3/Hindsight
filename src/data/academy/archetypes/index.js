@@ -5,17 +5,21 @@ import { diamondHandsModule } from './diamond-hands'
 import { diamondHandsQuizzes } from './diamond-hands-quizzes'
 import { lossAverseModule } from './loss-averse'
 import { lossAverseQuizzes } from './loss-averse-quizzes'
+import { copyTraderModule } from './copy-trader'
+import { copyTraderQuizzes } from './copy-trader-quizzes'
 
 // Export individual modules
 export { narrativeFrontRunnerModule, narrativeFrontRunnerQuizzes }
 export { diamondHandsModule, diamondHandsQuizzes }
 export { lossAverseModule, lossAverseQuizzes }
+export { copyTraderModule, copyTraderQuizzes }
 
 // All archetype modules
 export const archetypeModules = {
   'narrative-front-runner': narrativeFrontRunnerModule,
   'diamond-hands': diamondHandsModule,
   'loss-averse': lossAverseModule,
+  'copy-trader': copyTraderModule,
 }
 
 // All archetype quizzes
@@ -23,6 +27,7 @@ export const archetypeQuizzes = {
   'narrative-front-runner': narrativeFrontRunnerQuizzes,
   'diamond-hands': diamondHandsQuizzes,
   'loss-averse': lossAverseQuizzes,
+  'copy-trader': copyTraderQuizzes,
 }
 
 // Get module by archetype ID
