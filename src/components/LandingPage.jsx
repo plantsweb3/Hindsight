@@ -706,7 +706,7 @@ function Footer({ onOpenContact }) {
 
           {/* Right side links */}
           <div className="footer-right">
-            <a href="https://docs.tradehindsight.com" target="_blank" rel="noopener noreferrer" className="footer-link">
+            <a href="/academy" className="footer-link">
               Hindsight Academy
             </a>
             <button onClick={onOpenContact} className="footer-link footer-link-btn">
