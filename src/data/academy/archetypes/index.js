@@ -11,6 +11,8 @@ import { technicalAnalystModule } from './technical-analyst'
 import { technicalAnalystQuizzes } from './technical-analyst-quizzes'
 import { fomoTraderModule } from './fomo-trader'
 import { fomoTraderQuizzes } from './fomo-trader-quizzes'
+import { scalperModule } from './scalper'
+import { scalperQuizzes } from './scalper-quizzes'
 
 // Export individual modules
 export { narrativeFrontRunnerModule, narrativeFrontRunnerQuizzes }
@@ -19,6 +21,7 @@ export { lossAverseModule, lossAverseQuizzes }
 export { copyTraderModule, copyTraderQuizzes }
 export { technicalAnalystModule, technicalAnalystQuizzes }
 export { fomoTraderModule, fomoTraderQuizzes }
+export { scalperModule, scalperQuizzes }
 
 // All archetype modules
 export const archetypeModules = {
@@ -28,6 +31,7 @@ export const archetypeModules = {
   'copy-trader': copyTraderModule,
   'technical-analyst': technicalAnalystModule,
   'fomo-trader': fomoTraderModule,
+  'scalper': scalperModule,
 }
 
 // All archetype quizzes
@@ -38,6 +42,7 @@ export const archetypeQuizzes = {
   'copy-trader': copyTraderQuizzes,
   'technical-analyst': technicalAnalystQuizzes,
   'fomo-trader': fomoTraderQuizzes,
+  'scalper': scalperQuizzes,
 }
 
 // Get module by archetype ID
