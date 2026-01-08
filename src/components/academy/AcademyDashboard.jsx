@@ -12,131 +12,67 @@ const ACADEMY_TABS = [
 const ARCHETYPE_MODULES = [
   {
     id: 'diamond-hands',
-    slug: 'archetype-diamond-hands',
     title: 'Diamond Hands',
     subtitle: 'CONVICTION TRADING',
     description: 'Master the art of holding through volatility and knowing when conviction is justified',
     icon: '💎',
-    lessonCount: 5,
-    lessons: [
-      'When Conviction Becomes Copium',
-      'Setting Invalidation Points',
-      'Partial Profit-Taking Strategies',
-      'Research Deep Dive Methods',
-      'Case Studies: Hold vs Fold'
-    ]
+    lessonCount: 8
   },
   {
     id: 'narrative-front-runner',
-    slug: 'archetype-narrative-front-runner',
     title: 'Narrative Front-Runner',
     subtitle: 'TREND PREDICTION',
     description: 'Spot narratives early and time your entries for maximum upside',
     icon: '🔮',
-    lessonCount: 5,
-    lessons: [
-      'Narrative Lifecycle: Early, Peak, Decay',
-      'Catalyst Timing Strategies',
-      'Building a Narrative Watchlist',
-      'Meta Analysis: Predicting Themes',
-      'Position Sizing for Speculation'
-    ]
+    lessonCount: 8
   },
   {
     id: 'loss-averse',
-    slug: 'archetype-loss-averse',
     title: 'Loss Averse',
     subtitle: 'CAPITAL PROTECTION',
     description: 'Protect your capital while learning to let winners run',
     icon: '🛡️',
-    lessonCount: 5,
-    lessons: [
-      'Letting Winners Run',
-      'Trailing Stop Strategies',
-      'Balancing Risk and Reward',
-      'When to Hold Through Volatility',
-      'Building Conviction to Override Fear'
-    ]
+    lessonCount: 8
   },
   {
     id: 'copy-trader',
-    slug: 'archetype-copy-trader',
     title: 'Copy Trader',
     subtitle: 'SMART MONEY FOLLOWING',
     description: 'Level up from follower to independent thinker with your own edge',
     icon: '👀',
-    lessonCount: 5,
-    lessons: [
-      'Finding Consistent Winners to Track',
-      'Exit Timing for Copy Trades',
-      'Building Independent Conviction',
-      'Diversifying Your Copy Sources',
-      'From Follower to Leader'
-    ]
+    lessonCount: 8
   },
   {
     id: 'technical-analyst',
-    slug: 'archetype-technical-analyst',
     title: 'Technical Analyst',
     subtitle: 'CHART MASTERY',
     description: 'Blend TA with memecoin dynamics for better entries and exits',
     icon: '📊',
-    lessonCount: 5,
-    lessons: [
-      'TA in Memecoins: What Works',
-      'Volume Profile Analysis',
-      'Blending Technical and Narrative',
-      'Support and Resistance in Low-Caps',
-      'Recognizing Manipulation on Charts'
-    ]
+    lessonCount: 8
   },
   {
     id: 'fomo-trader',
-    slug: 'archetype-fomo-trader',
     title: 'FOMO Trader',
     subtitle: 'IMPULSE CONTROL',
     description: 'Transform fear of missing out into disciplined opportunity selection',
     icon: '😰',
-    lessonCount: 5,
-    lessons: [
-      'The Psychology of FOMO',
-      'Building a Pre-Entry Checklist',
-      'Opportunity Cost Analysis',
-      'Patience Pays: Waiting for Your Setup',
-      'FOMO vs Conviction: The Difference'
-    ]
+    lessonCount: 8
   },
   {
     id: 'impulse-trader',
-    slug: 'archetype-impulse-trader',
     title: 'Impulse Trader',
     subtitle: 'STRUCTURED INTUITION',
     description: 'Channel your gut instincts into a systematic edge',
     icon: '⚡',
-    lessonCount: 5,
-    lessons: [
-      'Building a Pre-Trade Routine',
-      'The 5-Minute Cooling Off Rule',
-      'When Gut Feeling Actually Works',
-      'Finding Patterns in Your Chaos',
-      'From Reactive to Proactive'
-    ]
+    lessonCount: 8
   },
   {
     id: 'scalper',
-    slug: 'archetype-scalper',
     title: 'Scalper',
     subtitle: 'HIGH FREQUENCY',
     description: 'Maximize your quick-trade edge while avoiding overtrading',
     icon: '⚔️',
-    lessonCount: 5,
-    lessons: [
-      'Quality Over Quantity',
-      'Fee Optimization Strategies',
-      'Perfect Entry Timing',
-      'Identifying Low-Probability Setups',
-      'Scaling Your Scalping System'
-    ]
+    lessonCount: 8
   }
 ]
 
@@ -211,7 +147,7 @@ function ModuleCard({ module, completedLessons = 0 }) {
 function ArchetypeCard({ archetype, isUserArchetype = false }) {
   return (
     <Link
-      to={`/academy/${archetype.slug}`}
+      to={`/academy/archetype/${archetype.id}`}
       className={`module-card archetype-card glass-card ${isUserArchetype ? 'user-archetype' : ''}`}
     >
       {isUserArchetype && (

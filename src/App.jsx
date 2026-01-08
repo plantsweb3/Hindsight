@@ -20,6 +20,8 @@ import AcademyLayout from './components/academy/AcademyLayout'
 import AcademyDashboard from './components/academy/AcademyDashboard'
 import ModuleView from './components/academy/ModuleView'
 import LessonView from './components/academy/LessonView'
+import ArchetypeModuleView from './components/academy/ArchetypeModuleView'
+import ArchetypeLessonView from './components/academy/ArchetypeLessonView'
 
 function AppContent() {
   const { user, token, isAuthenticated, isLoading: authLoading, saveArchetype, saveAnalysis } = useAuth()
@@ -495,6 +497,8 @@ export default function App() {
           {/* Academy - URL-based routing */}
           <Route path="/academy" element={<AcademyLayout />}>
             <Route index element={<AcademyDashboard />} />
+            <Route path="archetype/:archetypeId" element={<ArchetypeModuleView />} />
+            <Route path="archetype/:archetypeId/:lessonSlug" element={<ArchetypeLessonView />} />
             <Route path=":moduleSlug" element={<ModuleView />} />
             <Route path=":moduleSlug/:lessonSlug" element={<LessonView />} />
           </Route>
