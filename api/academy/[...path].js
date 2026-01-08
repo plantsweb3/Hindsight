@@ -7,7 +7,9 @@ import {
   getUserAcademyProgress,
   markLessonComplete,
   getUserById,
-  seedAcademyContent
+  seedAcademyContent,
+  getAcademyOnboardingStatus,
+  saveAcademyOnboarding
 } from '../lib/db.js'
 import jwt from 'jsonwebtoken'
 
@@ -148,6 +150,40 @@ export default async function handler(req, res) {
 
       await seedAcademyContent()
       return res.status(200).json({ success: true, message: 'Academy content seeded' })
+    }
+
+    // GET /api/academy/onboarding - Check onboarding status (requires auth)
+    if (method === 'GET' && segments.length === 1 && segments[0] === 'onboarding') {
+      const user = await authenticateUser(req)
+      if (!user) {
+        return res.status(401).json({ error: 'Authentication required' })
+      }
+
+      const status = await getAcademyOnboardingStatus(user.id)
+      return res.status(200).json(status || { onboarded: false })
+    }
+
+    // POST /api/academy/onboarding - Save onboarding data (requires auth)
+    if (method === 'POST' && segments.length === 1 && segments[0] === 'onboarding') {
+      const user = await authenticateUser(req)
+      if (!user) {
+        return res.status(401).json({ error: 'Authentication required' })
+      }
+
+      const { experienceLevel, tradingGoal, placementScore, startSection } = req.body
+
+      if (!experienceLevel || !tradingGoal || !startSection) {
+        return res.status(400).json({ error: 'Missing required fields' })
+      }
+
+      await saveAcademyOnboarding(user.id, {
+        experienceLevel,
+        tradingGoal,
+        placementScore: placementScore || null,
+        startSection,
+      })
+
+      return res.status(200).json({ success: true, message: 'Onboarding complete' })
     }
 
     // 404 for unmatched routes

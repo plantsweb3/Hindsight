@@ -53,6 +53,23 @@ export async function initDb() {
     await getDb().execute(`ALTER TABLE users ADD COLUMN pro_expires_at DATETIME`)
   } catch (e) { /* Column already exists */ }
 
+  // Add Academy onboarding columns
+  try {
+    await getDb().execute(`ALTER TABLE users ADD COLUMN academy_onboarded INTEGER DEFAULT 0`)
+  } catch (e) { /* Column already exists */ }
+  try {
+    await getDb().execute(`ALTER TABLE users ADD COLUMN experience_level TEXT`)
+  } catch (e) { /* Column already exists */ }
+  try {
+    await getDb().execute(`ALTER TABLE users ADD COLUMN trading_goal TEXT`)
+  } catch (e) { /* Column already exists */ }
+  try {
+    await getDb().execute(`ALTER TABLE users ADD COLUMN placement_score INTEGER`)
+  } catch (e) { /* Column already exists */ }
+  try {
+    await getDb().execute(`ALTER TABLE users ADD COLUMN academy_start_section TEXT`)
+  } catch (e) { /* Column already exists */ }
+
   await getDb().execute(`
     CREATE TABLE IF NOT EXISTS analyses (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -983,6 +1000,41 @@ export async function seedAcademyContent() {
   }
 
   console.log('[Academy] Content seeded successfully')
+}
+
+// Get user's academy onboarding status
+export async function getAcademyOnboardingStatus(userId) {
+  const result = await getDb().execute({
+    sql: `SELECT academy_onboarded, experience_level, trading_goal, placement_score, academy_start_section
+          FROM users WHERE id = ?`,
+    args: [userId],
+  })
+  if (!result.rows.length) return null
+  const row = result.rows[0]
+  return {
+    onboarded: Boolean(row.academy_onboarded),
+    experienceLevel: row.experience_level,
+    tradingGoal: row.trading_goal,
+    placementScore: row.placement_score,
+    startSection: row.academy_start_section,
+  }
+}
+
+// Save academy onboarding data
+export async function saveAcademyOnboarding(userId, data) {
+  const { experienceLevel, tradingGoal, placementScore, startSection } = data
+  await getDb().execute({
+    sql: `UPDATE users SET
+            academy_onboarded = 1,
+            experience_level = ?,
+            trading_goal = ?,
+            placement_score = ?,
+            academy_start_section = ?,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?`,
+    args: [experienceLevel, tradingGoal, placementScore, startSection, userId],
+  })
+  return true
 }
 
 export default getDb

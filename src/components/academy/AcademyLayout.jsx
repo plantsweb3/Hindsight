@@ -1,9 +1,9 @@
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import AcademyOnboarding from './AcademyOnboarding'
 
 function AcademyHeader() {
-  const navigate = useNavigate()
-
   return (
     <header className="academy-header">
       <div className="academy-header-left">
@@ -47,14 +47,99 @@ function RippleBackground() {
 }
 
 export default function AcademyLayout() {
-  const { isAuthenticated, user } = useAuth()
+  const navigate = useNavigate()
+  const { isAuthenticated, user, token } = useAuth()
+  const [isOnboarded, setIsOnboarded] = useState(null) // null = loading, true/false = status
+  const [onboardingData, setOnboardingData] = useState(null)
 
+  useEffect(() => {
+    checkOnboardingStatus()
+  }, [isAuthenticated, token])
+
+  const checkOnboardingStatus = async () => {
+    // First check localStorage (works for both logged in and guest users)
+    const localData = localStorage.getItem('academy_onboarding')
+    if (localData) {
+      try {
+        const parsed = JSON.parse(localData)
+        if (parsed.onboarded) {
+          setOnboardingData(parsed)
+          setIsOnboarded(true)
+          return
+        }
+      } catch (e) {
+        // Invalid localStorage data, continue
+      }
+    }
+
+    // If logged in, check database
+    if (isAuthenticated && token) {
+      try {
+        const res = await fetch('/api/academy/onboarding', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (data.onboarded) {
+            setOnboardingData(data)
+            setIsOnboarded(true)
+            // Sync to localStorage
+            localStorage.setItem('academy_onboarding', JSON.stringify({
+              ...data,
+              onboarded: true,
+            }))
+            return
+          }
+        }
+      } catch (err) {
+        console.error('Failed to check onboarding status:', err)
+      }
+    }
+
+    // Not onboarded
+    setIsOnboarded(false)
+  }
+
+  const handleOnboardingComplete = (startSection) => {
+    setOnboardingData({
+      startSection: startSection.section,
+      onboarded: true,
+    })
+    setIsOnboarded(true)
+    // Navigate to dashboard
+    navigate('/academy')
+  }
+
+  // Loading state
+  if (isOnboarded === null) {
+    return (
+      <div className="academy-page">
+        <RippleBackground />
+        <div className="academy-loading">
+          <div className="spinner" />
+          <p>Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show onboarding if not completed
+  if (!isOnboarded) {
+    return (
+      <div className="academy-page">
+        <RippleBackground />
+        <AcademyOnboarding onComplete={handleOnboardingComplete} />
+      </div>
+    )
+  }
+
+  // Show regular Academy content
   return (
     <div className="academy-page">
       <RippleBackground />
       <AcademyHeader />
       <main className="academy-main">
-        <Outlet context={{ isAuthenticated, user }} />
+        <Outlet context={{ isAuthenticated, user, onboardingData }} />
       </main>
     </div>
   )
