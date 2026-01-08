@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { analyzeWallet, analyzeBehavior, isValidSolanaAddress, convertTradesToJournalEntries, createJournalEntriesBatch, getJournalPatterns, getCrossWalletStats } from './services/solana'
@@ -15,6 +16,10 @@ import ProFeatures from './components/ProFeatures'
 import Contact from './components/Contact'
 import ReportBug from './components/ReportBug'
 import Admin from './components/Admin'
+import AcademyLayout from './components/academy/AcademyLayout'
+import AcademyDashboard from './components/academy/AcademyDashboard'
+import ModuleView from './components/academy/ModuleView'
+import LessonView from './components/academy/LessonView'
 
 function AppContent() {
   const { user, token, isAuthenticated, isLoading: authLoading, saveArchetype, saveAnalysis } = useAuth()
@@ -485,7 +490,19 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <BrowserRouter>
+        <Routes>
+          {/* Academy - URL-based routing */}
+          <Route path="/academy" element={<AcademyLayout />}>
+            <Route index element={<AcademyDashboard />} />
+            <Route path=":moduleSlug" element={<ModuleView />} />
+            <Route path=":moduleSlug/:lessonSlug" element={<LessonView />} />
+          </Route>
+
+          {/* Everything else - existing state-based */}
+          <Route path="/*" element={<AppContent />} />
+        </Routes>
+      </BrowserRouter>
       <Analytics />
     </AuthProvider>
   )

@@ -77,6 +77,9 @@ function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, onOpe
 
       {/* Desktop nav */}
       <div className="header-nav header-nav-desktop">
+        <a href="/academy" className="nav-link-btn">
+          Academy
+        </a>
         <button onClick={onOpenContact} className="nav-link-btn">
           Contact
         </button>
@@ -140,6 +143,13 @@ function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, onOpe
               </button>
             </div>
             <nav className="mobile-nav-links">
+              <a href="/academy" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                  <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                </svg>
+                Academy
+              </a>
               <button onClick={() => handleNavAction(onOpenContact)} className="mobile-nav-link">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />

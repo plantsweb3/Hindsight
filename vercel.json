@@ -11,6 +11,8 @@
     { "source": "/api/auth/:path*", "destination": "/api/auth/[...path]" },
     { "source": "/api/journal/:path*", "destination": "/api/journal/[...path]" },
     { "source": "/api/journal", "destination": "/api/journal/[...path]" },
+    { "source": "/api/academy/:path*", "destination": "/api/academy/[...path]" },
+    { "source": "/api/academy", "destination": "/api/academy/[...path]" },
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

@@ -57,6 +57,9 @@ function DashboardHeader({ user, currentPage, onNavigate, onLogout, onSettings }
           >
             Journal
           </button>
+          <a href="/academy" className="nav-link">
+            Academy
+          </a>
         </nav>
       </div>
       <div className="header-right" ref={dropdownRef}>
