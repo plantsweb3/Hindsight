@@ -57,7 +57,7 @@ const LEVEL_THRESHOLDS = [
   { level: 15, xpRequired: 6475, title: 'Legend' },
 ]
 
-const JWT_SECRET = process.env.JWT_SECRET || 'hindsight-dev-secret-change-in-production'
+const JWT_SECRET = process.env.JWT_SECRET || 'hindsight-secret-key-change-in-production'
 
 // Initialize database and seed content on cold start
 let dbInitialized = false
