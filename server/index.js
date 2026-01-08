@@ -346,37 +346,58 @@ function calculatePnLStats(trades) {
   }
 }
 
-// Fetch current token balances for wallet
+// Fetch current token balances for wallet using DAS API with pagination
+// Filters out positions worth less than $1
 async function getWalletTokenBalances(walletAddress) {
   try {
-    const response = await fetch(`https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'getTokenAccountsByOwner',
-        params: [
-          walletAddress,
-          { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
-          { encoding: 'jsonParsed' }
-        ],
-      }),
-    })
+    const allTokens = []
+    let page = 1
+    const limit = 100
 
-    const data = await response.json()
-    if (!data.result?.value) return []
-
-    return data.result.value
-      .map(account => {
-        const info = account.account.data.parsed.info
-        return {
-          mint: info.mint,
-          balance: parseFloat(info.tokenAmount.uiAmount || 0),
-          decimals: info.tokenAmount.decimals,
-        }
+    // Paginate through all fungible tokens
+    while (page <= 10) { // Cap at 1000 tokens max
+      const response = await fetch(`https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'searchAssets',
+          params: {
+            ownerAddress: walletAddress,
+            tokenType: 'fungible',
+            displayOptions: { showNativeBalance: false },
+            page,
+            limit,
+          },
+        }),
       })
-      .filter(t => t.balance > 0) // Only non-zero balances
+
+      const data = await response.json()
+      if (!data.result?.items?.length) break
+
+      for (const item of data.result.items) {
+        const balance = item.token_info?.balance
+        const decimals = item.token_info?.decimals ?? 0
+
+        if (balance && balance > 0) {
+          const uiBalance = balance / Math.pow(10, decimals)
+          // Only include tokens with meaningful balance (filters dust/spam)
+          if (uiBalance >= 0.001) {
+            allTokens.push({
+              mint: item.id,
+              balance: uiBalance,
+              decimals,
+            })
+          }
+        }
+      }
+
+      if (data.result.items.length < limit) break
+      page++
+    }
+
+    return allTokens
   } catch (err) {
     console.warn('Failed to fetch token balances:', err.message)
     return []
