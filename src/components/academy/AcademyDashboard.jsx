@@ -4,8 +4,8 @@ import { useAuth } from '../../contexts/AuthContext'
 
 // Tab configuration
 const ACADEMY_TABS = [
-  { id: 'trading-101', label: 'Trading 101' },
-  { id: 'by-archetype', label: 'Learn by Archetype' }
+  { id: 'trading-101', label: 'Trading 101', subtitle: 'Structured path from beginner to pro' },
+  { id: 'by-archetype', label: 'Learn by Archetype', subtitle: 'Personalized for your style' }
 ]
 
 // Daily XP goal
@@ -25,20 +25,56 @@ const ACHIEVEMENTS = {
   'xp_1000': { id: 'xp_1000', name: 'Dedicated Learner', icon: '📖', description: 'Earn 1,000 total XP' },
 }
 
-// Archetype modules data (ordered by trading frequency, low to high)
+// Archetype display name formatting
+const ARCHETYPE_DISPLAY_NAMES = {
+  'diamond-hands': 'Diamond Hands',
+  'diamondhands': 'Diamond Hands',
+  'DiamondHands': 'Diamond Hands',
+  'narrative-front-runner': 'Narrative Front Runner',
+  'narrativefrontrunner': 'Narrative Front Runner',
+  'NarrativeFrontRunner': 'Narrative Front Runner',
+  'loss-averse': 'Loss Averse',
+  'lossaverse': 'Loss Averse',
+  'LossAverse': 'Loss Averse',
+  'copy-trader': 'Copy Trader',
+  'copytrader': 'Copy Trader',
+  'CopyTrader': 'Copy Trader',
+  'technical-analyst': 'Technical Analyst',
+  'technicalanalyst': 'Technical Analyst',
+  'TechnicalAnalyst': 'Technical Analyst',
+  'fomo-trader': 'FOMO Trader',
+  'fomotrader': 'FOMO Trader',
+  'FOMOTrader': 'FOMO Trader',
+  'FOMO': 'FOMO Trader',
+  'impulse-trader': 'Impulse Trader',
+  'impulsetrader': 'Impulse Trader',
+  'ImpulseTrader': 'Impulse Trader',
+  'scalper': 'Scalper',
+  'Scalper': 'Scalper',
+}
+
+function formatArchetypeName(archetype) {
+  if (!archetype) return null
+  return ARCHETYPE_DISPLAY_NAMES[archetype] ||
+    archetype.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()
+}
+
+// Archetype modules data
 const ARCHETYPE_MODULES = [
   {
     id: 'diamond-hands',
     title: 'Diamond Hands',
     subtitle: 'CONVICTION TRADING',
+    tagline: 'Patient entries, conviction holds',
     description: 'Master the art of holding through volatility and knowing when conviction is justified',
     icon: '💎',
     lessonCount: 8
   },
   {
     id: 'narrative-front-runner',
-    title: 'Narrative Front-Runner',
+    title: 'Narrative Front Runner',
     subtitle: 'TREND PREDICTION',
+    tagline: 'Early narratives, calculated timing',
     description: 'Spot narratives early and time your entries for maximum upside',
     icon: '🔮',
     lessonCount: 8
@@ -47,6 +83,7 @@ const ARCHETYPE_MODULES = [
     id: 'loss-averse',
     title: 'Loss Averse',
     subtitle: 'CAPITAL PROTECTION',
+    tagline: 'Preserve capital, controlled risk',
     description: 'Protect your capital while learning to let winners run',
     icon: '🛡️',
     lessonCount: 8
@@ -55,6 +92,7 @@ const ARCHETYPE_MODULES = [
     id: 'copy-trader',
     title: 'Copy Trader',
     subtitle: 'SMART MONEY FOLLOWING',
+    tagline: 'Follow smart money, build independence',
     description: 'Level up from follower to independent thinker with your own edge',
     icon: '👀',
     lessonCount: 8
@@ -63,6 +101,7 @@ const ARCHETYPE_MODULES = [
     id: 'technical-analyst',
     title: 'Technical Analyst',
     subtitle: 'CHART MASTERY',
+    tagline: 'Data-driven, systematic approach',
     description: 'Blend TA with memecoin dynamics for better entries and exits',
     icon: '📊',
     lessonCount: 8
@@ -71,6 +110,7 @@ const ARCHETYPE_MODULES = [
     id: 'fomo-trader',
     title: 'FOMO Trader',
     subtitle: 'IMPULSE CONTROL',
+    tagline: 'Channel urgency into discipline',
     description: 'Transform fear of missing out into disciplined opportunity selection',
     icon: '😰',
     lessonCount: 8
@@ -79,6 +119,7 @@ const ARCHETYPE_MODULES = [
     id: 'impulse-trader',
     title: 'Impulse Trader',
     subtitle: 'STRUCTURED INTUITION',
+    tagline: 'Trust instincts with guardrails',
     description: 'Channel your gut instincts into a systematic edge',
     icon: '⚡',
     lessonCount: 8
@@ -87,20 +128,20 @@ const ARCHETYPE_MODULES = [
     id: 'scalper',
     title: 'Scalper',
     subtitle: 'HIGH FREQUENCY',
+    tagline: 'Quick moves, disciplined exits',
     description: 'Maximize your quick-trade edge while avoiding overtrading',
     icon: '⚔️',
     lessonCount: 8
   }
 ]
 
-// Map archetype names to module IDs (handle variations)
+// Map archetype names to module IDs
 function normalizeArchetypeId(archetype) {
   if (!archetype) return null
   const normalized = archetype.toLowerCase()
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9-]/g, '')
 
-  // Handle common variations
   const mapping = {
     'diamondhands': 'diamond-hands',
     'narrativefrontrunner': 'narrative-front-runner',
@@ -116,144 +157,266 @@ function normalizeArchetypeId(archetype) {
   return mapping[normalized.replace(/-/g, '')] || normalized
 }
 
-// Stats Bar Component
-function StatsBar({ xpProgress, levelInfo }) {
-  const isStreakActive = xpProgress?.lastActivity === new Date().toISOString().split('T')[0]
+// Hero Stats Grid Component
+function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons }) {
+  const completionPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
+  const hasStreak = (xpProgress?.streak || 0) > 0
 
   return (
-    <div className="stats-bar">
-      <div className="stat-item streak-stat">
-        <div className={`stat-icon ${isStreakActive ? 'streak-active' : ''}`}>🔥</div>
-        <div className="stat-content">
-          <span className="stat-value">{xpProgress?.streak || 0}</span>
-          <span className="stat-label">Day Streak</span>
+    <div className="hero-stats-grid">
+      <div className="hero-stat">
+        <span className={`hero-stat-icon ${hasStreak ? 'streak-active' : ''}`}>🔥</span>
+        <div className="hero-stat-content">
+          <span className="hero-stat-value">{xpProgress?.streak || 0}</span>
+          <span className="hero-stat-label">Day Streak</span>
         </div>
       </div>
-
-      <div className="stat-item level-stat">
-        <div className="stat-icon">🏆</div>
-        <div className="stat-content">
-          <span className="stat-value">Level {levelInfo?.level || 1}</span>
-          <span className="stat-label">{levelInfo?.title || 'Newcomer'}</span>
+      <div className="hero-stat">
+        <span className="hero-stat-icon">⚡</span>
+        <div className="hero-stat-content">
+          <span className="hero-stat-value">{xpProgress?.total?.toLocaleString() || 0}</span>
+          <span className="hero-stat-label">Total XP</span>
         </div>
       </div>
-
-      <div className="stat-item xp-stat">
-        <div className="stat-icon">⚡</div>
-        <div className="stat-content">
-          <div className="xp-progress-container">
-            <div className="xp-progress-bar">
-              <div
-                className="xp-progress-fill"
-                style={{ width: `${levelInfo?.progressPercent || 0}%` }}
-              />
-            </div>
-            <span className="xp-progress-text">
-              {levelInfo?.xpInCurrentLevel || 0} / {levelInfo?.xpForNextLevel || 0} XP
-            </span>
-          </div>
+      <div className="hero-stat">
+        <span className="hero-stat-icon">🏆</span>
+        <div className="hero-stat-content">
+          <span className="hero-stat-value">Level {levelInfo?.level || 1}</span>
+          <span className="hero-stat-label">{levelInfo?.title || 'Newcomer'}</span>
         </div>
       </div>
-
-      <div className="stat-item total-xp-stat">
-        <div className="stat-icon">💎</div>
-        <div className="stat-content">
-          <span className="stat-value">{xpProgress?.total?.toLocaleString() || 0}</span>
-          <span className="stat-label">Total XP</span>
+      <div className="hero-stat">
+        <span className="hero-stat-icon">📊</span>
+        <div className="hero-stat-content">
+          <span className="hero-stat-value">{completionPercent}%</span>
+          <span className="hero-stat-label">Complete</span>
         </div>
       </div>
     </div>
   )
 }
 
-// Daily Goal Widget
-function DailyGoalWidget({ dailyXp = 0 }) {
+// Daily Goal Ring Component
+function DailyGoalRing({ dailyXp = 0 }) {
   const progress = Math.min((dailyXp / DAILY_XP_GOAL) * 100, 100)
   const isComplete = dailyXp >= DAILY_XP_GOAL
-  const circumference = 2 * Math.PI * 36
+  const circumference = 2 * Math.PI * 40
 
   return (
-    <div className={`daily-goal-widget ${isComplete ? 'goal-complete' : ''}`}>
-      <div className="goal-ring-container">
-        <svg viewBox="0 0 80 80" className="goal-ring">
-          <circle
-            cx="40"
-            cy="40"
-            r="36"
-            fill="none"
-            stroke="rgba(255,255,255,0.1)"
-            strokeWidth="6"
-          />
-          <circle
-            cx="40"
-            cy="40"
-            r="36"
-            fill="none"
-            stroke={isComplete ? '#22c55e' : '#8b5cf6'}
-            strokeWidth="6"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={circumference - (progress / 100) * circumference}
-            transform="rotate(-90 40 40)"
-            className="goal-progress-ring"
-          />
-        </svg>
-        <div className="goal-ring-content">
-          {isComplete ? (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          ) : (
-            <span className="goal-xp">{dailyXp}</span>
-          )}
-        </div>
+    <div className={`daily-goal-ring ${isComplete ? 'complete' : ''}`}>
+      <svg viewBox="0 0 100 100" className="goal-svg">
+        <circle
+          cx="50"
+          cy="50"
+          r="40"
+          fill="none"
+          stroke="rgba(255,255,255,0.1)"
+          strokeWidth="8"
+        />
+        <circle
+          cx="50"
+          cy="50"
+          r="40"
+          fill="none"
+          stroke={isComplete ? '#22c55e' : '#8b5cf6'}
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference - (progress / 100) * circumference}
+          transform="rotate(-90 50 50)"
+          className="goal-progress-circle"
+        />
+      </svg>
+      <div className="goal-ring-inner">
+        {isComplete ? (
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        ) : (
+          <>
+            <span className="goal-current">{dailyXp}</span>
+            <span className="goal-target">/{DAILY_XP_GOAL}</span>
+          </>
+        )}
       </div>
-      <div className="goal-text">
-        <span className="goal-title">Daily Goal</span>
-        <span className="goal-progress">{dailyXp}/{DAILY_XP_GOAL} XP</span>
-      </div>
+      <span className="goal-label">Daily XP</span>
     </div>
   )
 }
 
-// Welcome Banner Component
-function WelcomeBanner({ user, xpProgress, levelInfo, completedLessons, totalLessons, nextLesson }) {
-  const getEncouragementMessage = () => {
+// Hero Section Component
+function HeroSection({ user, xpProgress, levelInfo, totalLessons, completedLessons, dailyXp, nextLesson, openAuthModal }) {
+  const navigate = useNavigate()
+
+  const getMotivationalText = () => {
     const streak = xpProgress?.streak || 0
     const xpToNext = levelInfo?.xpToNextLevel || 0
+    const level = levelInfo?.level || 1
 
-    if (streak >= 7) {
-      return `Amazing! You're on a ${streak}-day streak! Keep the momentum going!`
-    } else if (streak >= 3) {
-      return `Welcome back! You're on a ${streak}-day streak 🔥`
-    } else if (xpToNext > 0 && xpToNext <= 50) {
-      return `You're only ${xpToNext} XP away from Level ${(levelInfo?.level || 1) + 1}!`
-    } else if (completedLessons > 0 && totalLessons > 0) {
+    if (streak >= 7) return `You're on a ${streak}-day streak! Keep it going! 🔥`
+    if (streak >= 3) return `${streak}-day streak! You're building momentum! 🔥`
+    if (xpToNext > 0 && xpToNext <= 30) return `Just ${xpToNext} XP to Level ${level + 1}!`
+    if (completedLessons === 0) return "Ready to start your trading journey?"
+    if (completedLessons > 0 && totalLessons > 0) {
       const percent = Math.round((completedLessons / totalLessons) * 100)
-      if (percent >= 50) {
-        return `You've completed ${percent}% of the Academy - you're crushing it!`
-      }
-      return `Keep going! You've completed ${completedLessons} lessons so far.`
+      if (percent >= 80) return "You're almost done! Finish strong! 💪"
+      if (percent >= 50) return "Halfway there! Keep the momentum!"
     }
-    return "Ready to level up your trading knowledge? Let's go!"
+    return "Continue where you left off"
+  }
+
+  const handleContinue = () => {
+    if (nextLesson) {
+      navigate(`/academy/${nextLesson.module_slug}/${nextLesson.slug}`)
+    }
+  }
+
+  if (!user) {
+    return (
+      <section className="hero-section hero-unauthenticated">
+        <div className="hero-content">
+          <h1 className="hero-title">Hindsight Academy</h1>
+          <p className="hero-subtitle">
+            Master the psychology and strategy of trading with lessons tailored to your style.
+          </p>
+          <button onClick={() => openAuthModal('signup')} className="hero-cta-btn">
+            Sign In to Track Progress
+          </button>
+        </div>
+      </section>
+    )
   }
 
   return (
-    <div className="welcome-banner glass-card">
-      <div className="welcome-content">
-        <h2 className="welcome-title">
-          {user?.username ? `Welcome back, ${user.username}!` : 'Welcome to Hindsight Academy!'}
-        </h2>
-        <p className="welcome-message">{getEncouragementMessage()}</p>
+    <section className="hero-section">
+      <div className="hero-left">
+        <h1 className="hero-welcome">Welcome back, {user.username}!</h1>
+        <p className="hero-motivational">{getMotivationalText()}</p>
+        {nextLesson && (
+          <button onClick={handleContinue} className="hero-cta-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            Continue Learning
+          </button>
+        )}
       </div>
-      {nextLesson && (
-        <Link to={`/academy/${nextLesson.module_slug}/${nextLesson.slug}`} className="continue-btn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polygon points="5 3 19 12 5 21 5 3" />
+      <div className="hero-right">
+        <HeroStats
+          xpProgress={xpProgress}
+          levelInfo={levelInfo}
+          totalLessons={totalLessons}
+          completedLessons={completedLessons}
+        />
+        <DailyGoalRing dailyXp={dailyXp} />
+      </div>
+    </section>
+  )
+}
+
+// Enhanced Module Card Component
+function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent = false, isComplete = false }) {
+  const navigate = useNavigate()
+  const totalLessons = module.lesson_count || 0
+  const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
+
+  const cardClasses = [
+    'module-card',
+    'glass-card',
+    isCurrent && 'module-current',
+    isComplete && 'module-complete',
+    isLocked && 'module-locked',
+    module.is_pro === 1 && 'module-pro'
+  ].filter(Boolean).join(' ')
+
+  const handleClick = (e) => {
+    if (isLocked) {
+      e.preventDefault()
+      return
+    }
+    navigate(`/academy/${module.slug}`)
+  }
+
+  const getBadgeText = () => {
+    if (isComplete) return 'COMPLETE'
+    if (isCurrent) return 'CONTINUE'
+    if (isLocked) return 'LOCKED'
+    return null
+  }
+
+  const badge = getBadgeText()
+
+  return (
+    <div className={cardClasses} onClick={handleClick}>
+      {isLocked && (
+        <div className="module-lock-overlay">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
           </svg>
-          Continue Learning
-        </Link>
+        </div>
       )}
+
+      {badge && (
+        <div className={`module-badge module-badge-${badge.toLowerCase()}`}>
+          {isComplete && (
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
+          {badge}
+        </div>
+      )}
+
+      <div className="module-card-header">
+        <div className="module-icon-wrapper">
+          <span className="module-icon">{module.icon || '📚'}</span>
+          {isComplete && (
+            <div className="module-complete-check">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+          )}
+        </div>
+        <span className={`module-difficulty difficulty-${module.difficulty || 'beginner'}`}>
+          {module.difficulty || 'beginner'}
+        </span>
+      </div>
+
+      <h3 className="module-title">{module.title}</h3>
+      {module.subtitle && (
+        <p className="module-subtitle">{module.subtitle}</p>
+      )}
+      <p className="module-description">{module.description}</p>
+
+      <div className="module-footer">
+        <div className="module-dots">
+          {Array.from({ length: Math.min(totalLessons, 6) }).map((_, i) => (
+            <span key={i} className={`module-dot ${i < completedLessons ? 'filled' : ''}`} />
+          ))}
+          {totalLessons > 6 && <span className="module-dot-more">+{totalLessons - 6}</span>}
+        </div>
+        <div className="module-progress-row">
+          <div className="module-progress-track">
+            <div className="module-progress-fill" style={{ width: `${progress}%` }} />
+          </div>
+          <span className="module-progress-label">{completedLessons}/{totalLessons}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Achievement Badge Component
+function AchievementBadge({ achievement, isEarned, isNew }) {
+  return (
+    <div
+      className={`achievement-badge ${isEarned ? 'earned' : 'locked'} ${isNew ? 'new' : ''}`}
+      title={`${achievement.name}: ${achievement.description}`}
+    >
+      {isNew && <span className="achievement-new-tag">NEW</span>}
+      <span className="achievement-icon">{achievement.icon}</span>
+      <span className="achievement-name">{achievement.name}</span>
     </div>
   )
 }
@@ -264,209 +427,120 @@ function AchievementShowcase({ earnedAchievements = [] }) {
 
   return (
     <div className="achievement-showcase">
-      <h3 className="achievement-title">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="8" r="7" />
-          <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
-        </svg>
+      <h3 className="achievement-header">
+        <span className="achievement-header-icon">🏆</span>
         Your Achievements
       </h3>
       <div className="achievement-scroll">
-        {allAchievements.length === 0 ? (
-          <p className="achievement-empty">Complete lessons to earn badges!</p>
-        ) : (
-          allAchievements.map(achievement => {
-            const isEarned = earnedAchievements.includes(achievement.id)
-            return (
-              <div
-                key={achievement.id}
-                className={`achievement-badge ${isEarned ? 'earned' : 'locked'}`}
-                title={`${achievement.name}: ${achievement.description}`}
-              >
-                <span className="achievement-icon">{achievement.icon}</span>
-                <span className="achievement-name">{achievement.name}</span>
-              </div>
-            )
-          })
-        )}
+        {allAchievements.map(achievement => (
+          <AchievementBadge
+            key={achievement.id}
+            achievement={achievement}
+            isEarned={earnedAchievements.includes(achievement.id)}
+            isNew={false}
+          />
+        ))}
       </div>
     </div>
   )
 }
 
-// Enhanced Module Card Component
-function ModuleCard({ module, completedLessons = 0, isLocked = false, isActive = false, lessonProgress = [] }) {
-  const navigate = useNavigate()
-  const totalLessons = module.lesson_count || 0
-  const progress = totalLessons > 0
-    ? Math.round((completedLessons / totalLessons) * 100)
-    : 0
-  const isComplete = progress === 100
-
-  const isPro = module.is_pro === 1
-
-  // Find next incomplete lesson
-  const getNextLessonSlug = () => {
-    if (!module.lessons || module.lessons.length === 0) return null
-    const completedSlugs = lessonProgress.map(l => l.lesson_id)
-    const nextLesson = module.lessons.find(l => !completedSlugs.includes(l.id))
-    return nextLesson?.slug || module.lessons[0]?.slug
-  }
-
-  const handleContinue = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    const nextSlug = getNextLessonSlug()
-    if (nextSlug) {
-      navigate(`/academy/${module.slug}/${nextSlug}`)
-    } else {
-      navigate(`/academy/${module.slug}`)
-    }
-  }
+// Archetype Profile Card
+function ArchetypeProfileCard({ archetype, onRetakeQuiz }) {
+  const archetypeData = ARCHETYPE_MODULES.find(a => a.id === archetype)
+  if (!archetypeData) return null
 
   return (
-    <div className={`module-card glass-card ${isPro ? 'module-pro' : ''} ${isActive ? 'module-active' : ''} ${isLocked ? 'module-locked' : ''}`}>
-      {isLocked && (
-        <div className="module-lock-overlay">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-          </svg>
-          <span>Complete previous module</span>
-        </div>
-      )}
-      {isPro && (
-        <div className="module-pro-badge">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-          </svg>
-          Pro
-        </div>
-      )}
-      <Link to={`/academy/${module.slug}`} className="module-card-link">
-        <div className="module-card-header">
-          <div className="module-card-icon">
-            <span>{module.icon || '📚'}</span>
-            {isComplete && (
-              <div className="module-complete-check">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </div>
-            )}
-          </div>
-          <span className={`module-difficulty difficulty-${module.difficulty || 'beginner'}`}>
-            {module.difficulty || 'beginner'}
-          </span>
-        </div>
-        <h3 className="module-card-title">{module.title}</h3>
-        {module.subtitle && (
-          <p className="module-card-subtitle">{module.subtitle}</p>
-        )}
-        <p className="module-card-desc">{module.description}</p>
-      </Link>
-
-      <div className="module-card-footer">
-        {/* Lesson completion indicators */}
-        <div className="module-lesson-dots">
-          {Array.from({ length: Math.min(totalLessons, 8) }).map((_, i) => (
-            <span
-              key={i}
-              className={`lesson-dot ${i < completedLessons ? 'completed' : ''}`}
-            />
-          ))}
-          {totalLessons > 8 && <span className="lesson-dot-more">+{totalLessons - 8}</span>}
-        </div>
-
-        {/* Progress bar */}
-        <div className="module-progress-section">
-          <div className="module-progress-bar">
-            <div className="module-progress-fill" style={{ width: `${progress}%` }} />
-          </div>
-          <span className="module-progress-text">
-            {completedLessons}/{totalLessons} lessons
-          </span>
-        </div>
-
-        {/* Continue button */}
-        {!isLocked && completedLessons > 0 && !isComplete && (
-          <button onClick={handleContinue} className="module-continue-btn">
-            Continue
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
-        )}
-        {isComplete && (
-          <div className="module-complete-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-            Complete
-          </div>
-        )}
+    <div className="archetype-profile-card glass-card">
+      <div className="archetype-profile-icon">{archetypeData.icon}</div>
+      <div className="archetype-profile-content">
+        <h2 className="archetype-profile-name">{archetypeData.title}</h2>
+        <p className="archetype-profile-tagline">{archetypeData.tagline}</p>
+        <p className="archetype-profile-desc">{archetypeData.description}</p>
+        <button onClick={onRetakeQuiz} className="archetype-retake-btn">
+          Retake Quiz
+        </button>
       </div>
     </div>
   )
 }
 
-function ArchetypeCard({ archetype, isUserArchetype = false }) {
+// Recommended Lesson Card
+function RecommendedLessonCard({ lesson }) {
   return (
-    <Link
-      to={`/academy/archetype/${archetype.id}`}
-      className={`module-card archetype-card glass-card ${isUserArchetype ? 'user-archetype' : ''}`}
-    >
-      {isUserArchetype && (
-        <div className="user-archetype-badge">
-          YOUR ARCHETYPE
-        </div>
-      )}
-      <div className="module-card-header">
-        <div className="module-card-icon">
-          <span>{archetype.icon}</span>
-        </div>
-      </div>
-      <h3 className="module-card-title">{archetype.title}</h3>
-      <p className="archetype-card-subtitle">{archetype.subtitle}</p>
-      <p className="module-card-desc">{archetype.description}</p>
-      <div className="module-card-meta">
-        <span className="module-lesson-count">{archetype.lessonCount} lessons</span>
-      </div>
-    </Link>
-  )
-}
-
-function RecommendedLesson({ lesson }) {
-  return (
-    <Link
-      to={`/academy/${lesson.module_slug}/${lesson.slug}`}
-      className="recommended-card glass-card"
-    >
-      <div className="recommended-badge">Recommended</div>
-      <h4 className="recommended-title">{lesson.title}</h4>
-      <p className="recommended-desc">{lesson.description}</p>
-      <div className="recommended-meta">
-        <span className="recommended-time">{lesson.reading_time} min read</span>
-        <span className={`recommended-difficulty difficulty-${lesson.difficulty}`}>
+    <Link to={`/academy/${lesson.module_slug}/${lesson.slug}`} className="recommended-lesson-card glass-card">
+      <div className="recommended-lesson-header">
+        <span className="recommended-lesson-module">From: {lesson.module_title || lesson.module_slug}</span>
+        <span className={`recommended-lesson-difficulty difficulty-${lesson.difficulty}`}>
           {lesson.difficulty}
         </span>
       </div>
+      <h4 className="recommended-lesson-title">{lesson.title}</h4>
+      <p className="recommended-lesson-desc">{lesson.description}</p>
+      <div className="recommended-lesson-footer">
+        <span className="recommended-lesson-time">{lesson.reading_time || 5} min read</span>
+        <span className="recommended-lesson-xp">+10 XP</span>
+      </div>
     </Link>
   )
 }
 
+// Expandable Archetype Card
+function ExpandableArchetypeCard({ archetype, isExpanded, onToggle, userArchetype }) {
+  return (
+    <div className={`expandable-archetype ${isExpanded ? 'expanded' : ''}`}>
+      <button className="expandable-archetype-header" onClick={onToggle}>
+        <span className="expandable-archetype-icon">{archetype.icon}</span>
+        <div className="expandable-archetype-info">
+          <span className="expandable-archetype-name">{archetype.title}</span>
+          <span className="expandable-archetype-tagline">{archetype.tagline}</span>
+        </div>
+        <span className="expandable-archetype-count">{archetype.lessonCount} lessons</span>
+        <svg
+          className="expandable-archetype-chevron"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <polyline points={isExpanded ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} />
+        </svg>
+      </button>
+      {isExpanded && (
+        <div className="expandable-archetype-content">
+          <p className="expandable-archetype-context">
+            These strategies can complement your {formatArchetypeName(userArchetype) || 'trading'} style
+          </p>
+          <Link to={`/academy/archetype/${archetype.id}`} className="expandable-archetype-cta">
+            Explore {archetype.title} Lessons
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </Link>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Main Dashboard Component
 export default function AcademyDashboard() {
   const { isAuthenticated, user, openAuthModal } = useOutletContext()
   const { token } = useAuth()
+  const navigate = useNavigate()
+
   const [modules, setModules] = useState([])
   const [recommended, setRecommended] = useState([])
   const [progress, setProgress] = useState({})
-  const [lessonProgress, setLessonProgress] = useState([])
   const [xpProgress, setXpProgress] = useState(null)
   const [levelInfo, setLevelInfo] = useState(null)
   const [achievements, setAchievements] = useState([])
   const [dailyXp, setDailyXp] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [expandedArchetype, setExpandedArchetype] = useState(null)
 
   // Tab state with localStorage persistence
   const [activeTab, setActiveTab] = useState(() => {
@@ -474,7 +548,6 @@ export default function AcademyDashboard() {
     return saved && ACADEMY_TABS.some(t => t.id === saved) ? saved : 'trading-101'
   })
 
-  // Update localStorage when tab changes
   useEffect(() => {
     localStorage.setItem('academy_active_tab', activeTab)
   }, [activeTab])
@@ -488,13 +561,11 @@ export default function AcademyDashboard() {
     setError('')
 
     try {
-      // Fetch modules
       const modulesRes = await fetch('/api/academy/modules')
       if (!modulesRes.ok) throw new Error('Failed to fetch modules')
       const modulesData = await modulesRes.json()
       setModules(modulesData.modules || [])
 
-      // If authenticated, fetch all progress data
       if (token) {
         const headers = { 'Authorization': `Bearer ${token}` }
 
@@ -507,14 +578,12 @@ export default function AcademyDashboard() {
 
         if (progressRes.ok) {
           const progressData = await progressRes.json()
-          // The API returns { moduleProgress: [...], totalLessons, completedLessons, recentlyCompleted }
           const progressMap = {}
           const moduleProgressArray = progressData.progress?.moduleProgress || []
           moduleProgressArray.forEach(m => {
             progressMap[m.id] = m.completed_lessons || 0
           })
           setProgress(progressMap)
-          setLessonProgress(progressData.progress?.recentlyCompleted || [])
         }
 
         if (recommendedRes.ok) {
@@ -527,10 +596,8 @@ export default function AcademyDashboard() {
           setXpProgress(xpData.xp)
           setLevelInfo(xpData.levelInfo)
 
-          // Calculate daily XP (simplified - based on today's activity)
           const today = new Date().toISOString().split('T')[0]
           if (xpData.xp?.lastActivity === today) {
-            // Estimate daily XP from recent activity
             setDailyXp(Math.min(xpData.xp.total % 100, DAILY_XP_GOAL))
           }
         }
@@ -550,37 +617,50 @@ export default function AcademyDashboard() {
 
   // Get user's archetype
   const userArchetypeId = normalizeArchetypeId(user?.primaryArchetype || user?.primary_archetype)
-
-  // Reorder archetype modules to put user's archetype first
-  const orderedArchetypeModules = [...ARCHETYPE_MODULES]
-  if (userArchetypeId) {
-    const userIndex = orderedArchetypeModules.findIndex(m => m.id === userArchetypeId)
-    if (userIndex > 0) {
-      const [userModule] = orderedArchetypeModules.splice(userIndex, 1)
-      orderedArchetypeModules.unshift(userModule)
-    }
-  }
+  const userArchetypeDisplay = formatArchetypeName(user?.primaryArchetype || user?.primary_archetype)
 
   // Calculate overall progress
   const totalLessons = modules.reduce((sum, m) => sum + (m.lesson_count || 0), 0)
   const completedLessons = Object.values(progress).reduce((sum, count) => sum + count, 0)
 
-  // Find next incomplete lesson for "Continue Learning"
+  // Find next incomplete lesson
   const findNextLesson = () => {
     for (const module of modules) {
       const moduleProgress = progress[module.id] || 0
       if (moduleProgress < (module.lesson_count || 0)) {
-        // This module has incomplete lessons
-        return {
-          module_slug: module.slug,
-          slug: module.lessons?.[moduleProgress]?.slug || module.slug
-        }
+        return { module_slug: module.slug, slug: module.slug }
       }
     }
     return recommended[0] || null
   }
 
   const nextLesson = findNextLesson()
+
+  // Determine module states
+  const getModuleState = (module, index) => {
+    const moduleCompleted = progress[module.id] || 0
+    const total = module.lesson_count || 0
+    const isComplete = moduleCompleted >= total && total > 0
+
+    // Check if previous modules are complete for locking
+    let prevComplete = true
+    for (let i = 0; i < index; i++) {
+      const prevModule = modules[i]
+      const prevProgress = progress[prevModule.id] || 0
+      if (prevProgress < (prevModule.lesson_count || 0)) {
+        prevComplete = false
+        break
+      }
+    }
+
+    const isLocked = index > 0 && !prevComplete && !isComplete
+    const isCurrent = !isComplete && !isLocked && prevComplete
+
+    return { isComplete, isLocked, isCurrent }
+  }
+
+  // Filter archetypes for "Explore Other Archetypes" section
+  const otherArchetypes = ARCHETYPE_MODULES.filter(a => a.id !== userArchetypeId)
 
   if (isLoading) {
     return (
@@ -595,44 +675,24 @@ export default function AcademyDashboard() {
     return (
       <div className="academy-error">
         <p>{error}</p>
-        <button onClick={fetchData} className="academy-retry-btn">
-          Try Again
-        </button>
+        <button onClick={fetchData} className="academy-retry-btn">Try Again</button>
       </div>
     )
   }
 
   return (
     <div className="academy-dashboard">
-      {/* Welcome Banner (authenticated users) */}
-      {isAuthenticated && (
-        <WelcomeBanner
-          user={user}
-          xpProgress={xpProgress}
-          levelInfo={levelInfo}
-          completedLessons={completedLessons}
-          totalLessons={totalLessons}
-          nextLesson={nextLesson}
-        />
-      )}
-
-      {/* Stats Bar (authenticated users) */}
-      {isAuthenticated && (
-        <div className="gamification-row">
-          <StatsBar xpProgress={xpProgress} levelInfo={levelInfo} />
-          <DailyGoalWidget dailyXp={dailyXp} />
-        </div>
-      )}
-
-      {/* Hero Section (non-authenticated) */}
-      {!isAuthenticated && (
-        <section className="academy-hero">
-          <h1 className="academy-title">Hindsight Academy</h1>
-          <p className="academy-subtitle">
-            Master the psychology and strategy of trading with personalized lessons tailored to your archetype.
-          </p>
-        </section>
-      )}
+      {/* Hero Section */}
+      <HeroSection
+        user={user}
+        xpProgress={xpProgress}
+        levelInfo={levelInfo}
+        totalLessons={totalLessons}
+        completedLessons={completedLessons}
+        dailyXp={dailyXp}
+        nextLesson={nextLesson}
+        openAuthModal={openAuthModal}
+      />
 
       {/* Tab Navigation */}
       <div className="academy-tabs">
@@ -642,7 +702,8 @@ export default function AcademyDashboard() {
             className={`academy-tab ${activeTab === tab.id ? 'active' : ''}`}
             onClick={() => setActiveTab(tab.id)}
           >
-            {tab.label}
+            <span className="tab-label">{tab.label}</span>
+            <span className="tab-subtitle">{tab.subtitle}</span>
           </button>
         ))}
       </div>
@@ -652,127 +713,122 @@ export default function AcademyDashboard() {
         {/* Trading 101 Tab */}
         {activeTab === 'trading-101' && (
           <>
-            {/* Recommended Section (if authenticated with recommendations) */}
-            {isAuthenticated && recommended.length > 0 && (
-              <section className="academy-section">
-                <h2 className="academy-section-title">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                  </svg>
-                  Recommended for You
-                </h2>
-                <p className="academy-section-desc">
-                  Based on your {user?.primaryArchetype || user?.primary_archetype ? `${user.primaryArchetype || user.primary_archetype} archetype` : 'trading style'}
-                </p>
-                <div className="recommended-grid">
-                  {recommended.slice(0, 3).map(lesson => (
-                    <RecommendedLesson key={lesson.id} lesson={lesson} />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Trading 101 Modules */}
-            <section className="academy-section">
+            {/* Module Grid - PRIMARY CONTENT */}
+            <section className="modules-section">
               <div className="modules-grid">
                 {modules.map((module, index) => {
-                  // Determine if module should be locked (requires previous completion)
-                  // For now, only first module is always unlocked
-                  const prevModuleComplete = index === 0 ||
-                    (progress[modules[index - 1]?.id] || 0) >= (modules[index - 1]?.lesson_count || 0)
-                  const isLocked = false // Disabled locking for now - can enable later
-
-                  // Check if this is the "active" module (first incomplete)
-                  const isActive = !isLocked &&
-                    (progress[module.id] || 0) < (module.lesson_count || 0) &&
-                    modules.slice(0, index).every(m => (progress[m.id] || 0) >= (m.lesson_count || 0))
-
+                  const { isComplete, isLocked, isCurrent } = getModuleState(module, index)
                   return (
                     <ModuleCard
                       key={module.id}
                       module={module}
                       completedLessons={progress[module.id] || 0}
+                      isComplete={isComplete}
                       isLocked={isLocked}
-                      isActive={isActive}
-                      lessonProgress={lessonProgress.filter(l => l.module_id === module.id)}
+                      isCurrent={isCurrent}
                     />
                   )
                 })}
               </div>
             </section>
+
+            {/* Achievements */}
+            {isAuthenticated && (
+              <AchievementShowcase earnedAchievements={achievements} />
+            )}
           </>
         )}
 
         {/* Learn by Archetype Tab */}
         {activeTab === 'by-archetype' && (
-          <section className="academy-section">
-            {/* Quiz CTA for users without archetype */}
-            {isAuthenticated && !userArchetypeId && (
-              <div className="archetype-quiz-cta glass-card">
-                <div className="quiz-cta-content">
-                  <span className="quiz-cta-icon">🎯</span>
-                  <div className="quiz-cta-text">
-                    <h3>Discover Your Trading Personality</h3>
-                    <p>Take the archetype quiz to get personalized learning recommendations</p>
-                  </div>
-                </div>
-                <Link to="/" className="quiz-cta-btn">
-                  Take the Quiz
-                </Link>
-              </div>
-            )}
-
-            {!isAuthenticated && (
-              <div className="archetype-quiz-cta glass-card">
-                <div className="quiz-cta-content">
-                  <span className="quiz-cta-icon">🎯</span>
-                  <div className="quiz-cta-text">
-                    <h3>Get Personalized Recommendations</h3>
-                    <p>Sign in and take the personality quiz to highlight your archetype</p>
-                  </div>
-                </div>
-                <button onClick={() => openAuthModal('signup')} className="quiz-cta-btn">
-                  Sign In
-                </button>
-              </div>
-            )}
-
-            {/* Archetype description */}
-            <p className="archetype-section-desc">
-              Deep-dive lessons tailored to your trading personality. Each archetype module addresses specific strengths to leverage and weaknesses to overcome.
-            </p>
-
-            {/* Archetype Modules Grid */}
-            <div className="modules-grid archetype-grid">
-              {orderedArchetypeModules.map(archetype => (
-                <ArchetypeCard
-                  key={archetype.id}
-                  archetype={archetype}
-                  isUserArchetype={archetype.id === userArchetypeId}
+          <>
+            {/* Archetype Profile Card */}
+            {isAuthenticated && userArchetypeId ? (
+              <>
+                <ArchetypeProfileCard
+                  archetype={userArchetypeId}
+                  onRetakeQuiz={() => navigate('/')}
                 />
-              ))}
-            </div>
-          </section>
+
+                {/* Recommended for Your Archetype */}
+                {recommended.length > 0 && (
+                  <section className="archetype-recommended-section">
+                    <h3 className="section-header">
+                      Recommended for {userArchetypeDisplay}s
+                    </h3>
+                    <div className="recommended-lessons-grid">
+                      {recommended.slice(0, 4).map(lesson => (
+                        <RecommendedLessonCard key={lesson.id} lesson={lesson} />
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* Explore Other Archetypes */}
+                <section className="explore-archetypes-section">
+                  <h3 className="section-header">Want to step outside your comfort zone?</h3>
+                  <p className="section-subheader">Learn strategies from other trading styles</p>
+                  <div className="expandable-archetypes">
+                    {otherArchetypes.map(archetype => (
+                      <ExpandableArchetypeCard
+                        key={archetype.id}
+                        archetype={archetype}
+                        isExpanded={expandedArchetype === archetype.id}
+                        onToggle={() => setExpandedArchetype(
+                          expandedArchetype === archetype.id ? null : archetype.id
+                        )}
+                        userArchetype={userArchetypeId}
+                      />
+                    ))}
+                  </div>
+                </section>
+              </>
+            ) : (
+              /* No archetype / not logged in */
+              <div className="archetype-cta-section">
+                <div className="archetype-cta-card glass-card">
+                  <span className="archetype-cta-icon">🎯</span>
+                  <h2 className="archetype-cta-title">
+                    {isAuthenticated ? 'Discover Your Trading Personality' : 'Get Personalized Recommendations'}
+                  </h2>
+                  <p className="archetype-cta-desc">
+                    {isAuthenticated
+                      ? 'Take the archetype quiz to unlock personalized lessons tailored to your trading style'
+                      : 'Sign in and take the personality quiz to get recommendations for your trading style'
+                    }
+                  </p>
+                  {isAuthenticated ? (
+                    <Link to="/" className="archetype-cta-btn">Take the Quiz</Link>
+                  ) : (
+                    <button onClick={() => openAuthModal('signup')} className="archetype-cta-btn">
+                      Sign In
+                    </button>
+                  )}
+                </div>
+
+                {/* Show all archetypes as browsable */}
+                <section className="browse-archetypes-section">
+                  <h3 className="section-header">Browse All Archetypes</h3>
+                  <div className="archetype-browse-grid">
+                    {ARCHETYPE_MODULES.map(archetype => (
+                      <Link
+                        key={archetype.id}
+                        to={`/academy/archetype/${archetype.id}`}
+                        className="archetype-browse-card glass-card"
+                      >
+                        <span className="archetype-browse-icon">{archetype.icon}</span>
+                        <h4 className="archetype-browse-name">{archetype.title}</h4>
+                        <p className="archetype-browse-tagline">{archetype.tagline}</p>
+                        <span className="archetype-browse-count">{archetype.lessonCount} lessons</span>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              </div>
+            )}
+          </>
         )}
       </div>
-
-      {/* Achievement Showcase (authenticated users) */}
-      {isAuthenticated && (
-        <AchievementShowcase earnedAchievements={achievements} />
-      )}
-
-      {/* CTA for non-authenticated users */}
-      {!isAuthenticated && (
-        <section className="academy-cta glass-card">
-          <h3 className="cta-title">Track Your Progress</h3>
-          <p className="cta-desc">
-            Sign in to save your progress, get personalized recommendations based on your trading archetype, and unlock your full learning potential.
-          </p>
-          <button onClick={() => openAuthModal('signup')} className="cta-btn">
-            Sign In to Get Started
-          </button>
-        </section>
-      )}
     </div>
   )
 }
