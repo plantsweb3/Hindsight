@@ -1,4 +1,5 @@
 import {
+  initDb,
   getAcademyModules,
   getAcademyModuleBySlug,
   getAcademyLessonBySlug,
@@ -11,6 +12,20 @@ import {
 import jwt from 'jsonwebtoken'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'hindsight-dev-secret-change-in-production'
+
+// Initialize database and seed content on cold start
+let dbInitialized = false
+async function ensureDb() {
+  if (!dbInitialized) {
+    await initDb()
+    // Auto-seed content if no modules exist
+    const modules = await getAcademyModules()
+    if (modules.length === 0) {
+      await seedAcademyContent()
+    }
+    dbInitialized = true
+  }
+}
 
 // Helper to verify JWT and get user
 async function authenticateUser(req) {
@@ -45,6 +60,9 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
   }
+
+  // Ensure database is initialized
+  await ensureDb()
 
   const segments = parsePath(req.query.path)
   const method = req.method
