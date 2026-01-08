@@ -19,13 +19,22 @@ const JWT_SECRET = process.env.JWT_SECRET || 'hindsight-dev-secret-change-in-pro
 let dbInitialized = false
 async function ensureDb() {
   if (!dbInitialized) {
-    await initDb()
-    // Auto-seed content if no modules exist
-    const modules = await getAcademyModules()
-    if (modules.length === 0) {
-      await seedAcademyContent()
+    console.log('[Academy] Starting database initialization...')
+    try {
+      await initDb()
+      console.log('[Academy] Database initialized, checking for seed...')
+      // Auto-seed content if no modules exist
+      const modules = await getAcademyModules()
+      if (modules.length === 0) {
+        console.log('[Academy] No modules found, seeding content...')
+        await seedAcademyContent()
+      }
+      dbInitialized = true
+      console.log('[Academy] Database ready')
+    } catch (err) {
+      console.error('[Academy] Database initialization failed:', err.message)
+      throw err
     }
-    dbInitialized = true
   }
 }
 
@@ -63,13 +72,12 @@ export default async function handler(req, res) {
     return res.status(200).end()
   }
 
-  // Ensure database is initialized
-  await ensureDb()
-
   const segments = parsePath(req.query.path)
   const method = req.method
 
   try {
+    // Ensure database is initialized (inside try/catch to handle errors)
+    await ensureDb()
     // GET /api/academy/modules - List all modules with lesson counts
     if (method === 'GET' && segments.length === 1 && segments[0] === 'modules') {
       const modules = await getAcademyModules()
