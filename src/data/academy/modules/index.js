@@ -8,12 +8,15 @@ import { traderModule } from './trader'
 import { traderQuizzes, getTraderQuizByLessonSlug } from './trader-quizzes'
 import { specialistModule } from './specialist'
 import { specialistQuizzes, getSpecialistQuizByLessonSlug } from './specialist-quizzes'
+import { masterModule } from './master'
+import { masterQuizzes, getMasterQuizByLessonSlug } from './master-quizzes'
 
 // Export individual modules
 export { newcomerModule }
 export { apprenticeModule, apprenticeQuizzes, getApprenticeQuizByLessonSlug }
 export { traderModule, traderQuizzes, getTraderQuizByLessonSlug }
 export { specialistModule, specialistQuizzes, getSpecialistQuizByLessonSlug }
+export { masterModule, masterQuizzes, getMasterQuizByLessonSlug }
 
 // All Trading 101 modules
 export const trading101Modules = {
@@ -21,6 +24,7 @@ export const trading101Modules = {
   'apprentice': apprenticeModule,
   'trader': traderModule,
   'specialist': specialistModule,
+  'master': masterModule,
 }
 
 // Get module by slug
@@ -63,6 +67,7 @@ export const trading101Quizzes = {
   'apprentice': apprenticeQuizzes,
   'trader': traderQuizzes,
   'specialist': specialistQuizzes,
+  'master': masterQuizzes,
 }
 
 // Get quiz for a specific Trading 101 lesson
