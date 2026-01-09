@@ -14,18 +14,20 @@ import { XP_CONFIG, ACHIEVEMENT_XP, getLevelInfo, DAILY_GOALS, DEFAULT_DAILY_GOA
 // ==============================================
 
 // XP values for placement test modules
-// Each module represents: 5 lessons (125 XP) + 5 quiz passes (50 XP) + module bonus
+// Balanced to give ~1000-1200 XP for acing the test (Specialist level)
 // These are KNOWLEDGE-BASED rewards only
 const PLACEMENT_MODULE_XP = {
-  newcomer: 225,    // 125 + 50 + 50 module bonus
-  apprentice: 250,  // 125 + 50 + 75 module bonus
-  trader: 275,      // 125 + 50 + 100 module bonus
-  specialist: 325,  // 125 + 50 + 150 module bonus
-  master: 375       // 125 + 50 + 200 module bonus
+  newcomer: 150,    // Base XP for testing out
+  apprentice: 175,  // Slightly more for harder content
+  trader: 200,      // Mid-tier difficulty
+  specialist: 225,  // Advanced content
+  master: 250       // Hardest section
 }
+// Total for passing all 5: 1000 XP
 
-// Perfect score bonus per section (5 quizzes × 25 XP = 125 XP max per module)
-const PLACEMENT_PERFECT_BONUS_PER_MODULE = 125
+// Perfect score bonus per section (rewards exceptional knowledge)
+const PLACEMENT_PERFECT_BONUS_PER_MODULE = 50
+// Total with all perfect: 1000 + 250 = 1250 XP
 
 // Calculate total XP from all sources - this is the SINGLE SOURCE OF TRUTH
 // XP is calculated from BEST scores only - retakes don't add XP, they can only improve it
