@@ -3,6 +3,26 @@ import { Link, useParams, useOutletContext } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { getTrading101Module, hasLocalModule } from '../../data/academy/modules'
 
+// Helper for local progress tracking (same as LessonView)
+const LOCAL_PROGRESS_KEY = 'hindsight_academy_progress'
+
+function getLocalProgress() {
+  try {
+    const data = localStorage.getItem(LOCAL_PROGRESS_KEY)
+    return data ? JSON.parse(data) : { completedLessons: [] }
+  } catch {
+    return { completedLessons: [] }
+  }
+}
+
+function getCompletedLessonsForModule(moduleSlug) {
+  const progress = getLocalProgress()
+  const prefix = `${moduleSlug}/`
+  return progress.completedLessons
+    .filter(key => key.startsWith(prefix))
+    .map(key => key.replace(prefix, ''))
+}
+
 function LessonCard({ lesson, moduleSlug, isCompleted }) {
   return (
     <Link
@@ -98,8 +118,15 @@ export default function ModuleView() {
 
       setModule(moduleData.module)
 
-      // If authenticated, fetch progress
-      if (token) {
+      // Check for progress
+      const isLocalModuleData = hasLocalModule(moduleSlug)
+
+      if (isLocalModuleData) {
+        // For local modules, use localStorage (works without auth)
+        const completedSlugs = getCompletedLessonsForModule(moduleSlug)
+        setCompletedLessonIds(new Set(completedSlugs))
+      } else if (token) {
+        // For API modules, fetch progress from server
         const progressRes = await fetch('/api/academy/progress', {
           headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -142,7 +169,10 @@ export default function ModuleView() {
     return null
   }
 
-  const completedCount = module.lessons?.filter(l => completedLessonIds.has(l.id)).length || 0
+  // For local modules, completedLessonIds contains slugs; for API modules, it contains IDs
+  const completedCount = module.lessons?.filter(l =>
+    completedLessonIds.has(l.id) || completedLessonIds.has(l.slug)
+  ).length || 0
   const totalLessons = module.lessons?.length || 0
   const progress = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0
 
@@ -173,7 +203,7 @@ export default function ModuleView() {
               </svg>
               {totalLessons} lessons
             </span>
-            {isAuthenticated && completedCount > 0 && (
+            {completedCount > 0 && (
               <span className="module-stat module-stat-progress">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="20 6 9 17 4 12" />
@@ -186,7 +216,7 @@ export default function ModuleView() {
       </header>
 
       {/* Progress Bar */}
-      {isAuthenticated && totalLessons > 0 && (
+      {totalLessons > 0 && (isAuthenticated || hasLocalModule(moduleSlug)) && (
         <div className="module-progress-section">
           <div className="module-progress-bar-large">
             <div className="module-progress-fill-large" style={{ width: `${progress}%` }} />
@@ -205,7 +235,7 @@ export default function ModuleView() {
               <LessonCard
                 lesson={lesson}
                 moduleSlug={moduleSlug}
-                isCompleted={completedLessonIds.has(lesson.id)}
+                isCompleted={completedLessonIds.has(lesson.id) || completedLessonIds.has(lesson.slug)}
               />
             </div>
           ))}

@@ -47,8 +47,9 @@ export function getTrading101Lesson(moduleSlug, lessonSlug) {
     module_title: module.title,
     module_icon: module.icon,
     reading_time: lesson.readTime,
-    prevLesson: lessonIndex > 0 ? module.lessons[lessonIndex - 1] : null,
-    nextLesson: lessonIndex < module.lessons.length - 1 ? module.lessons[lessonIndex + 1] : null
+    // Use snake_case and return slug strings for navigation
+    prev_lesson: lessonIndex > 0 ? module.lessons[lessonIndex - 1].slug : null,
+    next_lesson: lessonIndex < module.lessons.length - 1 ? module.lessons[lessonIndex + 1].slug : null
   }
 }
 

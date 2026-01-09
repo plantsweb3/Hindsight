@@ -5,6 +5,39 @@ import Quiz from './Quiz'
 import { NEWCOMER_QUIZZES, getQuizByLessonSlug } from '../../data/quizzes/newcomer'
 import { getTrading101Lesson, hasLocalModule, getTrading101LessonQuiz } from '../../data/academy/modules'
 
+// Helper for local progress tracking
+const LOCAL_PROGRESS_KEY = 'hindsight_academy_progress'
+
+function getLocalProgress() {
+  try {
+    const data = localStorage.getItem(LOCAL_PROGRESS_KEY)
+    return data ? JSON.parse(data) : { completedLessons: [] }
+  } catch {
+    return { completedLessons: [] }
+  }
+}
+
+function saveLocalProgress(progress) {
+  localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify(progress))
+}
+
+function isLessonCompleted(moduleSlug, lessonSlug) {
+  const progress = getLocalProgress()
+  const key = `${moduleSlug}/${lessonSlug}`
+  return progress.completedLessons.includes(key)
+}
+
+function markLessonCompleted(moduleSlug, lessonSlug) {
+  const progress = getLocalProgress()
+  const key = `${moduleSlug}/${lessonSlug}`
+  if (!progress.completedLessons.includes(key)) {
+    progress.completedLessons.push(key)
+    saveLocalProgress(progress)
+    return true
+  }
+  return false
+}
+
 function MarkdownContent({ content }) {
   // Simple markdown-to-html conversion for basic formatting
   const parseMarkdown = (text) => {
@@ -86,9 +119,10 @@ export default function LessonView() {
 
     try {
       let lessonData = null
+      let isLocalModule = hasLocalModule(moduleSlug)
 
       // Check for local data first
-      if (hasLocalModule(moduleSlug)) {
+      if (isLocalModule) {
         const localLesson = getTrading101Lesson(moduleSlug, lessonSlug)
         if (localLesson) {
           lessonData = { lesson: localLesson }
@@ -105,12 +139,18 @@ export default function LessonView() {
           throw new Error('Failed to fetch lesson')
         }
         lessonData = await lessonRes.json()
+        isLocalModule = false
       }
 
       setLesson(lessonData.lesson)
 
-      // Check if completed (still use API for progress tracking)
-      if (token) {
+      // Check if completed
+      if (isLocalModule) {
+        // For local modules, use localStorage
+        const completed = isLessonCompleted(moduleSlug, lessonSlug)
+        setIsCompleted(completed)
+      } else if (token) {
+        // For API modules, use the API
         const progressRes = await fetch('/api/academy/progress', {
           headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -146,24 +186,35 @@ export default function LessonView() {
   }
 
   const handleMarkComplete = async () => {
-    if (!token || !lesson) return
+    if (!lesson) return
 
     setIsMarking(true)
     try {
-      // Use new XP-enabled endpoint
-      const res = await fetch('/api/academy/lesson/complete', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ lessonId: lesson.id })
-      })
-      if (res.ok) {
-        const data = await res.json()
+      const isLocalModuleLesson = hasLocalModule(moduleSlug)
+
+      if (isLocalModuleLesson) {
+        // For local modules, use localStorage
+        const isNew = markLessonCompleted(moduleSlug, lessonSlug)
         setIsCompleted(true)
-        if (data.xpEarned > 0) {
-          setXpEarned(data.xpEarned)
+        if (isNew) {
+          setXpEarned(10) // Show XP earned for local completion
+        }
+      } else if (token) {
+        // For API modules, use the API
+        const res = await fetch('/api/academy/lesson/complete', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ lessonId: lesson.id })
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setIsCompleted(true)
+          if (data.xpEarned > 0) {
+            setXpEarned(data.xpEarned)
+          }
         }
       }
     } catch (err) {
@@ -315,7 +366,7 @@ export default function LessonView() {
 
       {/* Actions */}
       <div className="lesson-actions">
-        {isAuthenticated ? (
+        {(isAuthenticated || hasLocalModule(moduleSlug)) ? (
           <button
             onClick={handleMarkComplete}
             disabled={isCompleted || isMarking}
@@ -352,6 +403,7 @@ export default function LessonView() {
 
       {/* Navigation */}
       <nav className="lesson-navigation">
+        {/* Left side: Previous Lesson or Back to Module */}
         {lesson.prev_lesson ? (
           <button
             onClick={() => navigateToLesson(lesson.prev_lesson)}
@@ -363,8 +415,14 @@ export default function LessonView() {
             Previous Lesson
           </button>
         ) : (
-          <div />
+          <Link to={`/academy/${moduleSlug}`} className="lesson-nav-btn lesson-nav-prev">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to Module
+          </Link>
         )}
+        {/* Right side: Next Lesson or Back to Module (if at end) */}
         {lesson.next_lesson ? (
           <button
             onClick={() => navigateToLesson(lesson.next_lesson)}
@@ -377,9 +435,9 @@ export default function LessonView() {
           </button>
         ) : (
           <Link to={`/academy/${moduleSlug}`} className="lesson-nav-btn lesson-nav-next">
-            Back to Module
+            Complete Module
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 12h14M12 5l7 7-7 7" />
+              <polyline points="20 6 9 17 4 12" />
             </svg>
           </Link>
         )}

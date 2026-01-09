@@ -105,25 +105,42 @@ export default function QuizResults({ results, quiz, onRetry, onClose, isModuleT
           Review Answers
         </summary>
         <div className="quiz-review-list">
-          {results.questionResults?.map((qr, i) => (
-            <div key={qr.questionId} className={`quiz-review-item ${qr.isCorrect ? 'correct' : 'incorrect'}`}>
-              <div className="quiz-review-header">
-                <span className="quiz-review-num">Q{i + 1}</span>
-                {qr.isCorrect ? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                ) : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
-                    <path d="M18 6L6 18M6 6l12 12" />
-                  </svg>
+          {results.questionResults?.map((qr, i) => {
+            const question = quiz?.questions?.[i]
+            const userAnswerText = question?.options?.find(o => o.id === qr.userAnswer)?.text
+            const correctAnswerText = question?.options?.find(o => o.id === qr.correctAnswer)?.text
+
+            return (
+              <div key={qr.questionId} className={`quiz-review-item ${qr.isCorrect ? 'correct' : 'incorrect'}`}>
+                <div className="quiz-review-header">
+                  <span className="quiz-review-num">Q{i + 1}</span>
+                  {qr.isCorrect ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
+                      <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                  )}
+                </div>
+                <p className="quiz-review-question">{question?.question}</p>
+                <div className="quiz-review-answers">
+                  <p className={`quiz-review-answer ${qr.isCorrect ? 'correct' : 'incorrect'}`}>
+                    <span className="quiz-review-label">Your answer:</span> {userAnswerText || 'No answer'}
+                  </p>
+                  {!qr.isCorrect && (
+                    <p className="quiz-review-answer correct">
+                      <span className="quiz-review-label">Correct answer:</span> {correctAnswerText}
+                    </p>
+                  )}
+                </div>
+                {qr.explanation && (
+                  <p className="quiz-review-explanation">{qr.explanation}</p>
                 )}
               </div>
-              {!qr.isCorrect && (
-                <p className="quiz-review-explanation">{qr.explanation}</p>
-              )}
-            </div>
-          ))}
+            )
+          })}
         </div>
       </details>
 

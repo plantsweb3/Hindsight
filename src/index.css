@@ -11469,11 +11469,47 @@ input, button {
   color: #a1a1aa;
 }
 
+.quiz-review-question {
+  font-size: 0.9375rem;
+  color: #e5e5e5;
+  margin: 0;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.quiz-review-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.quiz-review-answer {
+  font-size: 0.875rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.quiz-review-answer.correct {
+  color: #10b981;
+}
+
+.quiz-review-answer.incorrect {
+  color: #ef4444;
+}
+
+.quiz-review-label {
+  color: #71717a;
+  margin-right: 0.25rem;
+}
+
 .quiz-review-explanation {
   font-size: 0.875rem;
   color: #71717a;
-  margin: 0;
+  margin: 0.5rem 0 0 0;
   line-height: 1.5;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Quiz Results Actions */
