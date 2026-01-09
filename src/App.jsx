@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { AchievementProvider } from './contexts/AchievementContext'
 import { analyzeWallet, analyzeBehavior, isValidSolanaAddress, convertTradesToJournalEntries, createJournalEntriesBatch, getJournalPatterns, getCrossWalletStats } from './services/solana'
 import { ARCHETYPES } from './data/quizData'
 import LandingPage from './components/LandingPage'
@@ -22,6 +23,7 @@ import ModuleView from './components/academy/ModuleView'
 import LessonView from './components/academy/LessonView'
 import ArchetypeModuleView from './components/academy/ArchetypeModuleView'
 import ArchetypeLessonView from './components/academy/ArchetypeLessonView'
+import AchievementCelebration from './components/academy/AchievementCelebration'
 
 // Scroll to top on route change
 function ScrollToTop() {
@@ -503,23 +505,27 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <ScrollToTop />
-        <Routes>
-          {/* Academy - URL-based routing */}
-          <Route path="/academy" element={<AcademyLayout />}>
-            <Route index element={<AcademyDashboard />} />
-            <Route path="archetype/:archetypeId" element={<ArchetypeModuleView />} />
-            <Route path="archetype/:archetypeId/:lessonSlug" element={<ArchetypeLessonView />} />
-            <Route path=":moduleSlug" element={<ModuleView />} />
-            <Route path=":moduleSlug/:lessonSlug" element={<LessonView />} />
-          </Route>
+      <AchievementProvider>
+        <BrowserRouter>
+          <ScrollToTop />
+          <Routes>
+            {/* Academy - URL-based routing */}
+            <Route path="/academy" element={<AcademyLayout />}>
+              <Route index element={<AcademyDashboard />} />
+              <Route path="archetype/:archetypeId" element={<ArchetypeModuleView />} />
+              <Route path="archetype/:archetypeId/:lessonSlug" element={<ArchetypeLessonView />} />
+              <Route path=":moduleSlug" element={<ModuleView />} />
+              <Route path=":moduleSlug/:lessonSlug" element={<LessonView />} />
+            </Route>
 
-          {/* Everything else - existing state-based */}
-          <Route path="/*" element={<AppContent />} />
-        </Routes>
-      </BrowserRouter>
-      <Analytics />
+            {/* Everything else - existing state-based */}
+            <Route path="/*" element={<AppContent />} />
+          </Routes>
+          {/* Achievement celebration modal - shows anywhere in the app */}
+          <AchievementCelebration />
+        </BrowserRouter>
+        <Analytics />
+      </AchievementProvider>
     </AuthProvider>
   )
 }

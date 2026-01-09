@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link, useOutletContext, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { useAchievements } from '../../contexts/AchievementContext'
 import { getArchetypeModule, hasArchetypeModule } from '../../data/academy/archetypes'
 import { hasLocalModule, getTrading101Module } from '../../data/academy/modules'
+import { ACHIEVEMENTS, getLocalAchievements } from '../../services/achievements'
 
 // Helper for local progress tracking (same as LessonView/ModuleView)
 const LOCAL_PROGRESS_KEY = 'hindsight_academy_progress'
@@ -30,20 +32,6 @@ const ACADEMY_TABS = [
 
 // Daily XP goal
 const DAILY_XP_GOAL = 30
-
-// Achievement definitions
-const ACHIEVEMENTS = {
-  'first_lesson': { id: 'first_lesson', name: 'First Steps', icon: '👣', description: 'Complete your first lesson' },
-  'streak_3': { id: 'streak_3', name: 'On Fire', icon: '🔥', description: '3-day learning streak' },
-  'streak_7': { id: 'streak_7', name: 'Week Warrior', icon: '⚔️', description: '7-day learning streak' },
-  'streak_30': { id: 'streak_30', name: 'Monthly Master', icon: '🏆', description: '30-day learning streak' },
-  'perfect_quiz': { id: 'perfect_quiz', name: 'Perfect Score', icon: '💯', description: 'Get 100% on any quiz' },
-  'module_complete': { id: 'module_complete', name: 'Module Master', icon: '📚', description: 'Complete a full module' },
-  'level_5': { id: 'level_5', name: 'Rising Star', icon: '⭐', description: 'Reach Level 5' },
-  'level_10': { id: 'level_10', name: 'Expert Trader', icon: '🎯', description: 'Reach Level 10' },
-  'xp_500': { id: 'xp_500', name: 'Knowledge Seeker', icon: '🧠', description: 'Earn 500 total XP' },
-  'xp_1000': { id: 'xp_1000', name: 'Dedicated Learner', icon: '📖', description: 'Earn 1,000 total XP' },
-}
 
 // Archetype display name formatting
 const ARCHETYPE_DISPLAY_NAMES = {
@@ -711,7 +699,14 @@ export default function AcademyDashboard() {
 
         if (achievementsRes.ok) {
           const achievementsData = await achievementsRes.json()
-          setAchievements(achievementsData.achievements || [])
+          // Merge server achievements with local achievements
+          const serverAchievements = achievementsData.achievements || []
+          const localAchievements = getLocalAchievements()
+          const mergedAchievements = [...new Set([...serverAchievements, ...localAchievements])]
+          setAchievements(mergedAchievements)
+        } else {
+          // Use only local achievements if API fails
+          setAchievements(getLocalAchievements())
         }
 
         if (recommendedRes.ok) {
@@ -741,6 +736,8 @@ export default function AcademyDashboard() {
       } else {
         // Not authenticated - still use local progress for local modules
         setProgress(localProgressMap)
+        // Also load local achievements
+        setAchievements(getLocalAchievements())
       }
     } catch (err) {
       console.error('Failed to fetch academy data:', err)
@@ -898,8 +895,8 @@ export default function AcademyDashboard() {
               </div>
             </section>
 
-            {/* Achievements */}
-            {isAuthenticated && (
+            {/* Achievements - show for authenticated users or anyone with local achievements */}
+            {(isAuthenticated || achievements.length > 0) && (
               <AchievementShowcase earnedAchievements={achievements} />
             )}
           </>

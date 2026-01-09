@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate, useOutletContext } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { useAchievements } from '../../contexts/AchievementContext'
 import Quiz from './Quiz'
 import { NEWCOMER_QUIZZES, getQuizByLessonSlug } from '../../data/quizzes/newcomer'
 import { getTrading101Lesson, hasLocalModule, getTrading101LessonQuiz } from '../../data/academy/modules'
@@ -88,6 +89,7 @@ export default function LessonView() {
   const navigate = useNavigate()
   const { isAuthenticated, openAuthModal } = useOutletContext()
   const { token } = useAuth()
+  const { checkLessonCompletion, checkQuizCompletion } = useAchievements()
   const [lesson, setLesson] = useState(null)
   const [isCompleted, setIsCompleted] = useState(false)
   const [isMarking, setIsMarking] = useState(false)
@@ -198,6 +200,8 @@ export default function LessonView() {
         setIsCompleted(true)
         if (isNew) {
           setXpEarned(10) // Show XP earned for local completion
+          // Check for achievements after completing lesson
+          checkLessonCompletion(moduleSlug, lessonSlug)
         }
       } else if (token) {
         // For API modules, use the API
@@ -215,6 +219,8 @@ export default function LessonView() {
           if (data.xpEarned > 0) {
             setXpEarned(data.xpEarned)
           }
+          // Check for achievements after completing lesson
+          checkLessonCompletion(moduleSlug, lessonSlug)
         }
       }
     } catch (err) {
@@ -232,6 +238,8 @@ export default function LessonView() {
     if (results.xpEarned > 0) {
       setXpEarned(prev => prev + results.xpEarned)
     }
+    // Check for quiz-related achievements (like perfect score)
+    checkQuizCompletion(results)
   }
 
   const handleQuizClose = () => {
