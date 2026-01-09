@@ -9060,16 +9060,12 @@ input, button {
 
 /* Module Difficulty Badge */
 .module-difficulty {
-  position: absolute;
-  top: 14px;
-  right: 14px;
   font-size: 0.625rem;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   text-transform: uppercase;
   font-weight: 600;
   letter-spacing: 0.05em;
-  z-index: 2;
 }
 
 .module-difficulty.difficulty-beginner {

@@ -533,12 +533,7 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
     <div className={cardClasses} onClick={handleClick}>
       {/* Badge stack in top-right corner */}
       <div className="module-badge-stack">
-        {/* Difficulty badge always shows */}
-        <span className={`module-difficulty difficulty-${module.difficulty || 'beginner'}`}>
-          {module.difficulty || 'beginner'}
-        </span>
-
-        {/* Status badge below difficulty */}
+        {/* Status badge on top */}
         {badge && (
           <div className={`module-badge module-badge-${badge.toLowerCase()}`}>
             {isComplete && (
@@ -554,6 +549,11 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
             {badge}
           </div>
         )}
+
+        {/* Difficulty badge below status */}
+        <span className={`module-difficulty difficulty-${module.difficulty || 'beginner'}`}>
+          {module.difficulty || 'beginner'}
+        </span>
       </div>
 
       <div className="module-card-header">
