@@ -6,6 +6,7 @@ import { getArchetypeModule, hasArchetypeModule } from '../../data/academy/arche
 import { hasLocalModule, getTrading101Module } from '../../data/academy/modules'
 import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal } from '../../services/achievements'
 import { getLevelInfo, DAILY_GOALS, DEFAULT_DAILY_GOAL } from '../../config/xpConfig'
+import PlacementTest from './PlacementTest'
 
 // Helper for local progress tracking (same as LessonView/ModuleView)
 const LOCAL_PROGRESS_KEY = 'hindsight_academy_progress'
@@ -434,7 +435,7 @@ function LockedModulePopup({ module, onClose, onGoToNextLesson, onPlacementTest 
         </div>
         <h3 className="locked-popup-title">Module Locked</h3>
         <p className="locked-popup-message">
-          Complete <strong>{module?.prevModuleTitle || 'previous modules'}</strong> to unlock <strong>{module?.title}</strong>
+          Complete <strong>{module?.prevModuleTitle || 'the previous module'}</strong> to unlock this one.
         </p>
         <div className="locked-popup-actions">
           <button className="locked-popup-btn primary" onClick={onGoToNextLesson}>
@@ -443,13 +444,21 @@ function LockedModulePopup({ module, onClose, onGoToNextLesson, onPlacementTest 
             </svg>
             Continue Learning
           </button>
+
+          <div className="locked-popup-divider">
+            <span>or</span>
+          </div>
+
           <button className="locked-popup-btn secondary" onClick={onPlacementTest}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 20h9" />
               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
             </svg>
-            Take Placement Test
+            Take Placement Test to Skip Ahead
           </button>
+          <p className="locked-popup-hint">
+            Prove your knowledge and unlock higher levels instantly
+          </p>
         </div>
       </div>
     </div>
@@ -457,7 +466,7 @@ function LockedModulePopup({ module, onClose, onGoToNextLesson, onPlacementTest 
 }
 
 // Enhanced Module Card Component
-function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent = false, isComplete = false, onLockedClick }) {
+function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent = false, isComplete = false, isTestedOut = false, onLockedClick }) {
   const navigate = useNavigate()
   const totalLessons = module.lesson_count || 0
   const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
@@ -467,6 +476,7 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
     'glass-card',
     isCurrent && 'module-current',
     isComplete && 'module-complete',
+    isTestedOut && !isComplete && 'module-tested-out',
     isLocked && 'module-locked',
     module.is_pro === 1 && 'module-pro'
   ].filter(Boolean).join(' ')
@@ -482,6 +492,7 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
 
   const getBadgeText = () => {
     if (isComplete) return 'COMPLETE'
+    if (isTestedOut && !isComplete) return 'SKIPPED'
     if (isCurrent) return 'CONTINUE'
     if (isLocked) return 'LOCKED'
     return null
@@ -709,6 +720,7 @@ export default function AcademyDashboard() {
   const [expandedArchetype, setExpandedArchetype] = useState(null)
   const [lockedModulePopup, setLockedModulePopup] = useState(null)
   const [showDailyGoalModal, setShowDailyGoalModal] = useState(false)
+  const [showPlacementTest, setShowPlacementTest] = useState(false)
 
   // Tab state with localStorage persistence
   const [activeTab, setActiveTab] = useState(() => {
@@ -897,23 +909,29 @@ export default function AcademyDashboard() {
     const total = module.lesson_count || 0
     const isComplete = moduleCompleted >= total && total > 0
 
-    // Check if previous modules are complete for locking
+    // Check if module was tested out via placement test
+    const localProgress = getLocalProgress()
+    const testedOutModules = localProgress.testedOutModules || []
+    const isTestedOut = testedOutModules.includes(module.slug)
+
+    // Check if previous modules are complete or tested out for locking
     let prevComplete = true
     let prevModuleTitle = null
     for (let i = 0; i < index; i++) {
       const prevModule = modules[i]
       const prevProgress = progress[prevModule.id] || 0
-      if (prevProgress < (prevModule.lesson_count || 0)) {
+      const prevTestedOut = testedOutModules.includes(prevModule.slug)
+      if (prevProgress < (prevModule.lesson_count || 0) && !prevTestedOut) {
         prevComplete = false
         prevModuleTitle = prevModule.title
         break
       }
     }
 
-    const isLocked = index > 0 && !prevComplete && !isComplete
-    const isCurrent = !isComplete && !isLocked && prevComplete
+    const isLocked = index > 0 && !prevComplete && !isComplete && !isTestedOut
+    const isCurrent = !isComplete && !isLocked && (prevComplete || isTestedOut)
 
-    return { isComplete, isLocked, isCurrent, prevModuleTitle }
+    return { isComplete, isLocked, isCurrent, isTestedOut, prevModuleTitle }
   }
 
   // Handle locked module click
@@ -932,8 +950,45 @@ export default function AcademyDashboard() {
   // Handle "Take Placement Test" from popup
   const handlePlacementTest = () => {
     setLockedModulePopup(null)
-    // TODO: Implement placement test - for now navigate to quiz or first module
-    navigate('/academy')
+    setShowPlacementTest(true)
+  }
+
+  // Handle placement test completion
+  const handlePlacementComplete = (placementLevel) => {
+    setShowPlacementTest(false)
+    // Apply placement results - unlock modules up to placement level
+    applyPlacementResult(placementLevel)
+    // Refresh data to show updated unlocks
+    fetchData()
+  }
+
+  // Apply placement test results - unlock modules up to placement level
+  const applyPlacementResult = (placementLevel) => {
+    const UNLOCK_ORDER = ['newcomer', 'apprentice', 'trader', 'specialist', 'master']
+    const placementIndex = UNLOCK_ORDER.indexOf(placementLevel)
+
+    if (placementIndex <= 0) return // No modules to unlock
+
+    // Get local progress
+    const localProgress = getLocalProgress()
+
+    // Mark modules as "tested out" (not completed, but unlocked)
+    const testedOut = localProgress.testedOutModules || []
+    const moduleSlugs = modules.slice(0, placementIndex).map(m => m.slug)
+
+    moduleSlugs.forEach(slug => {
+      if (!testedOut.includes(slug)) {
+        testedOut.push(slug)
+      }
+    })
+
+    // Save to localStorage
+    localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify({
+      ...localProgress,
+      testedOutModules: testedOut,
+      placementLevel,
+      placementDate: new Date().toISOString()
+    }))
   }
 
   // Handle daily goal modal
@@ -958,6 +1013,16 @@ export default function AcademyDashboard() {
 
   // Filter archetypes for "Explore Other Archetypes" section
   const otherArchetypes = ARCHETYPE_MODULES.filter(a => a.id !== userArchetypeId)
+
+  // Render Placement Test if active
+  if (showPlacementTest) {
+    return (
+      <PlacementTest
+        onComplete={handlePlacementComplete}
+        onCancel={() => setShowPlacementTest(false)}
+      />
+    )
+  }
 
   if (isLoading) {
     return (
@@ -1013,11 +1078,25 @@ export default function AcademyDashboard() {
         {/* Trading 101 Tab */}
         {activeTab === 'trading-101' && (
           <>
+            {/* Trading 101 Header with Placement Test Link */}
+            <div className="trading-101-header">
+              <div className="trading-101-header-content">
+                <h2 className="trading-101-title">Trading 101</h2>
+                <p className="trading-101-subtitle">Structured path from beginner to pro</p>
+              </div>
+              <button
+                className="placement-test-link"
+                onClick={handlePlacementTest}
+              >
+                Test out of levels →
+              </button>
+            </div>
+
             {/* Module Grid - PRIMARY CONTENT */}
             <section className="modules-section">
               <div className="modules-grid">
                 {modules.map((module, index) => {
-                  const { isComplete, isLocked, isCurrent, prevModuleTitle } = getModuleState(module, index)
+                  const { isComplete, isLocked, isCurrent, isTestedOut, prevModuleTitle } = getModuleState(module, index)
                   return (
                     <ModuleCard
                       key={module.id}
@@ -1026,6 +1105,7 @@ export default function AcademyDashboard() {
                       isComplete={isComplete}
                       isLocked={isLocked}
                       isCurrent={isCurrent}
+                      isTestedOut={isTestedOut}
                       onLockedClick={() => handleLockedModuleClick(module, prevModuleTitle)}
                     />
                   )
