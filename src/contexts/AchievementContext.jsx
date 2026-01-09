@@ -8,8 +8,12 @@ import {
   incrementLessonsCompleted,
   markModuleCompletedLocal,
   updateLocalStats,
-  calculateAchievementXpReward
+  calculateAchievementXpReward,
+  addAchievementXp,
+  addQuizXp,
+  addLocalXp
 } from '../services/achievements'
+import { getLevelInfo } from '../config/xpConfig'
 
 const AchievementContext = createContext(null)
 
@@ -17,6 +21,10 @@ export function AchievementProvider({ children }) {
   // Queue of achievements to celebrate (shown one at a time)
   const [achievementQueue, setAchievementQueue] = useState([])
   const [isShowingCelebration, setIsShowingCelebration] = useState(false)
+
+  // Level up celebration state
+  const [levelUpInfo, setLevelUpInfo] = useState(null)
+  const [isShowingLevelUp, setIsShowingLevelUp] = useState(false)
 
   // Add achievements to the celebration queue
   const queueAchievements = useCallback((newAchievementIds) => {
@@ -46,9 +54,25 @@ export function AchievementProvider({ children }) {
     })
   }, [])
 
+  // Dismiss level up celebration
+  const dismissLevelUp = useCallback(() => {
+    setIsShowingLevelUp(false)
+    setLevelUpInfo(null)
+  }, [])
+
+  // Queue level up celebration
+  const queueLevelUp = useCallback((levelInfo) => {
+    setLevelUpInfo(levelInfo)
+    setIsShowingLevelUp(true)
+  }, [])
+
   // Check achievements after lesson completion (local)
   const checkLessonCompletion = useCallback((moduleSlug, lessonSlug, earnedAchievements = []) => {
-    // Increment local lesson count
+    // Get level before changes
+    const statsBefore = getLocalStats()
+    const levelBefore = getLevelInfo(statsBefore.totalXp || 0)
+
+    // Increment local lesson count (this also adds lesson XP)
     const stats = incrementLessonsCompleted()
 
     // Merge with any server-side earned achievements
@@ -60,18 +84,46 @@ export function AchievementProvider({ children }) {
       lessonSlug
     })
 
-    // Save and queue new achievements
+    // Save achievements and add achievement XP
     newAchievements.forEach(id => saveLocalAchievement(id))
+    if (newAchievements.length > 0) {
+      addAchievementXp(newAchievements)
+    }
+
+    // Queue achievements for celebration
     queueAchievements(newAchievements)
+
+    // Check for level up
+    const updatedStats = getLocalStats()
+    const levelAfter = getLevelInfo(updatedStats.totalXp || 0)
+    if (levelAfter.level > levelBefore.level) {
+      // Delay level up to show after achievements
+      setTimeout(() => {
+        queueLevelUp({
+          newLevel: levelAfter.level,
+          newTitle: levelAfter.title,
+          previousLevel: levelBefore.level,
+          titleChanged: levelAfter.title !== levelBefore.title
+        })
+      }, newAchievements.length > 0 ? 500 : 0)
+    }
 
     return {
       newAchievements,
-      xpReward: calculateAchievementXpReward(newAchievements)
+      xpReward: calculateAchievementXpReward(newAchievements),
+      totalXp: updatedStats.totalXp
     }
-  }, [queueAchievements])
+  }, [queueAchievements, queueLevelUp])
 
   // Check achievements after quiz completion
   const checkQuizCompletion = useCallback((quizResults, earnedAchievements = []) => {
+    // Get level before changes
+    const statsBefore = getLocalStats()
+    const levelBefore = getLevelInfo(statsBefore.totalXp || 0)
+
+    // Add quiz XP first
+    addQuizXp(quizResults.passed, quizResults.perfect)
+
     const stats = getLocalStats()
     const allEarned = [...new Set([...getLocalAchievements(), ...earnedAchievements])]
 
@@ -82,15 +134,35 @@ export function AchievementProvider({ children }) {
       totalQuestions: quizResults.totalQuestions
     })
 
-    // Save and queue new achievements
+    // Save achievements and add achievement XP
     newAchievements.forEach(id => saveLocalAchievement(id))
+    if (newAchievements.length > 0) {
+      addAchievementXp(newAchievements)
+    }
+
+    // Queue achievements for celebration
     queueAchievements(newAchievements)
+
+    // Check for level up
+    const updatedStats = getLocalStats()
+    const levelAfter = getLevelInfo(updatedStats.totalXp || 0)
+    if (levelAfter.level > levelBefore.level) {
+      setTimeout(() => {
+        queueLevelUp({
+          newLevel: levelAfter.level,
+          newTitle: levelAfter.title,
+          previousLevel: levelBefore.level,
+          titleChanged: levelAfter.title !== levelBefore.title
+        })
+      }, newAchievements.length > 0 ? 500 : 0)
+    }
 
     return {
       newAchievements,
-      xpReward: calculateAchievementXpReward(newAchievements)
+      xpReward: calculateAchievementXpReward(newAchievements),
+      totalXp: updatedStats.totalXp
     }
-  }, [queueAchievements])
+  }, [queueAchievements, queueLevelUp])
 
   // Check achievements after module completion
   const checkModuleCompletion = useCallback((moduleSlug, earnedAchievements = []) => {
@@ -160,11 +232,16 @@ export function AchievementProvider({ children }) {
   }, [])
 
   const value = {
-    // Celebration state
+    // Achievement celebration state
     isShowingCelebration,
     currentCelebration,
     dismissCelebration,
     achievementQueue,
+
+    // Level up celebration state
+    isShowingLevelUp,
+    levelUpInfo,
+    dismissLevelUp,
 
     // Achievement checking functions
     checkLessonCompletion,

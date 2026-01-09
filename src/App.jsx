@@ -24,6 +24,7 @@ import LessonView from './components/academy/LessonView'
 import ArchetypeModuleView from './components/academy/ArchetypeModuleView'
 import ArchetypeLessonView from './components/academy/ArchetypeLessonView'
 import AchievementCelebration from './components/academy/AchievementCelebration'
+import LevelUpCelebration from './components/academy/LevelUpCelebration'
 
 // Scroll to top on route change
 function ScrollToTop() {
@@ -523,6 +524,8 @@ export default function App() {
           </Routes>
           {/* Achievement celebration modal - shows anywhere in the app */}
           <AchievementCelebration />
+          {/* Level up celebration modal - shows anywhere in the app */}
+          <LevelUpCelebration />
         </BrowserRouter>
         <Analytics />
       </AchievementProvider>

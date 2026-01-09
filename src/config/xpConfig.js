@@ -1,23 +1,37 @@
 // XP and Progression Configuration
 
 export const XP_CONFIG = {
-  // Lesson activities
-  LESSON_READ: 10,
-  QUIZ_PASS: 15,
-  QUIZ_PERFECT: 25,
+  // Lesson completion
+  LESSON_COMPLETE: 25,
+
+  // Quiz XP
+  QUIZ_PASS: 10,           // Pass quiz (80%+)
+  QUIZ_PERFECT_BONUS: 25,  // Additional bonus for 100%
   MODULE_FINAL_PASS: 40,
   MODULE_FINAL_PERFECT: 60,
-  MODULE_COMPLETION_BONUS: 50,
+
+  // Module completion bonuses
+  MODULE_COMPLETION: {
+    newcomer: 50,
+    apprentice: 75,
+    trader: 100,
+    specialist: 150,
+    master: 200,
+    archetype: 100,
+  },
+
+  // Streak bonuses
+  STREAK_DAILY: 5,
+  STREAK_7_DAY: 25,
+  STREAK_30_DAY: 100,
 
   // Engagement activities
   DAILY_LOGIN: 5,
   FIRST_TRADE_LOGGED: 25,
-  JOURNAL_ENTRY: 10,
-
-  // Streak bonuses
-  STREAK_7_DAY: 25,
-  STREAK_30_DAY: 100,
-  STREAK_100_DAY: 500,
+  JOURNAL_ENTRY: 15,
+  JOURNAL_REFLECTION_BONUS: 10,
+  WEEKLY_REVIEW: 25,
+  WALLET_ANALYSIS: 20,
 
   // Quiz settings
   PASS_THRESHOLD: 0.8, // 80% to pass
@@ -27,22 +41,41 @@ export const XP_CONFIG = {
   XP_ON_IMPROVEMENT_ONLY: true,
 }
 
+// Achievement XP rewards (must match achievements.js)
+export const ACHIEVEMENT_XP = {
+  'first-steps': 25,
+  'on-fire': 50,
+  'week-warrior': 100,
+  'monthly-master': 500,
+  'perfect-score': 50,
+  'module-master': 100,
+  'rising-star': 25,
+  'expert-trader': 250,
+  'knowledge-seeker': 100,
+  'dedicated-learner': 200,
+}
+
 export const LEVEL_THRESHOLDS = [
   { level: 1, xpRequired: 0, title: 'Newcomer' },
   { level: 2, xpRequired: 50, title: 'Newcomer' },
-  { level: 3, xpRequired: 125, title: 'Newcomer' },
-  { level: 4, xpRequired: 225, title: 'Apprentice' },
-  { level: 5, xpRequired: 375, title: 'Apprentice' },
-  { level: 6, xpRequired: 575, title: 'Apprentice' },
-  { level: 7, xpRequired: 825, title: 'Journeyman' },
-  { level: 8, xpRequired: 1125, title: 'Journeyman' },
-  { level: 9, xpRequired: 1525, title: 'Journeyman' },
-  { level: 10, xpRequired: 2025, title: 'Expert' },
-  { level: 11, xpRequired: 2625, title: 'Expert' },
-  { level: 12, xpRequired: 3375, title: 'Expert' },
-  { level: 13, xpRequired: 4275, title: 'Master' },
-  { level: 14, xpRequired: 5275, title: 'Master' },
-  { level: 15, xpRequired: 6475, title: 'Legend' },
+  { level: 3, xpRequired: 150, title: 'Newcomer' },
+  { level: 4, xpRequired: 300, title: 'Apprentice' },
+  { level: 5, xpRequired: 500, title: 'Apprentice' },
+  { level: 6, xpRequired: 750, title: 'Apprentice' },
+  { level: 7, xpRequired: 1000, title: 'Trader' },
+  { level: 8, xpRequired: 1500, title: 'Trader' },
+  { level: 9, xpRequired: 2000, title: 'Trader' },
+  { level: 10, xpRequired: 3000, title: 'Specialist' },
+  { level: 11, xpRequired: 4000, title: 'Specialist' },
+  { level: 12, xpRequired: 5500, title: 'Specialist' },
+  { level: 13, xpRequired: 7000, title: 'Master' },
+  { level: 14, xpRequired: 9000, title: 'Master' },
+  { level: 15, xpRequired: 11000, title: 'Master' },
+  { level: 16, xpRequired: 14000, title: 'Grandmaster' },
+  { level: 17, xpRequired: 17000, title: 'Grandmaster' },
+  { level: 18, xpRequired: 21000, title: 'Grandmaster' },
+  { level: 19, xpRequired: 25000, title: 'Legend' },
+  { level: 20, xpRequired: 30000, title: 'Legend' },
 ]
 
 export const ACHIEVEMENTS = {

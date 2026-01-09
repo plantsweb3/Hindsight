@@ -4,7 +4,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useAchievements } from '../../contexts/AchievementContext'
 import { getArchetypeModule, hasArchetypeModule } from '../../data/academy/archetypes'
 import { hasLocalModule, getTrading101Module } from '../../data/academy/modules'
-import { ACHIEVEMENTS, getLocalAchievements } from '../../services/achievements'
+import { ACHIEVEMENTS, getLocalAchievements, getLocalStats } from '../../services/achievements'
+import { getLevelInfo } from '../../config/xpConfig'
 
 // Helper for local progress tracking (same as LessonView/ModuleView)
 const LOCAL_PROGRESS_KEY = 'hindsight_academy_progress'
@@ -165,39 +166,63 @@ function normalizeArchetypeId(archetype) {
   return mapping[normalized.replace(/-/g, '')] || normalized
 }
 
-// Hero Stats Grid Component
+// Hero Stats Grid Component - Level-first display
 function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons }) {
   const completionPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
   const hasStreak = (xpProgress?.streak || 0) > 0
 
+  // Use level info for progress bar
+  const level = levelInfo?.level || 1
+  const title = levelInfo?.title || 'Newcomer'
+  const progressPercent = levelInfo?.progressPercent || 0
+  const xpToNext = levelInfo?.xpToNextLevel || 0
+  const isMaxLevel = levelInfo?.isMaxLevel || false
+
   return (
-    <div className="hero-stats-grid">
-      <div className="hero-stat">
-        <span className={`hero-stat-icon ${hasStreak ? 'streak-active' : ''}`}>🔥</span>
-        <div className="hero-stat-content">
-          <span className="hero-stat-value">{xpProgress?.streak || 0}</span>
-          <span className="hero-stat-label">Day Streak</span>
+    <div className="hero-stats-container">
+      {/* Primary: Level Badge + Progress */}
+      <div className="hero-level-display">
+        <div className="hero-level-badge">
+          <span className="hero-level-number">{level}</span>
+        </div>
+        <div className="hero-level-info">
+          <span className="hero-level-title">{title}</span>
+          <div className="hero-level-progress">
+            <div className="hero-level-progress-track">
+              <div
+                className="hero-level-progress-fill"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <span className="hero-level-progress-text">
+              {isMaxLevel ? 'Max Level!' : `${xpToNext} XP to Level ${level + 1}`}
+            </span>
+          </div>
         </div>
       </div>
-      <div className="hero-stat">
-        <span className="hero-stat-icon">⚡</span>
-        <div className="hero-stat-content">
-          <span className="hero-stat-value">{xpProgress?.total?.toLocaleString() || 0}</span>
-          <span className="hero-stat-label">Total XP</span>
+
+      {/* Secondary: Quick Stats */}
+      <div className="hero-stats-grid">
+        <div className="hero-stat">
+          <span className={`hero-stat-icon ${hasStreak ? 'streak-active' : ''}`}>🔥</span>
+          <div className="hero-stat-content">
+            <span className="hero-stat-value">{xpProgress?.streak || 0}</span>
+            <span className="hero-stat-label">Day Streak</span>
+          </div>
         </div>
-      </div>
-      <div className="hero-stat">
-        <span className="hero-stat-icon">🏆</span>
-        <div className="hero-stat-content">
-          <span className="hero-stat-value">Level {levelInfo?.level || 1}</span>
-          <span className="hero-stat-label">{levelInfo?.title || 'Newcomer'}</span>
+        <div className="hero-stat">
+          <span className="hero-stat-icon">⚡</span>
+          <div className="hero-stat-content">
+            <span className="hero-stat-value">{(levelInfo?.totalXp || 0).toLocaleString()}</span>
+            <span className="hero-stat-label">Total XP</span>
+          </div>
         </div>
-      </div>
-      <div className="hero-stat">
-        <span className="hero-stat-icon">📊</span>
-        <div className="hero-stat-content">
-          <span className="hero-stat-value">{completionPercent}%</span>
-          <span className="hero-stat-label">Complete</span>
+        <div className="hero-stat">
+          <span className="hero-stat-icon">📊</span>
+          <div className="hero-stat-content">
+            <span className="hero-stat-value">{completionPercent}%</span>
+            <span className="hero-stat-label">Complete</span>
+          </div>
         </div>
       </div>
     </div>
@@ -686,15 +711,29 @@ export default function AcademyDashboard() {
           setProgress(localProgressMap)
         }
 
+        // Always load local stats for local module XP
+        const localStats = getLocalStats()
+        const localXp = localStats.totalXp || 0
+
         if (xpProgressRes.ok) {
           const xpData = await xpProgressRes.json()
-          setXpProgress(xpData.xp)
-          setLevelInfo(xpData.levelInfo)
+          // Use local XP if higher (user may have completed local modules)
+          const serverXp = xpData.xp?.total || 0
+          const totalXp = Math.max(localXp, serverXp)
+          const mergedLevelInfo = getLevelInfo(totalXp)
+
+          setXpProgress({ ...xpData.xp, total: totalXp })
+          setLevelInfo(mergedLevelInfo)
 
           const today = new Date().toISOString().split('T')[0]
-          if (xpData.xp?.lastActivity === today) {
-            setDailyXp(Math.min(xpData.xp.total % 100, DAILY_XP_GOAL))
+          if (xpData.xp?.lastActivity === today || localStats.lastActivityDate === today) {
+            setDailyXp(Math.min(totalXp % 100, DAILY_XP_GOAL))
           }
+        } else {
+          // Fallback to local XP if API fails
+          const localLevelInfo = getLevelInfo(localXp)
+          setXpProgress({ total: localXp, streak: localStats.currentStreak || 0 })
+          setLevelInfo(localLevelInfo)
         }
 
         if (achievementsRes.ok) {
@@ -738,6 +777,11 @@ export default function AcademyDashboard() {
         setProgress(localProgressMap)
         // Also load local achievements
         setAchievements(getLocalAchievements())
+        // Load local XP and level info
+        const localStats = getLocalStats()
+        const localLevelInfo = getLevelInfo(localStats.totalXp || 0)
+        setXpProgress({ total: localStats.totalXp || 0, streak: localStats.currentStreak || 0 })
+        setLevelInfo(localLevelInfo)
       }
     } catch (err) {
       console.error('Failed to fetch academy data:', err)

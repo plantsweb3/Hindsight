@@ -1,4 +1,5 @@
 // Achievement Definitions and Checking Service
+import { XP_CONFIG, ACHIEVEMENT_XP, getLevelInfo } from '../config/xpConfig'
 
 export const ACHIEVEMENTS = {
   'first-steps': {
@@ -145,13 +146,79 @@ export function updateLocalStats(updates) {
   return newStats
 }
 
-// Increment lessons completed in local stats
+// Add XP to local stats and check for level up
+export function addLocalXp(amount, source = 'unknown') {
+  const stats = getLocalStats()
+  const previousXp = stats.totalXp || 0
+  const previousLevel = getLevelInfo(previousXp)
+
+  stats.totalXp = previousXp + amount
+  stats.lastActivityDate = new Date().toISOString().split('T')[0]
+
+  // Track XP by source for debugging
+  if (!stats.xpBySource) stats.xpBySource = {}
+  stats.xpBySource[source] = (stats.xpBySource[source] || 0) + amount
+
+  localStorage.setItem(LOCAL_STATS_KEY, JSON.stringify(stats))
+
+  const newLevel = getLevelInfo(stats.totalXp)
+  const leveledUp = newLevel.level > previousLevel.level
+  const titleChanged = newLevel.title !== previousLevel.title
+
+  return {
+    stats,
+    xpAwarded: amount,
+    newTotal: stats.totalXp,
+    leveledUp,
+    newLevel: newLevel.level,
+    newTitle: newLevel.title,
+    titleChanged,
+    previousLevel: previousLevel.level
+  }
+}
+
+// Increment lessons completed in local stats (adds XP too)
 export function incrementLessonsCompleted() {
   const stats = getLocalStats()
   stats.lessonsCompleted = (stats.lessonsCompleted || 0) + 1
   stats.lastActivityDate = new Date().toISOString().split('T')[0]
+
+  // Add lesson XP
+  const previousXp = stats.totalXp || 0
+  stats.totalXp = previousXp + XP_CONFIG.LESSON_COMPLETE
+
+  // Track XP by source
+  if (!stats.xpBySource) stats.xpBySource = {}
+  stats.xpBySource.lesson = (stats.xpBySource.lesson || 0) + XP_CONFIG.LESSON_COMPLETE
+
   localStorage.setItem(LOCAL_STATS_KEY, JSON.stringify(stats))
   return stats
+}
+
+// Add quiz XP to local stats
+export function addQuizXp(passed, perfect) {
+  if (!passed) return { xpAwarded: 0 }
+
+  let xp = XP_CONFIG.QUIZ_PASS
+  if (perfect) {
+    xp += XP_CONFIG.QUIZ_PERFECT_BONUS
+  }
+
+  return addLocalXp(xp, 'quiz')
+}
+
+// Add achievement XP to local stats
+export function addAchievementXp(achievementIds) {
+  if (!achievementIds || achievementIds.length === 0) return { xpAwarded: 0 }
+
+  const totalXp = achievementIds.reduce((sum, id) => {
+    return sum + (ACHIEVEMENT_XP[id] || ACHIEVEMENTS[id]?.xpReward || 0)
+  }, 0)
+
+  if (totalXp > 0) {
+    return addLocalXp(totalXp, 'achievement')
+  }
+  return { xpAwarded: 0 }
 }
 
 // Mark module as completed in local stats
@@ -163,6 +230,14 @@ export function markModuleCompletedLocal(moduleSlug) {
   if (!stats.completedModules.includes(moduleSlug)) {
     stats.completedModules.push(moduleSlug)
     stats.modulesCompleted = stats.completedModules.length
+
+    // Add module completion XP
+    const moduleXp = XP_CONFIG.MODULE_COMPLETION[moduleSlug] || XP_CONFIG.MODULE_COMPLETION.archetype || 50
+    const previousXp = stats.totalXp || 0
+    stats.totalXp = previousXp + moduleXp
+
+    if (!stats.xpBySource) stats.xpBySource = {}
+    stats.xpBySource.module = (stats.xpBySource.module || 0) + moduleXp
   }
   localStorage.setItem(LOCAL_STATS_KEY, JSON.stringify(stats))
   return stats
