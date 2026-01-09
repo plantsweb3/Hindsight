@@ -1,31 +1,37 @@
-import { useState, useEffect } from 'react'
-import { Link, useParams, useOutletContext } from 'react-router-dom'
-import { useAuth } from '../../contexts/AuthContext'
+import { Link, useParams } from 'react-router-dom'
 import { getArchetypeModule } from './archetypeData'
+import { getArchetypeLessonCardStatus } from '../../services/achievements'
 
-function LessonCard({ lesson, archetypeId, lessonNumber, isCompleted }) {
+function LessonCard({ lesson, archetypeId, lessonNumber, status }) {
+  // Determine card class based on status
+  const getCardClass = () => {
+    if (status.style === 'green-glow') return 'lesson-status-passed'
+    if (status.style === 'yellow') return 'lesson-status-review'
+    return 'lesson-status-not-started'
+  }
+
   return (
     <Link
       to={`/academy/archetype/${archetypeId}/${lesson.slug}`}
-      className={`lesson-card glass-card ${isCompleted ? 'lesson-completed' : ''}`}
+      className={`lesson-card glass-card ${getCardClass()}`}
     >
       <div className="lesson-card-header">
         <span className="archetype-lesson-number">Lesson {lessonNumber}</span>
-        {isCompleted ? (
-          <span className="lesson-completed-badge">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-            Completed
+        <div className="lesson-status-badges">
+          <span className={`lesson-status-badge status-${status.style}`}>
+            {status.style === 'green-glow' && (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
+            {status.displayText}
           </span>
-        ) : (
-          <span className="lesson-status-circle" />
-        )}
+        </div>
       </div>
       <h3 className="lesson-card-title">{lesson.title}</h3>
       <div className="lesson-card-footer">
         <span className="lesson-cta">
-          {isCompleted ? 'Review' : 'Start'}
+          {status.type === 'not-started' ? 'Start' : 'Review'}
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
@@ -37,26 +43,8 @@ function LessonCard({ lesson, archetypeId, lessonNumber, isCompleted }) {
 
 export default function ArchetypeModuleView() {
   const { archetypeId } = useParams()
-  const { isAuthenticated } = useOutletContext()
-  const { token } = useAuth()
-  const [completedLessonKeys, setCompletedLessonKeys] = useState(new Set())
 
   const module = getArchetypeModule(archetypeId)
-
-  useEffect(() => {
-    // Load completed lessons from localStorage
-    const loadProgress = () => {
-      try {
-        const saved = localStorage.getItem(`archetype_progress_${archetypeId}`)
-        if (saved) {
-          setCompletedLessonKeys(new Set(JSON.parse(saved)))
-        }
-      } catch (e) {
-        console.error('Failed to load archetype progress:', e)
-      }
-    }
-    loadProgress()
-  }, [archetypeId])
 
   if (!module) {
     return (
@@ -69,7 +57,10 @@ export default function ArchetypeModuleView() {
     )
   }
 
-  const completedCount = module.lessons.filter(l => completedLessonKeys.has(l.slug)).length
+  const completedCount = module.lessons.filter(l => {
+    const status = getArchetypeLessonCardStatus(archetypeId, l.slug)
+    return status.type === 'completed'
+  }).length
   const totalLessons = module.lessons.length
   const progress = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0
 
@@ -127,17 +118,20 @@ export default function ArchetypeModuleView() {
       <section className="lessons-section">
         <h2 className="lessons-title">Lessons</h2>
         <div className="lessons-list">
-          {module.lessons.map((lesson, index) => (
-            <div key={lesson.id} className="lesson-item">
-              <span className="lesson-number">{index + 1}</span>
-              <LessonCard
-                lesson={lesson}
-                archetypeId={archetypeId}
-                lessonNumber={index + 1}
-                isCompleted={completedLessonKeys.has(lesson.slug)}
-              />
-            </div>
-          ))}
+          {module.lessons.map((lesson, index) => {
+            const status = getArchetypeLessonCardStatus(archetypeId, lesson.slug)
+            return (
+              <div key={lesson.id} className="lesson-item">
+                <span className="lesson-number">{index + 1}</span>
+                <LessonCard
+                  lesson={lesson}
+                  archetypeId={archetypeId}
+                  lessonNumber={index + 1}
+                  status={status}
+                />
+              </div>
+            )
+          })}
         </div>
       </section>
 
