@@ -1004,8 +1004,25 @@ export function hasCompletedPlacementTest() {
 // These are the highest scores ever achieved across all attempts
 export function getPlacementBestScores() {
   try {
-    const data = localStorage.getItem('placementTestBestScores')
-    return data ? JSON.parse(data) : {}
+    // Try new key first
+    let data = localStorage.getItem('placementTestBestScores')
+    if (data) {
+      return JSON.parse(data)
+    }
+    // Fall back to legacy key (before best/latest separation)
+    data = localStorage.getItem('placementTestScores')
+    if (data) {
+      return JSON.parse(data)
+    }
+    // Also check moduleScores in progress (another legacy location)
+    const progressData = localStorage.getItem('hindsight_academy_progress')
+    if (progressData) {
+      const progress = JSON.parse(progressData)
+      if (progress.moduleScores && Object.keys(progress.moduleScores).length > 0) {
+        return progress.moduleScores
+      }
+    }
+    return {}
   } catch {
     return {}
   }
