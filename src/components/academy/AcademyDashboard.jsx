@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useAchievements } from '../../contexts/AchievementContext'
 import { getArchetypeModule, hasArchetypeModule } from '../../data/academy/archetypes'
 import { hasLocalModule, getTrading101Module } from '../../data/academy/modules'
-import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores, calculateTotalXP } from '../../services/achievements'
+import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores, calculateTotalXP, getPlacementBestScores, getPlacementLatestScores } from '../../services/achievements'
 import { getLevelInfo, DAILY_GOALS, DEFAULT_DAILY_GOAL } from '../../config/xpConfig'
 import { getArchetypeRecommendations, getWalletAnalysisInsights } from '../../data/academy/archetypeRecommendations'
 import PlacementTest from './PlacementTest'
@@ -1061,59 +1061,56 @@ export default function AcademyDashboard() {
     navigate(`/academy/${moduleSlug}`)
   }
 
-  // Apply placement test results - unlock modules based on section scores
+  // Apply placement test results - unlock modules based on scores
+  //
+  // IMPORTANT LOGIC:
+  // - testedOutModules: Based on BEST scores (can only go up, never lose access)
+  // - unlockedForReview: Based on LATEST scores (reflects current knowledge gaps)
+  //
+  // This allows users to retake the test to get better review recommendations
+  // without losing XP or module access from previous better scores
   const applyPlacementResult = (placementLevel, sectionScores = null) => {
     const UNLOCK_ORDER = ['newcomer', 'apprentice', 'trader', 'specialist', 'master']
     const passThreshold = 0.75
 
+    // Get scores from the separate tracking system
+    const bestScores = getPlacementBestScores()
+    const latestScores = getPlacementLatestScores()
+
+    // Use provided scores if available (for immediate update), otherwise use stored
+    const currentLatestScores = sectionScores || latestScores
+
     // Get local progress
     const localProgress = getLocalProgress()
 
-    // Initialize arrays if they don't exist
-    const testedOut = localProgress.testedOutModules || []
-    const unlockedForReview = localProgress.unlockedForReview || []
-    const moduleScores = localProgress.moduleScores || {}
-
-    if (sectionScores) {
-      // Unlock modules based on individual section scores
-      UNLOCK_ORDER.forEach(level => {
-        const score = sectionScores[level]
-        if (score > 0) {
-          // Save the score
-          moduleScores[level] = score
-
-          if (score >= passThreshold) {
-            // Passed - mark as tested out
-            if (!testedOut.includes(level)) {
-              testedOut.push(level)
-            }
-          } else {
-            // Attempted but didn't pass - unlock for review
-            if (!unlockedForReview.includes(level)) {
-              unlockedForReview.push(level)
-            }
-          }
-        }
-      })
-    } else {
-      // Fallback: Unlock based on placement level index
-      const placementIndex = UNLOCK_ORDER.indexOf(placementLevel)
-      if (placementIndex > 0) {
-        const moduleSlugs = UNLOCK_ORDER.slice(0, placementIndex)
-        moduleSlugs.forEach(slug => {
-          if (!testedOut.includes(slug)) {
-            testedOut.push(slug)
-          }
-        })
+    // testedOutModules is based on BEST scores - you never lose access
+    const testedOut = []
+    UNLOCK_ORDER.forEach(level => {
+      const bestScore = bestScores[level] || 0
+      if (bestScore >= passThreshold) {
+        testedOut.push(level)
       }
-    }
+    })
+
+    // unlockedForReview is based on LATEST scores - reflects current knowledge gaps
+    const unlockedForReview = []
+    UNLOCK_ORDER.forEach(level => {
+      const latestScore = currentLatestScores[level] || 0
+      // Module is unlocked for review if:
+      // 1. User attempted it (score > 0) but didn't pass this time
+      // 2. OR if they previously tested out but did poorly on retake (needs brushing up)
+      if (latestScore > 0 && latestScore < passThreshold) {
+        unlockedForReview.push(level)
+      }
+    })
 
     // Save to localStorage
     const newProgress = {
       ...localProgress,
       testedOutModules: testedOut,
       unlockedForReview: unlockedForReview,
-      moduleScores: moduleScores,
+      moduleScores: bestScores, // Keep best scores in moduleScores for compatibility
+      latestModuleScores: currentLatestScores, // Also track latest for review recommendations
       placementLevel,
       placementDate: new Date().toISOString()
     }

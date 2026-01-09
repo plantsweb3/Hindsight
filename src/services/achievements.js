@@ -44,15 +44,17 @@ export function calculateTotalXP() {
     totalXP += ACHIEVEMENT_XP[achId] || 0
   })
 
-  // 4. XP from placement test (ONE TIME ONLY - based on modules PASSED)
+  // 4. XP from placement test - uses BEST scores (highest ever achieved)
+  // This ensures XP can only go up, never down from retakes
   const placementCompleted = localStorage.getItem('placementTestCompleted') === 'true'
   if (placementCompleted) {
-    const scoresData = localStorage.getItem('placementTestScores')
-    const sectionScores = scoresData ? JSON.parse(scoresData) : {}
+    // Use best scores for XP calculation (not latest scores)
+    const bestScoresData = localStorage.getItem('placementTestBestScores')
+    const bestScores = bestScoresData ? JSON.parse(bestScoresData) : {}
     const modules = ['newcomer', 'apprentice', 'trader', 'specialist', 'master']
 
     modules.forEach(moduleId => {
-      const score = sectionScores[moduleId]
+      const score = bestScores[moduleId]
       // Only award XP for modules PASSED (75%+)
       if (score >= 0.75) {
         totalXP += PLACEMENT_MODULE_XP[moduleId]
@@ -844,125 +846,144 @@ export function hasCompletedPlacementTest() {
   }
 }
 
-// Mark placement test as completed
-function markPlacementTestCompleted(sectionScores) {
+// Get placement test BEST scores (for XP calculation and module unlocking)
+// These are the highest scores ever achieved across all attempts
+export function getPlacementBestScores() {
+  try {
+    const data = localStorage.getItem('placementTestBestScores')
+    return data ? JSON.parse(data) : {}
+  } catch {
+    return {}
+  }
+}
+
+// Get placement test LATEST scores (for review recommendations)
+// These are the most recent scores from the last attempt
+export function getPlacementLatestScores() {
+  try {
+    const data = localStorage.getItem('placementTestLatestScores')
+    return data ? JSON.parse(data) : {}
+  } catch {
+    return {}
+  }
+}
+
+// Save placement test scores - tracks both BEST and LATEST separately
+// - Best scores: Used for XP calculation and module unlocking (can only go up)
+// - Latest scores: Used for review recommendations (reflects current knowledge)
+function savePlacementScores(sectionScores) {
+  try {
+    // Always save the latest scores (most recent attempt)
+    localStorage.setItem('placementTestLatestScores', JSON.stringify(sectionScores))
+    localStorage.setItem('placementTestLatestDate', new Date().toISOString())
+
+    // Update best scores - take the MAX of existing and new for each section
+    const existingBest = getPlacementBestScores()
+    const updatedBest = { ...existingBest }
+
+    Object.entries(sectionScores).forEach(([level, score]) => {
+      if (!updatedBest[level] || score > updatedBest[level]) {
+        updatedBest[level] = score
+      }
+    })
+
+    localStorage.setItem('placementTestBestScores', JSON.stringify(updatedBest))
+
+    // Also save to legacy key for backwards compatibility
+    localStorage.setItem('placementTestScores', JSON.stringify(updatedBest))
+
+    return { bestScores: updatedBest, latestScores: sectionScores }
+  } catch (err) {
+    console.error('Failed to save placement scores:', err)
+    return { bestScores: sectionScores, latestScores: sectionScores }
+  }
+}
+
+// Mark placement test as completed (first time only)
+function markPlacementTestCompleted() {
   try {
     localStorage.setItem('placementTestCompleted', 'true')
     localStorage.setItem('placementTestDate', new Date().toISOString())
-    if (sectionScores) {
-      localStorage.setItem('placementTestScores', JSON.stringify(sectionScores))
-    }
   } catch (err) {
     console.error('Failed to mark placement test completed:', err)
   }
 }
 
-// Update best placement scores if new scores are better
-function updateBestPlacementScores(sectionScores) {
-  try {
-    const existingScores = JSON.parse(localStorage.getItem('placementTestScores') || '{}')
-    const updatedScores = { ...existingScores }
-
-    Object.entries(sectionScores).forEach(([level, score]) => {
-      if (!updatedScores[level] || score > updatedScores[level]) {
-        updatedScores[level] = score
-      }
-    })
-
-    localStorage.setItem('placementTestScores', JSON.stringify(updatedScores))
-    return updatedScores
-  } catch {
-    return sectionScores
-  }
-}
-
 // Award XP and achievements for placement test
 // Returns the rewards that were given
-// IMPORTANT: Only awards XP on FIRST completion to prevent exploits
+//
+// SCORING LOGIC:
+// - BEST scores: Used for XP calculation and module unlocking (can only go up)
+// - LATEST scores: Used for review recommendations (reflects current knowledge)
+//
+// On retake:
+// - Best scores are updated if new scores are higher
+// - XP is recalculated based on best scores (may increase if better)
+// - Review recommendations use latest scores
 export function awardPlacementRewards(placementLevel, sectionScores) {
   const levels = ['newcomer', 'apprentice', 'trader', 'specialist', 'master']
-  const placementIndex = placementLevel === 'completed' ? 5 : levels.indexOf(placementLevel)
-  const isRetake = hasCompletedPlacementTest()
+  const isFirstCompletion = !hasCompletedPlacementTest()
 
-  // If newcomer, no rewards to give
-  if (placementIndex <= 0) {
-    return { xpEarned: 0, achievements: [], modulesUnlocked: 0, isRetake }
+  // Save scores - this updates both best and latest
+  const { bestScores, latestScores } = savePlacementScores(sectionScores)
+
+  // Calculate modules unlocked based on BEST scores (not current attempt)
+  // This ensures you never lose module access from a bad retake
+  const modulesUnlockedFromBest = levels.filter(level => bestScores[level] >= 0.75)
+
+  // If first time, mark as completed
+  if (isFirstCompletion) {
+    markPlacementTestCompleted()
   }
 
-  // If this is a retake, only update module unlocks - NO XP or achievements
-  if (isRetake) {
-    console.log('Placement test retake - updating module unlocks but not awarding XP')
+  // Calculate achievements based on best scores
+  const placementIndex = modulesUnlockedFromBest.length
+  const newAchievements = isFirstCompletion
+    ? calculatePlacementAchievements(placementLevel, bestScores)
+    : []
 
-    // Update best scores if better
-    if (sectionScores) {
-      updateBestPlacementScores(sectionScores)
-    }
-
-    return {
-      xpEarned: 0,
-      achievements: [],
-      modulesUnlocked: placementIndex,
-      isRetake: true
-    }
-  }
-
-  // FIRST TIME COMPLETION - Award everything
-
-  // Mark as completed FIRST to prevent exploits
-  markPlacementTestCompleted(sectionScores)
-
-  // Calculate XP
-  const xpEarned = calculatePlacementXP(placementLevel)
-
-  // Calculate achievements
-  const newAchievements = calculatePlacementAchievements(placementLevel, sectionScores)
-
-  // Award XP to local stats
-  if (xpEarned > 0) {
-    addLocalXp(xpEarned, 'placement_test')
-  }
-
-  // Award achievements
+  // Award achievements (only on first completion)
   newAchievements.forEach(achId => {
     saveLocalAchievement(achId)
   })
 
-  // Award achievement XP
-  if (newAchievements.length > 0) {
-    addAchievementXp(newAchievements)
-  }
-
-  // Update stats to reflect "lesson equivalents" and "module completions"
+  // Update stats to track modules tested out (based on best scores)
   const stats = getLocalStats()
-  stats.lessonsCompleted = (stats.lessonsCompleted || 0) + (placementIndex * 5)
-  stats.modulesCompleted = (stats.modulesCompleted || 0) + placementIndex
 
-  // Track which modules were completed via placement
+  // Track which modules were completed via placement (based on best scores)
   if (!stats.completedModules) stats.completedModules = []
-  for (let i = 0; i < placementIndex; i++) {
-    const moduleSlug = levels[i]
+  modulesUnlockedFromBest.forEach(moduleSlug => {
     if (!stats.completedModules.includes(moduleSlug)) {
       stats.completedModules.push(moduleSlug)
     }
-  }
+  })
+
+  // Update lesson and module counts based on best scores
+  stats.lessonsCompleted = Math.max(stats.lessonsCompleted || 0, modulesUnlockedFromBest.length * 5)
+  stats.modulesCompleted = Math.max(stats.modulesCompleted || 0, modulesUnlockedFromBest.length)
 
   saveStatsAndNotify(stats)
 
+  // Dispatch XP update event so components recalculate XP
+  dispatchXPUpdate()
+
   // Check for XP-based achievements (like Rising Star at 500 XP)
-  const updatedStats = getLocalStats()
+  const calculatedXp = calculateTotalXP()
   const xpAchievements = []
   const earnedAchievements = getLocalAchievements()
 
-  if (updatedStats.totalXp >= 500 && !earnedAchievements.includes('rising-star')) {
+  if (calculatedXp >= 500 && !earnedAchievements.includes('rising-star')) {
     xpAchievements.push('rising-star')
     saveLocalAchievement('rising-star')
-    addAchievementXp(['rising-star'])
   }
 
+  // Return info for UI - XP is calculated, not stored
   return {
-    xpEarned,
+    xpEarned: calculateTotalXP(), // Current total XP (calculated)
     achievements: [...newAchievements, ...xpAchievements],
-    modulesUnlocked: placementIndex,
-    isRetake: false
+    modulesUnlocked: modulesUnlockedFromBest.length,
+    isRetake: !isFirstCompletion,
+    bestScores,
+    latestScores
   }
 }
