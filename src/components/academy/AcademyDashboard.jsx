@@ -898,7 +898,7 @@ function ArchetypeModuleCard({ archetype, isUserArchetype = false, onClick }) {
             }}
           />
         </div>
-        <span className="archetype-progress-label">{completedCount}/{totalLessons}</span>
+        <span className="module-mastery-label">{progressPercent}%</span>
       </div>
     </div>
   )
