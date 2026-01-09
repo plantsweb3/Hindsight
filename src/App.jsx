@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AchievementProvider } from './contexts/AchievementContext'
 import { analyzeWallet, analyzeBehavior, isValidSolanaAddress, convertTradesToJournalEntries, createJournalEntriesBatch, getJournalPatterns, getCrossWalletStats } from './services/solana'
@@ -528,6 +529,7 @@ export default function App() {
           <LevelUpCelebration />
         </BrowserRouter>
         <Analytics />
+        <SpeedInsights />
       </AchievementProvider>
     </AuthProvider>
   )
