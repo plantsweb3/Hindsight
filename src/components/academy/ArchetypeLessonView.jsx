@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate, useOutletContext } from 'react-router-dom'
-import { getArchetypeLesson, getArchetypeModule } from './archetypeData'
+import { getArchetypeLesson, getArchetypeModule, getArchetypeLessonQuiz } from './archetypeData'
+import Quiz from './Quiz'
 
 // Simple markdown-to-html conversion for basic formatting
 function MarkdownContent({ content }) {
@@ -75,9 +76,12 @@ export default function ArchetypeLessonView() {
   const { isAuthenticated, openAuthModal } = useOutletContext()
   const [isCompleted, setIsCompleted] = useState(false)
   const [isMarking, setIsMarking] = useState(false)
+  const [showQuiz, setShowQuiz] = useState(false)
+  const [quizCompleted, setQuizCompleted] = useState(false)
 
   const lesson = getArchetypeLesson(archetypeId, lessonSlug)
   const module = getArchetypeModule(archetypeId)
+  const quiz = lesson ? getArchetypeLessonQuiz(archetypeId, lesson.id) : null
 
   useEffect(() => {
     // Check if lesson is completed from localStorage
@@ -92,8 +96,24 @@ export default function ArchetypeLessonView() {
         console.error('Failed to check lesson completion:', e)
       }
     }
+
+    // Check if quiz is completed from localStorage
+    const checkQuizCompleted = () => {
+      if (!quiz) return
+      try {
+        const saved = localStorage.getItem(`archetype_quiz_${archetypeId}`)
+        if (saved) {
+          const completedQuizzes = new Set(JSON.parse(saved))
+          setQuizCompleted(completedQuizzes.has(lesson?.id))
+        }
+      } catch (e) {
+        console.error('Failed to check quiz completion:', e)
+      }
+    }
+
     checkCompleted()
-  }, [archetypeId, lessonSlug])
+    checkQuizCompleted()
+  }, [archetypeId, lessonSlug, quiz, lesson?.id])
 
   const handleMarkComplete = async () => {
     setIsMarking(true)
@@ -115,6 +135,23 @@ export default function ArchetypeLessonView() {
     if (lessonData?.slug) {
       navigate(`/academy/archetype/${archetypeId}/${lessonData.slug}`)
     }
+  }
+
+  const handleQuizComplete = (results) => {
+    // Save quiz completion to localStorage
+    try {
+      const saved = localStorage.getItem(`archetype_quiz_${archetypeId}`)
+      const completedQuizzes = saved ? new Set(JSON.parse(saved)) : new Set()
+      completedQuizzes.add(lesson.id)
+      localStorage.setItem(`archetype_quiz_${archetypeId}`, JSON.stringify([...completedQuizzes]))
+      setQuizCompleted(true)
+    } catch (e) {
+      console.error('Failed to save quiz completion:', e)
+    }
+  }
+
+  const handleQuizClose = () => {
+    setShowQuiz(false)
   }
 
   if (!lesson || !module) {
@@ -194,6 +231,43 @@ export default function ArchetypeLessonView() {
             </p>
           </div>
         )}
+
+        {/* Quiz Section */}
+        {quiz && isAuthenticated && (
+          <div className="lesson-quiz-section">
+            <div className="lesson-quiz-prompt">
+              <div className="lesson-quiz-info">
+                <span className="lesson-quiz-title">Test Your Knowledge</span>
+                <span className="lesson-quiz-desc">
+                  {quizCompleted
+                    ? 'Quiz completed!'
+                    : `${quiz.questions.length} questions - Test what you learned`}
+                </span>
+              </div>
+              <button
+                onClick={() => setShowQuiz(true)}
+                className={`lesson-quiz-btn ${quizCompleted ? 'completed' : ''}`}
+              >
+                {quizCompleted ? (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Retake Quiz
+                  </>
+                ) : (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 11l3 3L22 4" />
+                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                    </svg>
+                    Take Quiz
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
       </article>
 
       {/* Actions */}
@@ -267,6 +341,21 @@ export default function ArchetypeLessonView() {
           </Link>
         )}
       </nav>
+
+      {/* Quiz Modal */}
+      {showQuiz && quiz && (
+        <div className="quiz-modal-overlay" onClick={(e) => {
+          if (e.target === e.currentTarget) handleQuizClose()
+        }}>
+          <div className="quiz-modal-content">
+            <Quiz
+              quiz={quiz}
+              onComplete={handleQuizComplete}
+              onClose={handleQuizClose}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

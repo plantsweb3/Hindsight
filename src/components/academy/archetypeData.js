@@ -1,7 +1,7 @@
 // Archetype modules and lessons data
 // Imports real content from archetype modules
 
-import { archetypeModules } from '../../data/academy/archetypes'
+import { archetypeModules, archetypeQuizzes } from '../../data/academy/archetypes'
 
 // Map archetype modules to the structure expected by components
 export const ARCHETYPE_MODULES = Object.fromEntries(
@@ -14,13 +14,14 @@ export const ARCHETYPE_MODULES = Object.fromEntries(
       description: module.description,
       icon: module.icon,
       lessons: module.lessons.map((lesson, index) => ({
-        id: index + 1,
+        id: lesson.id, // Preserve original lesson ID for quiz matching
         slug: lesson.slug,
         title: lesson.title,
         description: lesson.description || '',
         content: lesson.content || '',
         readTime: lesson.readTime || 5,
-        xp: lesson.xp || 100
+        xp: lesson.xp || 100,
+        order: index + 1
       }))
     }
   ])
@@ -47,6 +48,62 @@ export function getArchetypeLesson(archetypeId, lessonSlug) {
     moduleIcon: module.icon,
     prevLesson: lessonIndex > 0 ? module.lessons[lessonIndex - 1] : null,
     nextLesson: lessonIndex < module.lessons.length - 1 ? module.lessons[lessonIndex + 1] : null
+  }
+}
+
+// Get quiz for a specific archetype lesson
+export function getArchetypeLessonQuiz(archetypeId, lessonId) {
+  const quizData = archetypeQuizzes[archetypeId]
+  if (!quizData || !quizData.lessonQuizzes) return null
+
+  const lessonQuiz = quizData.lessonQuizzes[lessonId]
+  if (!lessonQuiz) return null
+
+  // Transform to match Quiz component expected format
+  return {
+    title: lessonQuiz.lessonTitle || lessonQuiz.title || 'Lesson Quiz',
+    lessonSlug: `archetype-${archetypeId}-${lessonId}`,
+    questions: lessonQuiz.questions.map(q => ({
+      id: q.id,
+      question: q.question,
+      type: 'multiple-choice',
+      options: q.options.map((opt, idx) =>
+        typeof opt === 'string'
+          ? { id: String.fromCharCode(97 + idx), text: opt }
+          : opt
+      ),
+      correctAnswer: typeof q.correctAnswer === 'number'
+        ? String.fromCharCode(97 + q.correctAnswer)
+        : q.correctAnswer,
+      explanation: q.explanation
+    }))
+  }
+}
+
+// Get final test for an archetype module
+export function getArchetypeFinalTest(archetypeId) {
+  const quizData = archetypeQuizzes[archetypeId]
+  if (!quizData || !quizData.finalTest) return null
+
+  const finalTest = quizData.finalTest
+  return {
+    title: finalTest.title || 'Final Assessment',
+    moduleSlug: `archetype-${archetypeId}-final`,
+    passingScore: finalTest.passingScore || 80,
+    questions: finalTest.questions.map(q => ({
+      id: q.id,
+      question: q.question,
+      type: 'multiple-choice',
+      options: q.options.map((opt, idx) =>
+        typeof opt === 'string'
+          ? { id: String.fromCharCode(97 + idx), text: opt }
+          : opt
+      ),
+      correctAnswer: typeof q.correctAnswer === 'number'
+        ? String.fromCharCode(97 + q.correctAnswer)
+        : q.correctAnswer,
+      explanation: q.explanation
+    }))
   }
 }
 
