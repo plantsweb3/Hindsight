@@ -15741,6 +15741,12 @@ input, button {
   border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
+.recommendation-badge.badge-pitfall {
+  background: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
 .recommendation-lesson-title {
   font-size: 1rem;
   font-weight: 600;

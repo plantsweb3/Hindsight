@@ -7,82 +7,82 @@
 export const ARCHETYPE_DEFAULTS = {
   'narrative-front-runner': {
     strengthLesson: {
-      lessonSlug: 'finding-narratives-before-they-trend', // nfr-2
+      lessonSlug: 'finding-narratives-before-they-trend',
       reason: 'Play to your strength'
     },
     pitfallLesson: {
-      lessonSlug: 'exit-strategies-for-narrative-plays', // nfr-6
-      reason: 'Most common pitfall for your type'
+      lessonSlug: 'exit-strategies-for-narratives',
+      reason: 'Avoid common pitfalls'
     }
   },
   'diamond-hands': {
     strengthLesson: {
-      lessonSlug: 'identifying-hold-worthy-assets', // dh-2
+      lessonSlug: 'identifying-hold-worthy-assets',
       reason: 'Play to your strength'
     },
     pitfallLesson: {
-      lessonSlug: 'bag-holding-vs-conviction', // dh-5
-      reason: 'Most common pitfall for your type'
+      lessonSlug: 'when-diamond-hands-become-bag-holding',
+      reason: 'Avoid common pitfalls'
     }
   },
   'loss-averse': {
     strengthLesson: {
-      lessonSlug: 'position-sizing-for-capital-preservation', // la-2
+      lessonSlug: 'position-sizing-for-capital-preservation',
       reason: 'Play to your strength'
     },
     pitfallLesson: {
-      lessonSlug: 'when-caution-becomes-a-problem', // la-6
-      reason: 'Most common pitfall for your type'
+      lessonSlug: 'when-caution-becomes-a-problem',
+      reason: 'Avoid common pitfalls'
     }
   },
   'copy-trader': {
     strengthLesson: {
-      lessonSlug: 'finding-smart-money-to-follow', // ct-2
+      lessonSlug: 'finding-smart-money-to-follow',
       reason: 'Play to your strength'
     },
     pitfallLesson: {
-      lessonSlug: 'common-copy-trading-mistakes', // ct-7
-      reason: 'Most common pitfall for your type'
+      lessonSlug: 'common-copy-trading-mistakes',
+      reason: 'Avoid common pitfalls'
     }
   },
   'technical-analyst': {
     strengthLesson: {
-      lessonSlug: 'support-resistance-market-structure', // ta-2
+      lessonSlug: 'support-resistance-and-market-structure',
       reason: 'Play to your strength'
     },
     pitfallLesson: {
-      lessonSlug: 'combining-technical-and-fundamental-analysis', // ta-7
-      reason: 'Most common pitfall for your type'
+      lessonSlug: 'combining-technical-and-fundamental-analysis',
+      reason: 'Avoid common pitfalls'
     }
   },
   'fomo-trader': {
     strengthLesson: {
-      lessonSlug: 'building-a-watchlist-system', // fomo-5
-      reason: 'Essential skill for your type'
+      lessonSlug: 'building-a-watchlist-system',
+      reason: 'Play to your strength'
     },
     pitfallLesson: {
-      lessonSlug: 'the-fomo-override-system', // fomo-3
-      reason: 'Most common pitfall for your type'
+      lessonSlug: 'the-fomo-override-system',
+      reason: 'Avoid common pitfalls'
     }
   },
   'scalper': {
     strengthLesson: {
-      lessonSlug: 'scalping-setups-that-work', // sc-2
+      lessonSlug: 'scalping-setups-that-work',
       reason: 'Play to your strength'
     },
     pitfallLesson: {
-      lessonSlug: 'risk-management-at-high-frequency', // sc-4
-      reason: 'Most common pitfall for your type'
+      lessonSlug: 'risk-management-at-high-frequency',
+      reason: 'Avoid common pitfalls'
     }
   },
   'impulse-trader': {
     strengthLesson: {
-      lessonSlug: 'quick-validation-filters', // imp-4
-      reason: 'Essential skill for your type'
+      lessonSlug: 'quick-validation-filters',
+      reason: 'Play to your strength'
     },
     pitfallLesson: {
-      lessonSlug: 'the-pause-protocol', // imp-3
-      reason: 'Most common pitfall for your type'
+      lessonSlug: 'the-pause-protocol',
+      reason: 'Avoid common pitfalls'
     }
   }
 }
