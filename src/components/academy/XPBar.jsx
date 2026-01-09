@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
-import { getLevelInfo, LEVEL_THRESHOLDS } from '../../config/xpConfig'
-import { getLocalStats } from '../../services/achievements'
+import { getLevelInfo } from '../../config/xpConfig'
+import { calculateTotalXP, getLocalStats } from '../../services/achievements'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
 
@@ -11,55 +11,32 @@ export default function XPBar({ className = '', compact = false }) {
   const [isLoading, setIsLoading] = useState(true)
 
   const loadProgress = useCallback(async () => {
-    // Always load local stats first
+    // ALWAYS calculate XP from actual progress - never use stored total
+    const calculatedXp = calculateTotalXP()
     const localStats = getLocalStats()
-    const localXp = localStats.totalXp || 0
-    const localLevelInfo = getLevelInfo(localXp)
+    const levelInfo = getLevelInfo(calculatedXp)
 
-    // Set initial progress from localStorage
+    // Set progress from calculated XP
     setProgress({
-      levelInfo: localLevelInfo,
-      xp: { total: localXp, streak: localStats.currentStreak || 0 }
+      levelInfo: levelInfo,
+      xp: { total: calculatedXp, streak: localStats.currentStreak || 0 }
     })
 
-    // If authenticated, also fetch server data and use the max
-    if (isAuthenticated && token) {
-      try {
-        const res = await fetch(`${API_BASE}/api/academy/xp-progress`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-
-        if (res.ok) {
-          const serverData = await res.json()
-          const serverXp = serverData?.xp?.total || 0
-          // Use the higher of local vs server XP
-          const totalXp = Math.max(localXp, serverXp)
-          const mergedLevelInfo = getLevelInfo(totalXp)
-          setProgress({
-            levelInfo: mergedLevelInfo,
-            xp: { total: totalXp, streak: Math.max(localStats.currentStreak || 0, serverData?.xp?.streak || 0) }
-          })
-        }
-      } catch (err) {
-        console.error('Failed to fetch XP progress:', err)
-        // Keep using local data on error
-      }
-    }
     setIsLoading(false)
-  }, [isAuthenticated, token])
+  }, [])
 
   useEffect(() => {
     loadProgress()
 
-    // Listen for XP updates from other components
+    // Listen for XP updates from other components - recalculate when progress changes
     const handleXpUpdate = () => loadProgress()
     window.addEventListener('xpUpdated', handleXpUpdate)
+    window.addEventListener('progressUpdated', handleXpUpdate)
     window.addEventListener('storage', handleXpUpdate)
 
     return () => {
       window.removeEventListener('xpUpdated', handleXpUpdate)
+      window.removeEventListener('progressUpdated', handleXpUpdate)
       window.removeEventListener('storage', handleXpUpdate)
     }
   }, [loadProgress])

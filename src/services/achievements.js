@@ -1,6 +1,104 @@
 // Achievement Definitions and Checking Service
 import { XP_CONFIG, ACHIEVEMENT_XP, getLevelInfo, DAILY_GOALS, DEFAULT_DAILY_GOAL } from '../config/xpConfig'
 
+// ==============================================
+// CALCULATED XP SYSTEM
+// XP is NEVER stored as a total - always calculated from actual progress
+// ==============================================
+
+// XP values for placement test modules (matching MODULE_TEST_OUT_XP below)
+const PLACEMENT_MODULE_XP = {
+  newcomer: 225,
+  apprentice: 250,
+  trader: 275,
+  specialist: 325,
+  master: 375
+}
+
+// Calculate total XP from all sources - this is the SINGLE SOURCE OF TRUTH
+export function calculateTotalXP() {
+  let totalXP = 0
+
+  // 1. XP from completed lessons (25 XP each)
+  const progressData = localStorage.getItem('hindsight_academy_progress')
+  const progress = progressData ? JSON.parse(progressData) : {}
+  const completedLessons = progress.completedLessons || []
+  totalXP += completedLessons.length * XP_CONFIG.LESSON_COMPLETE
+
+  // 2. XP from quiz scores (10 XP for pass 80%+, 25 bonus for 100%)
+  const lessonScores = progress.lessonScores || {}
+  Object.values(lessonScores).forEach(scoreData => {
+    const bestScore = scoreData.bestScore || 0
+    if (bestScore >= 0.8) {
+      totalXP += XP_CONFIG.QUIZ_PASS // 10 XP for passing
+    }
+    if (bestScore >= 1.0) {
+      totalXP += XP_CONFIG.QUIZ_PERFECT_BONUS // 25 XP bonus for perfect
+    }
+  })
+
+  // 3. XP from achievements
+  const achievementsData = localStorage.getItem('hindsight_achievements')
+  const achievements = achievementsData ? JSON.parse(achievementsData) : []
+  achievements.forEach(achId => {
+    totalXP += ACHIEVEMENT_XP[achId] || 0
+  })
+
+  // 4. XP from placement test (ONE TIME ONLY - based on modules PASSED)
+  const placementCompleted = localStorage.getItem('placementTestCompleted') === 'true'
+  if (placementCompleted) {
+    const scoresData = localStorage.getItem('placementTestScores')
+    const sectionScores = scoresData ? JSON.parse(scoresData) : {}
+    const modules = ['newcomer', 'apprentice', 'trader', 'specialist', 'master']
+
+    modules.forEach(moduleId => {
+      const score = sectionScores[moduleId]
+      // Only award XP for modules PASSED (75%+)
+      if (score >= 0.75) {
+        totalXP += PLACEMENT_MODULE_XP[moduleId]
+      }
+    })
+  }
+
+  // 5. XP from module completions (only for modules completed through lessons, not placement)
+  const statsData = localStorage.getItem('hindsight_academy_stats')
+  const stats = statsData ? JSON.parse(statsData) : {}
+  const completedModules = stats.completedModules || []
+
+  // Only count modules that were completed through lessons (not via placement test)
+  const testedOutModules = progress.testedOutModules || []
+  completedModules.forEach(moduleSlug => {
+    // Don't double-count modules that were tested out via placement
+    if (!testedOutModules.includes(moduleSlug)) {
+      const moduleXp = XP_CONFIG.MODULE_COMPLETION[moduleSlug] || 50
+      totalXP += moduleXp
+    }
+  })
+
+  // 6. XP from daily goal bonuses (tracked separately)
+  const dailyBonusesClaimed = stats.dailyBonusesClaimed || 0
+  totalXP += dailyBonusesClaimed * XP_CONFIG.DAILY_GOAL_COMPLETE_BONUS
+
+  return totalXP
+}
+
+// Get calculated XP and level info - use this instead of stored totalXp
+export function getCalculatedXPInfo() {
+  const totalXp = calculateTotalXP()
+  const levelInfo = getLevelInfo(totalXp)
+  return {
+    totalXp,
+    ...levelInfo
+  }
+}
+
+// Dispatch event to trigger XP recalculation in all components
+function dispatchXPUpdate() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('xpUpdated'))
+  }
+}
+
 export const ACHIEVEMENTS = {
   'first-steps': {
     id: 'first-steps',

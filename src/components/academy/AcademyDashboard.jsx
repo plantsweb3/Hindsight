@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useAchievements } from '../../contexts/AchievementContext'
 import { getArchetypeModule, hasArchetypeModule } from '../../data/academy/archetypes'
 import { hasLocalModule, getTrading101Module } from '../../data/academy/modules'
-import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores } from '../../services/achievements'
+import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores, calculateTotalXP } from '../../services/achievements'
 import { getLevelInfo, DAILY_GOALS, DEFAULT_DAILY_GOAL } from '../../config/xpConfig'
 import { getArchetypeRecommendations, getWalletAnalysisInsights } from '../../data/academy/archetypeRecommendations'
 import PlacementTest from './PlacementTest'
@@ -509,16 +509,27 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
 
   return (
     <div className={cardClasses} onClick={handleClick}>
-      {/* Badge stack in top-right corner */}
-      <div className="module-badge-stack">
+      {/* Badge stack in top-right corner - using inline styles to guarantee spacing */}
+      <div style={{
+        position: 'absolute',
+        top: '12px',
+        right: '12px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        zIndex: 5
+      }}>
         {/* Difficulty badge always shows */}
         <span className={`module-difficulty difficulty-${module.difficulty || 'beginner'}`}>
           {module.difficulty || 'beginner'}
         </span>
 
-        {/* Status badge below difficulty */}
+        {/* Status badge below difficulty - explicit margin-top for spacing */}
         {badge && (
-          <div className={`module-badge module-badge-${badge.toLowerCase()}`}>
+          <div
+            className={`module-badge module-badge-${badge.toLowerCase()}`}
+            style={{ marginTop: '8px' }}
+          >
             {isComplete && (
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                 <polyline points="20 6 9 17 4 12" />
@@ -768,11 +779,12 @@ export default function AcademyDashboard() {
     }
 
     const handleXpUpdate = () => {
-      // Refresh XP and level info when XP changes
+      // Refresh XP and level info when XP changes - ALWAYS calculate from progress
+      const calculatedXp = calculateTotalXP()
       const localStats = getLocalStats()
-      const localLevelInfo = getLevelInfo(localStats.totalXp || 0)
-      setXpProgress(prev => ({ ...prev, total: localStats.totalXp || 0 }))
-      setLevelInfo(localLevelInfo)
+      const calculatedLevelInfo = getLevelInfo(calculatedXp)
+      setXpProgress(prev => ({ ...prev, total: calculatedXp }))
+      setLevelInfo(calculatedLevelInfo)
       // Also refresh daily goal progress
       const dailyProgress = getDailyGoalProgress()
       setDailyGoalProgress(dailyProgress)
@@ -855,21 +867,11 @@ export default function AcademyDashboard() {
         const mastery = calculateOverallMastery()
         setMasteryStats(mastery)
 
-        if (xpProgressRes.ok) {
-          const xpData = await xpProgressRes.json()
-          // Use local XP if higher (user may have completed local modules)
-          const serverXp = xpData.xp?.total || 0
-          const totalXp = Math.max(localXp, serverXp)
-          const mergedLevelInfo = getLevelInfo(totalXp)
-
-          setXpProgress({ ...xpData.xp, total: totalXp })
-          setLevelInfo(mergedLevelInfo)
-        } else {
-          // Fallback to local XP if API fails
-          const localLevelInfo = getLevelInfo(localXp)
-          setXpProgress({ total: localXp, streak: localStats.currentStreak || 0 })
-          setLevelInfo(localLevelInfo)
-        }
+        // ALWAYS calculate XP from actual progress - never use stored total
+        const calculatedXp = calculateTotalXP()
+        const calculatedLevelInfo = getLevelInfo(calculatedXp)
+        setXpProgress({ total: calculatedXp, streak: localStats.currentStreak || 0 })
+        setLevelInfo(calculatedLevelInfo)
 
         if (achievementsRes.ok) {
           const achievementsData = await achievementsRes.json()
@@ -912,11 +914,12 @@ export default function AcademyDashboard() {
         setProgress(localProgressMap)
         // Also load local achievements
         setAchievements(getLocalAchievements())
-        // Load local XP and level info
+        // ALWAYS calculate XP from actual progress - never use stored total
+        const calculatedXp = calculateTotalXP()
         const localStats = getLocalStats()
-        const localLevelInfo = getLevelInfo(localStats.totalXp || 0)
-        setXpProgress({ total: localStats.totalXp || 0, streak: localStats.currentStreak || 0 })
-        setLevelInfo(localLevelInfo)
+        const calculatedLevelInfo = getLevelInfo(calculatedXp)
+        setXpProgress({ total: calculatedXp, streak: localStats.currentStreak || 0 })
+        setLevelInfo(calculatedLevelInfo)
         // Load daily goal progress
         const dailyProgress = getDailyGoalProgress()
         setDailyGoalProgress(dailyProgress)

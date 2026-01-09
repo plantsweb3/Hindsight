@@ -24,10 +24,38 @@ function getCompletedLessonsForModule(moduleSlug) {
     .map(key => key.replace(prefix, ''))
 }
 
-// Get quiz score for a lesson
+// Get quiz score for a lesson - checks multiple possible key formats
 function getLessonQuizScore(moduleSlug, lessonSlug) {
-  const progress = getLessonProgress(moduleSlug, lessonSlug)
-  if (!progress) return null
+  // Try the standard format first
+  let progress = getLessonProgress(moduleSlug, lessonSlug)
+
+  // If no progress found, also check localStorage directly with debug
+  if (!progress) {
+    try {
+      const data = localStorage.getItem('hindsight_academy_progress')
+      const allProgress = data ? JSON.parse(data) : {}
+      const lessonScores = allProgress.lessonScores || {}
+
+      // Try different key formats that might be used
+      const possibleKeys = [
+        `${moduleSlug}/${lessonSlug}`,
+        `${moduleSlug}-${lessonSlug}`,
+        lessonSlug
+      ]
+
+      for (const key of possibleKeys) {
+        if (lessonScores[key]) {
+          progress = lessonScores[key]
+          break
+        }
+      }
+    } catch (err) {
+      console.error('Error reading lesson scores:', err)
+    }
+  }
+
+  if (!progress || progress.bestScore == null) return null
+
   return {
     bestScore: progress.bestScore,
     percentage: Math.round(progress.bestScore * 100),
