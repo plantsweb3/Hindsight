@@ -1243,21 +1243,15 @@ export default function AcademyDashboard() {
                   )
                 })}
 
-                {/* Refine Your Edge - 6th Module Card */}
+                {/* Refine Your Edge - 6th Module Card - Always Accessible */}
                 <div
-                  className={`module-card glass-card refine-edge-card ${!allModulesComplete ? 'module-locked' : ''}`}
-                  onClick={() => allModulesComplete && setActiveTab('by-archetype')}
+                  className="module-card glass-card refine-edge-card"
+                  onClick={() => setActiveTab('by-archetype')}
                 >
-                  {!allModulesComplete && (
-                    <div className="module-lock-overlay">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-                      </svg>
-                    </div>
-                  )}
-
-                  <div className={`module-badge module-badge-${allModulesComplete ? 'next-step' : 'locked'}`}>
-                    {allModulesComplete ? 'NEXT STEP' : 'COMPLETE ALL'}
+                  <div className="module-badge-stack">
+                    <span className="module-badge module-badge-archetypes">
+                      ARCHETYPES
+                    </span>
                   </div>
 
                   <div className="module-card-header">
@@ -1274,7 +1268,7 @@ export default function AcademyDashboard() {
 
                   <div className="module-footer refine-edge-footer">
                     <span className="refine-edge-cta">
-                      {allModulesComplete ? 'Explore Your Archetype →' : 'Complete Trading 101 to unlock'}
+                      Explore Archetypes →
                     </span>
                   </div>
                 </div>

@@ -737,16 +737,81 @@ export function calculatePlacementAchievements(placementLevel, sectionScores) {
   return achievements
 }
 
+// Check if placement test has been completed before
+export function hasCompletedPlacementTest() {
+  try {
+    return localStorage.getItem('placementTestCompleted') === 'true'
+  } catch {
+    return false
+  }
+}
+
+// Mark placement test as completed
+function markPlacementTestCompleted(sectionScores) {
+  try {
+    localStorage.setItem('placementTestCompleted', 'true')
+    localStorage.setItem('placementTestDate', new Date().toISOString())
+    if (sectionScores) {
+      localStorage.setItem('placementTestScores', JSON.stringify(sectionScores))
+    }
+  } catch (err) {
+    console.error('Failed to mark placement test completed:', err)
+  }
+}
+
+// Update best placement scores if new scores are better
+function updateBestPlacementScores(sectionScores) {
+  try {
+    const existingScores = JSON.parse(localStorage.getItem('placementTestScores') || '{}')
+    const updatedScores = { ...existingScores }
+
+    Object.entries(sectionScores).forEach(([level, score]) => {
+      if (!updatedScores[level] || score > updatedScores[level]) {
+        updatedScores[level] = score
+      }
+    })
+
+    localStorage.setItem('placementTestScores', JSON.stringify(updatedScores))
+    return updatedScores
+  } catch {
+    return sectionScores
+  }
+}
+
 // Award XP and achievements for placement test
 // Returns the rewards that were given
+// IMPORTANT: Only awards XP on FIRST completion to prevent exploits
 export function awardPlacementRewards(placementLevel, sectionScores) {
   const levels = ['newcomer', 'apprentice', 'trader', 'specialist', 'master']
   const placementIndex = placementLevel === 'completed' ? 5 : levels.indexOf(placementLevel)
+  const isRetake = hasCompletedPlacementTest()
 
   // If newcomer, no rewards to give
   if (placementIndex <= 0) {
-    return { xpEarned: 0, achievements: [], modulesUnlocked: 0 }
+    return { xpEarned: 0, achievements: [], modulesUnlocked: 0, isRetake }
   }
+
+  // If this is a retake, only update module unlocks - NO XP or achievements
+  if (isRetake) {
+    console.log('Placement test retake - updating module unlocks but not awarding XP')
+
+    // Update best scores if better
+    if (sectionScores) {
+      updateBestPlacementScores(sectionScores)
+    }
+
+    return {
+      xpEarned: 0,
+      achievements: [],
+      modulesUnlocked: placementIndex,
+      isRetake: true
+    }
+  }
+
+  // FIRST TIME COMPLETION - Award everything
+
+  // Mark as completed FIRST to prevent exploits
+  markPlacementTestCompleted(sectionScores)
 
   // Calculate XP
   const xpEarned = calculatePlacementXP(placementLevel)
@@ -799,6 +864,7 @@ export function awardPlacementRewards(placementLevel, sectionScores) {
   return {
     xpEarned,
     achievements: [...newAchievements, ...xpAchievements],
-    modulesUnlocked: placementIndex
+    modulesUnlocked: placementIndex,
+    isRetake: false
   }
 }

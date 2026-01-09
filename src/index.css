@@ -10122,29 +10122,34 @@ input, button {
 /* Quiz Score Badges */
 .quiz-score-badge {
   font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.125rem 0.5rem;
-  border-radius: 4px;
+  font-weight: 700;
+  padding: 0.25rem 0.625rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
 }
 
 .score-green {
   color: #22c55e;
-  background: rgba(34, 197, 94, 0.15);
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.4);
 }
 
 .score-yellow {
   color: #eab308;
-  background: rgba(234, 179, 8, 0.15);
+  background: rgba(234, 179, 8, 0.2);
+  border-color: rgba(234, 179, 8, 0.4);
 }
 
 .score-blue {
   color: #6366f1;
-  background: rgba(99, 102, 241, 0.15);
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
 }
 
 .score-gray {
   color: #71717a;
   background: rgba(113, 113, 122, 0.15);
+  border-color: rgba(113, 113, 122, 0.3);
 }
 
 /* Lesson Card Mastery Colors - Left Border Indicator */
@@ -12523,7 +12528,7 @@ input, button {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.375rem;
+  gap: 0.5rem;
   z-index: 5;
 }
 
@@ -14579,6 +14584,12 @@ input, button {
   color: #c4b5fd;
 }
 
+.module-badge-archetypes {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.3));
+  border: 1px solid rgba(139, 92, 246, 0.5);
+  color: #c4b5fd;
+}
+
 /* Lesson mastery color coding for dots */
 .module-dot.mastery-not-started {
   background: rgba(113, 113, 122, 0.3);
@@ -14995,6 +15006,33 @@ input, button {
 .placement-xp-label {
   font-size: 0.875rem;
   color: #a1a1aa;
+}
+
+/* Placement Retake Notice */
+.placement-retake-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  text-align: center;
+}
+
+.placement-retake-icon {
+  font-size: 1.5rem;
+}
+
+.placement-retake-text {
+  font-size: 1rem;
+  color: #f5f5f5;
+}
+
+.placement-retake-subtext {
+  font-size: 0.875rem;
+  color: #71717a;
 }
 
 /* Placement Modules Unlocked */

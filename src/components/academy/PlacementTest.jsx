@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { PLACEMENT_TEST, determinePlacement, calculateSectionScore, LEVEL_INFO } from '../../data/academy/placementTest'
-import { calculatePlacementXP, awardPlacementRewards, ACHIEVEMENTS } from '../../services/achievements'
+import { calculatePlacementXP, awardPlacementRewards, ACHIEVEMENTS, hasCompletedPlacementTest } from '../../services/achievements'
 
 // Question Card Component
 function QuestionCard({ question, selected, onSelect, questionNumber }) {
@@ -63,14 +63,17 @@ function PlacementResults({ answers, onAccept, onStartFromBeginning, onNavigateT
   const placementLevel = determinePlacement(answers)
   const levelInfo = LEVEL_INFO[placementLevel]
 
+  // Check if this is a retake
+  const isRetake = hasCompletedPlacementTest()
+
   // Calculate scores for each section (as decimal 0-1)
   const sectionScoresRaw = {}
   PLACEMENT_TEST.sections.forEach(section => {
     sectionScoresRaw[section.level] = calculateSectionScore(answers, section.questions)
   })
 
-  // Calculate rewards
-  const xpEarned = calculatePlacementXP(placementLevel)
+  // Calculate rewards (would be earned on first completion)
+  const xpEarned = isRetake ? 0 : calculatePlacementXP(placementLevel)
   const levels = ['newcomer', 'apprentice', 'trader', 'specialist', 'master']
   const placementIndex = levels.indexOf(placementLevel)
   const modulesTestedOut = placementLevel === 'completed' ? 5 : placementIndex
@@ -131,8 +134,14 @@ function PlacementResults({ answers, onAccept, onStartFromBeginning, onNavigateT
         <p className="result-level-desc">{levelInfo.description}</p>
       </div>
 
-      {/* XP Earned */}
-      {xpEarned > 0 && (
+      {/* XP Earned or Retake Notice */}
+      {isRetake ? (
+        <div className="placement-retake-notice">
+          <span className="placement-retake-icon">🔄</span>
+          <span className="placement-retake-text">Your module access has been updated based on your new scores.</span>
+          <span className="placement-retake-subtext">XP is only awarded on first completion.</span>
+        </div>
+      ) : xpEarned > 0 && (
         <div className="placement-xp-earned">
           <span className="placement-xp-icon">⚡</span>
           <span className="placement-xp-value">+{xpEarned.toLocaleString()} XP</span>
@@ -160,8 +169,8 @@ function PlacementResults({ answers, onAccept, onStartFromBeginning, onNavigateT
         </div>
       )}
 
-      {/* Achievements Earned */}
-      {potentialAchievements.length > 0 && (
+      {/* Achievements Earned - only show on first completion */}
+      {!isRetake && potentialAchievements.length > 0 && (
         <div className="placement-achievements-earned">
           <h3 className="achievements-earned-title">Achievements Unlocked!</h3>
           <div className="achievements-earned-list">
