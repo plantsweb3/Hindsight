@@ -14816,6 +14816,142 @@ input, button {
   margin: 0;
 }
 
+/* Placement XP Earned */
+.placement-xp-earned {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.1));
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.2);
+  }
+}
+
+.placement-xp-icon {
+  font-size: 1.5rem;
+}
+
+.placement-xp-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+.placement-xp-label {
+  font-size: 0.875rem;
+  color: #a1a1aa;
+}
+
+/* Placement Modules Unlocked */
+.placement-modules-unlocked {
+  width: 100%;
+  max-width: 400px;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.modules-unlocked-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #22c55e;
+  margin: 0 0 0.75rem;
+}
+
+.modules-unlocked-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.module-unlocked-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  color: #e4e4e7;
+}
+
+.module-unlocked-item svg {
+  color: #22c55e;
+  flex-shrink: 0;
+}
+
+.module-unlocked-icon {
+  font-size: 1rem;
+}
+
+.module-unlocked-name {
+  font-weight: 500;
+}
+
+/* Placement Achievements Earned */
+.placement-achievements-earned {
+  width: 100%;
+  max-width: 400px;
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.achievements-earned-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #a78bfa;
+  margin: 0 0 0.75rem;
+  text-align: center;
+}
+
+.achievements-earned-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.achievement-earned-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(139, 92, 246, 0.1);
+  border-radius: 8px;
+}
+
+.achievement-earned-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.achievement-earned-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.achievement-earned-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.achievement-earned-desc {
+  font-size: 0.8125rem;
+  color: #a1a1aa;
+}
+
 /* Section Breakdown */
 .section-breakdown {
   width: 100%;

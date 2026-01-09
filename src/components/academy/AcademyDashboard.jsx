@@ -967,11 +967,17 @@ export default function AcademyDashboard() {
   }
 
   // Handle placement test completion
-  const handlePlacementComplete = (placementLevel) => {
+  const handlePlacementComplete = (placementLevel, rewards) => {
     setShowPlacementTest(false)
     // Apply placement results - unlock modules up to placement level
     applyPlacementResult(placementLevel)
-    // Refresh data to show updated unlocks
+
+    // Update local state with new achievements if any were awarded
+    if (rewards?.achievements?.length > 0) {
+      setAchievements(prev => [...new Set([...prev, ...rewards.achievements])])
+    }
+
+    // Refresh data to show updated unlocks and XP
     fetchData()
   }
 

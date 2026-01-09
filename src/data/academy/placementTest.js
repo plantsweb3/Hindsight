@@ -46,12 +46,12 @@ export const PLACEMENT_TEST = {
         },
         {
           id: 'p-4',
-          question: 'What happens to tokens launched on pump.fun when they reach the bonding curve threshold?',
+          question: 'What happens to tokens on pump.fun when they complete their bonding curve (~$69K market cap)?',
           options: [
-            'They get deleted',
-            'They migrate to Raydium with liquidity',
+            'They get deleted from the platform',
+            'They graduate to PumpSwap with locked liquidity',
             'They become NFTs',
-            'Nothing changes'
+            'Nothing changes, they stay on the bonding curve'
           ],
           correctAnswer: 1
         }

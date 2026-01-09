@@ -460,3 +460,190 @@ export function getAchievementById(id) {
 export function getAllAchievementIds() {
   return Object.keys(ACHIEVEMENTS)
 }
+
+// ==============================================
+// PLACEMENT TEST XP AND ACHIEVEMENT SYSTEM
+// ==============================================
+
+// XP values for testing out of each module
+const MODULE_TEST_OUT_XP = {
+  newcomer: {
+    // 5 lessons × 25 XP = 125
+    // 5 quizzes passed × 10 XP = 50
+    // Module completion bonus = 50
+    // Total: 225 XP
+    lessonXp: 125,
+    quizXp: 50,
+    moduleBonus: 50,
+    total: 225
+  },
+  apprentice: {
+    // 5 lessons × 25 XP = 125
+    // 5 quizzes × 10 XP = 50
+    // Module completion bonus = 75
+    // Total: 250 XP
+    lessonXp: 125,
+    quizXp: 50,
+    moduleBonus: 75,
+    total: 250
+  },
+  trader: {
+    // 5 lessons × 25 XP = 125
+    // 5 quizzes × 10 XP = 50
+    // Module completion bonus = 100
+    // Total: 275 XP
+    lessonXp: 125,
+    quizXp: 50,
+    moduleBonus: 100,
+    total: 275
+  },
+  specialist: {
+    // 5 lessons × 25 XP = 125
+    // 5 quizzes × 10 XP = 50
+    // Module completion bonus = 150
+    // Total: 325 XP
+    lessonXp: 125,
+    quizXp: 50,
+    moduleBonus: 150,
+    total: 325
+  },
+  master: {
+    // 5 lessons × 25 XP = 125
+    // 5 quizzes × 10 XP = 50
+    // Module completion bonus = 200
+    // Total: 375 XP
+    lessonXp: 125,
+    quizXp: 50,
+    moduleBonus: 200,
+    total: 375
+  }
+}
+
+// Calculate XP for placement test based on placement level
+// Awards XP for all modules BELOW placement level (modules they tested out of)
+export function calculatePlacementXP(placementLevel) {
+  const levels = ['newcomer', 'apprentice', 'trader', 'specialist', 'master']
+  const placementIndex = placementLevel === 'completed' ? 5 : levels.indexOf(placementLevel)
+
+  let totalXp = 0
+
+  // Award XP for all modules BELOW placement level (modules they tested out of)
+  for (let i = 0; i < placementIndex; i++) {
+    totalXp += MODULE_TEST_OUT_XP[levels[i]].total
+  }
+
+  return totalXp
+}
+
+// Calculate which achievements should be awarded for placement test
+// Does NOT award time-based achievements (streaks)
+export function calculatePlacementAchievements(placementLevel, sectionScores) {
+  const levels = ['newcomer', 'apprentice', 'trader', 'specialist', 'master']
+  const placementIndex = placementLevel === 'completed' ? 5 : levels.indexOf(placementLevel)
+  const modulesTestedOut = placementIndex
+  const lessonsEquivalent = modulesTestedOut * 5
+
+  const achievements = []
+  const earnedAchievements = getLocalAchievements()
+
+  // First Steps - if they tested out of at least Newcomer
+  if (modulesTestedOut >= 1 && !earnedAchievements.includes('first-steps')) {
+    achievements.push('first-steps')
+  }
+
+  // Perfect Score - if any section was 100%
+  if (sectionScores) {
+    const gotPerfectSection = Object.values(sectionScores).some(score => score === 1.0)
+    if (gotPerfectSection && !earnedAchievements.includes('perfect-score')) {
+      achievements.push('perfect-score')
+    }
+  }
+
+  // Module Master - if tested out of at least 1 module
+  if (modulesTestedOut >= 1 && !earnedAchievements.includes('module-master')) {
+    achievements.push('module-master')
+  }
+
+  // Knowledge Seeker - 25 lessons equivalent (need all 5 modules = 25 lessons)
+  if (lessonsEquivalent >= 25 && !earnedAchievements.includes('knowledge-seeker')) {
+    achievements.push('knowledge-seeker')
+  }
+
+  // Expert Trader - completed all Trading 101
+  if (modulesTestedOut >= 5 && !earnedAchievements.includes('expert-trader')) {
+    achievements.push('expert-trader')
+  }
+
+  // Note: We deliberately do NOT award time-based achievements:
+  // - on-fire (3 day streak)
+  // - week-warrior (7 day streak)
+  // - monthly-master (30 day streak)
+
+  return achievements
+}
+
+// Award XP and achievements for placement test
+// Returns the rewards that were given
+export function awardPlacementRewards(placementLevel, sectionScores) {
+  const levels = ['newcomer', 'apprentice', 'trader', 'specialist', 'master']
+  const placementIndex = placementLevel === 'completed' ? 5 : levels.indexOf(placementLevel)
+
+  // If newcomer, no rewards to give
+  if (placementIndex <= 0) {
+    return { xpEarned: 0, achievements: [], modulesUnlocked: 0 }
+  }
+
+  // Calculate XP
+  const xpEarned = calculatePlacementXP(placementLevel)
+
+  // Calculate achievements
+  const newAchievements = calculatePlacementAchievements(placementLevel, sectionScores)
+
+  // Award XP to local stats
+  if (xpEarned > 0) {
+    addLocalXp(xpEarned, 'placement_test')
+  }
+
+  // Award achievements
+  newAchievements.forEach(achId => {
+    saveLocalAchievement(achId)
+  })
+
+  // Award achievement XP
+  if (newAchievements.length > 0) {
+    addAchievementXp(newAchievements)
+  }
+
+  // Update stats to reflect "lesson equivalents" and "module completions"
+  const stats = getLocalStats()
+  stats.lessonsCompleted = (stats.lessonsCompleted || 0) + (placementIndex * 5)
+  stats.modulesCompleted = (stats.modulesCompleted || 0) + placementIndex
+
+  // Track which modules were completed via placement
+  if (!stats.completedModules) stats.completedModules = []
+  for (let i = 0; i < placementIndex; i++) {
+    const moduleSlug = levels[i]
+    if (!stats.completedModules.includes(moduleSlug)) {
+      stats.completedModules.push(moduleSlug)
+    }
+  }
+
+  localStorage.setItem(LOCAL_STATS_KEY, JSON.stringify(stats))
+
+  // Check for XP-based achievements (like Rising Star at 500 XP)
+  const updatedStats = getLocalStats()
+  const xpAchievements = []
+  const earnedAchievements = getLocalAchievements()
+
+  if (updatedStats.totalXp >= 500 && !earnedAchievements.includes('rising-star')) {
+    xpAchievements.push('rising-star')
+    saveLocalAchievement('rising-star')
+    addAchievementXp(['rising-star'])
+  }
+
+  return {
+    xpEarned,
+    achievements: [...newAchievements, ...xpAchievements],
+    modulesUnlocked: placementIndex
+  }
+}

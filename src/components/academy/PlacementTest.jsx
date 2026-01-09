@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { PLACEMENT_TEST, determinePlacement, calculateSectionScore, LEVEL_INFO } from '../../data/academy/placementTest'
+import { calculatePlacementXP, awardPlacementRewards, ACHIEVEMENTS } from '../../services/achievements'
 
 // Question Card Component
 function QuestionCard({ question, selected, onSelect, questionNumber }) {
@@ -35,17 +36,51 @@ function PlacementResults({ answers, onAccept, onStartFromBeginning }) {
   const placementLevel = determinePlacement(answers)
   const levelInfo = LEVEL_INFO[placementLevel]
 
-  // Calculate scores for each section
+  // Calculate scores for each section (as decimal 0-1)
+  const sectionScoresRaw = {}
+  PLACEMENT_TEST.sections.forEach(section => {
+    sectionScoresRaw[section.level] = calculateSectionScore(answers, section.questions)
+  })
+
+  // Calculate rewards
+  const xpEarned = calculatePlacementXP(placementLevel)
+  const levels = ['newcomer', 'apprentice', 'trader', 'specialist', 'master']
+  const placementIndex = levels.indexOf(placementLevel)
+  const modulesTestedOut = placementLevel === 'completed' ? 5 : placementIndex
+
+  // Check for perfect scores
+  const hasPerfectScore = Object.values(sectionScoresRaw).some(score => score === 1.0)
+
+  // Calculate scores for display
   const sectionScores = PLACEMENT_TEST.sections.map(section => {
-    const score = calculateSectionScore(answers, section.questions)
+    const score = sectionScoresRaw[section.level]
     const passed = score >= PLACEMENT_TEST.passingThreshold
     return {
       level: section.level,
       name: section.name,
       score: Math.round(score * 100),
+      rawScore: score,
       passed
     }
   })
+
+  // Get list of modules tested out of
+  const testedOutModules = levels.slice(0, modulesTestedOut).map(level => {
+    const info = LEVEL_INFO[level]
+    return { level, name: info?.name || level, icon: info?.icon || '📚' }
+  })
+
+  // Determine which achievements would be earned
+  const potentialAchievements = []
+  if (modulesTestedOut >= 1) {
+    potentialAchievements.push('first-steps', 'module-master')
+  }
+  if (hasPerfectScore) {
+    potentialAchievements.push('perfect-score')
+  }
+  if (modulesTestedOut >= 5) {
+    potentialAchievements.push('expert-trader')
+  }
 
   return (
     <div className="placement-results">
@@ -62,6 +97,57 @@ function PlacementResults({ answers, onAccept, onStartFromBeginning }) {
         </div>
         <p className="result-level-desc">{levelInfo.description}</p>
       </div>
+
+      {/* XP Earned */}
+      {xpEarned > 0 && (
+        <div className="placement-xp-earned">
+          <span className="placement-xp-icon">⚡</span>
+          <span className="placement-xp-value">+{xpEarned.toLocaleString()} XP</span>
+          <span className="placement-xp-label">for demonstrated knowledge</span>
+        </div>
+      )}
+
+      {/* Modules Tested Out */}
+      {modulesTestedOut > 0 && (
+        <div className="placement-modules-unlocked">
+          <h3 className="modules-unlocked-title">
+            You tested out of {modulesTestedOut} module{modulesTestedOut > 1 ? 's' : ''}:
+          </h3>
+          <div className="modules-unlocked-list">
+            {testedOutModules.map(mod => (
+              <div key={mod.level} className="module-unlocked-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span className="module-unlocked-icon">{mod.icon}</span>
+                <span className="module-unlocked-name">{mod.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Achievements Earned */}
+      {potentialAchievements.length > 0 && (
+        <div className="placement-achievements-earned">
+          <h3 className="achievements-earned-title">Achievements Unlocked!</h3>
+          <div className="achievements-earned-list">
+            {potentialAchievements.map(achId => {
+              const achievement = ACHIEVEMENTS[achId]
+              if (!achievement) return null
+              return (
+                <div key={achId} className="achievement-earned-item">
+                  <span className="achievement-earned-icon">{achievement.icon}</span>
+                  <div className="achievement-earned-info">
+                    <span className="achievement-earned-name">{achievement.name}</span>
+                    <span className="achievement-earned-desc">{achievement.description}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="section-breakdown">
         <h3 className="breakdown-title">Your Scores</h3>
@@ -99,7 +185,7 @@ function PlacementResults({ answers, onAccept, onStartFromBeginning }) {
       </p>
 
       <div className="results-actions">
-        <button className="results-btn primary" onClick={() => onAccept(placementLevel)}>
+        <button className="results-btn primary" onClick={() => onAccept(placementLevel, sectionScoresRaw)}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polygon points="5 3 19 12 5 21 5 3" />
           </svg>
@@ -123,6 +209,23 @@ export default function PlacementTest({ onComplete, onCancel }) {
   const currentSectionData = sections[currentSection]
   const totalQuestions = sections.reduce((sum, s) => sum + s.questions.length, 0)
   const answeredQuestions = Object.keys(answers).length
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
+  // Scroll to top on section change
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [currentSection])
+
+  // Scroll to top when showing results
+  useEffect(() => {
+    if (showResults) {
+      window.scrollTo(0, 0)
+    }
+  }, [showResults])
 
   // Get global question number
   const getGlobalQuestionNumber = (sectionIndex, questionIndex) => {
@@ -159,14 +262,16 @@ export default function PlacementTest({ onComplete, onCancel }) {
     }
   }
 
-  // Accept placement and continue
-  const handleAcceptPlacement = (level) => {
-    onComplete(level)
+  // Accept placement and continue - awards XP and achievements
+  const handleAcceptPlacement = (level, sectionScores) => {
+    // Award XP and achievements for tested out modules
+    const rewards = awardPlacementRewards(level, sectionScores)
+    onComplete(level, rewards)
   }
 
-  // Start from beginning
+  // Start from beginning - no rewards
   const handleStartFromBeginning = () => {
-    onComplete('newcomer')
+    onComplete('newcomer', null)
   }
 
   // Render results
