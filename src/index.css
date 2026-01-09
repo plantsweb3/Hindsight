@@ -10152,6 +10152,63 @@ input, button {
   border-color: rgba(113, 113, 122, 0.3);
 }
 
+/* Lesson Status Badges */
+.lesson-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.625rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.lesson-status-badge.status-green-glow {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+}
+
+.lesson-status-badge.status-yellow {
+  color: #eab308;
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+}
+
+.lesson-status-badge.status-grey {
+  color: #71717a;
+  background: rgba(113, 113, 122, 0.1);
+  border: 1px solid rgba(113, 113, 122, 0.2);
+}
+
+/* Lesson Card Status States */
+.lesson-card.lesson-status-passed {
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.lesson-card.lesson-status-passed::before {
+  background: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+}
+
+.lesson-card.lesson-status-review {
+  border-color: rgba(234, 179, 8, 0.3);
+}
+
+.lesson-card.lesson-status-review::before {
+  background: #eab308;
+}
+
+.lesson-card.lesson-status-not-started {
+  border-color: rgba(113, 113, 122, 0.15);
+}
+
+.lesson-card.lesson-status-not-started::before {
+  background: rgba(113, 113, 122, 0.3);
+}
+
 /* Lesson Card Mastery Colors - Left Border Indicator */
 .lesson-card {
   position: relative;

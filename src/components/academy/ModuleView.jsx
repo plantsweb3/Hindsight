@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useParams, useOutletContext } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { getTrading101Module, hasLocalModule } from '../../data/academy/modules'
-import { getLessonProgress, getLessonMastery, getLessonMasteryPercentage, LESSON_MASTERY } from '../../services/achievements'
+import { getLessonCardStatus } from '../../services/achievements'
 
 // Helper for local progress tracking (same as LessonView)
 const LOCAL_PROGRESS_KEY = 'hindsight_academy_progress'
@@ -24,82 +24,32 @@ function getCompletedLessonsForModule(moduleSlug) {
     .map(key => key.replace(prefix, ''))
 }
 
-// Get mastery score for a lesson - ONLY from actual quiz scores, not placement
-function getLessonQuizScore(moduleSlug, lessonSlug) {
-  // First check the unified mastery function for quiz scores only
-  const mastery = getLessonMasteryPercentage(moduleSlug, lessonSlug)
-
-  // Only return data if it's from an actual quiz, not placement test
-  // (Placement test gives module-level scores, not per-lesson)
-  if (mastery.source === 'quiz' && mastery.percentage !== null) {
-    return {
-      bestScore: mastery.percentage / 100,
-      percentage: mastery.percentage,
-      mastery: getLessonMastery(mastery.percentage / 100, true),
-      source: 'quiz'
-    }
+function LessonCard({ lesson, moduleSlug, status }) {
+  // Determine card class based on status
+  const getCardClass = () => {
+    if (status.style === 'green-glow') return 'lesson-status-passed'
+    if (status.style === 'yellow') return 'lesson-status-review'
+    return 'lesson-status-not-started'
   }
-
-  // Also try legacy key formats for quiz scores
-  try {
-    const data = localStorage.getItem('hindsight_academy_progress')
-    const allProgress = data ? JSON.parse(data) : {}
-    const lessonScores = allProgress.lessonScores || {}
-
-    // Try different key formats that might be used
-    const possibleKeys = [
-      `${moduleSlug}/${lessonSlug}`,
-      `${moduleSlug}-${lessonSlug}`,
-      lessonSlug
-    ]
-
-    for (const key of possibleKeys) {
-      if (lessonScores[key]?.bestScore != null) {
-        return {
-          bestScore: lessonScores[key].bestScore,
-          percentage: Math.round(lessonScores[key].bestScore * 100),
-          mastery: getLessonMastery(lessonScores[key].bestScore, true),
-          source: 'quiz'
-        }
-      }
-    }
-  } catch (err) {
-    console.error('Error reading lesson scores:', err)
-  }
-
-  return null
-}
-
-function LessonCard({ lesson, moduleSlug, isCompleted, quizScore }) {
-  // Determine mastery color for visual indicator
-  const getMasteryColor = () => {
-    if (!quizScore) return 'gray'
-    if (quizScore.percentage >= 100) return 'green'
-    if (quizScore.percentage >= 80) return 'yellow'
-    return 'blue'
-  }
-
-  const masteryColor = getMasteryColor()
-  const hasMastery = quizScore && quizScore.percentage != null
 
   return (
     <Link
       to={`/academy/${moduleSlug}/${lesson.slug}`}
-      className={`lesson-card glass-card ${isCompleted ? 'lesson-completed' : ''} lesson-mastery-${masteryColor}`}
+      className={`lesson-card glass-card ${getCardClass()}`}
     >
       <div className="lesson-card-header">
         <span className={`lesson-difficulty difficulty-${lesson.difficulty}`}>
           {lesson.difficulty}
         </span>
         <div className="lesson-status-badges">
-          {isCompleted && (
-            <span className="lesson-completed-badge">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <span className={`lesson-status-badge status-${status.style}`}>
+            {status.style === 'green-glow' && (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              Completed
-            </span>
-          )}
+            )}
+            {status.displayText}
+          </span>
         </div>
       </div>
       <h3 className="lesson-card-title">{lesson.title}</h3>
@@ -112,22 +62,12 @@ function LessonCard({ lesson, moduleSlug, isCompleted, quizScore }) {
           </svg>
           {lesson.reading_time} min read
         </span>
-        {/* Mastery percentage with purple glow - only for actual quiz scores */}
-        {hasMastery ? (
-          <span
-            className="lesson-mastery-percentage"
-            title="From quiz"
-          >
-            {quizScore.percentage}%
-          </span>
-        ) : (
-          <span className="lesson-cta">
-            {isCompleted ? 'Review' : 'Start'}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </span>
-        )}
+        <span className="lesson-cta">
+          {status.type === 'not-started' ? 'Start' : 'Review'}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </span>
       </div>
     </Link>
   )
@@ -300,15 +240,14 @@ export default function ModuleView() {
         <h2 className="lessons-title">Lessons</h2>
         <div className="lessons-list">
           {module.lessons?.map((lesson, index) => {
-            const quizScore = getLessonQuizScore(moduleSlug, lesson.slug)
+            const status = getLessonCardStatus(moduleSlug, lesson.slug)
             return (
               <div key={lesson.id} className="lesson-item">
                 <span className="lesson-number">{index + 1}</span>
                 <LessonCard
                   lesson={lesson}
                   moduleSlug={moduleSlug}
-                  isCompleted={completedLessonIds.has(lesson.id) || completedLessonIds.has(lesson.slug)}
-                  quizScore={quizScore}
+                  status={status}
                 />
               </div>
             )

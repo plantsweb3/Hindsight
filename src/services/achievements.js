@@ -421,6 +421,61 @@ export function getModuleLessonDotStatuses(moduleId, lessonSlugs) {
   }))
 }
 
+// Get lesson card status for display in lesson cards inside modules
+// Returns { type, displayText, style } for rendering status badges
+export function getLessonCardStatus(moduleId, lessonSlug) {
+  // PRIORITY 1: Check if user completed the actual lesson quiz
+  const lessonScores = getAllLessonScores()
+  const lessonKey = `${moduleId}/${lessonSlug}`
+  const quizScore = lessonScores[lessonKey]
+
+  if (quizScore && quizScore.bestScore != null) {
+    // Lesson was completed via quiz - show score
+    const percentage = Math.round(quizScore.bestScore * 100)
+    return {
+      type: 'completed',
+      displayText: `${percentage}%`,
+      style: 'green-glow',
+      score: quizScore.bestScore
+    }
+  }
+
+  // PRIORITY 2: Check placement test result for this lesson
+  try {
+    const bestQuestionResults = JSON.parse(localStorage.getItem('placementTestBestQuestionResults') || '{}')
+
+    // Find the question that maps to this lesson
+    const matchingResult = Object.values(bestQuestionResults).find(
+      result => result.moduleId === moduleId && result.lessonSlug === lessonSlug
+    )
+
+    if (matchingResult) {
+      if (matchingResult.correct) {
+        return {
+          type: 'tested-out',
+          displayText: 'Passed',
+          style: 'green-glow'
+        }
+      } else {
+        return {
+          type: 'needs-review',
+          displayText: 'Review',
+          style: 'yellow'
+        }
+      }
+    }
+  } catch {
+    // Ignore errors
+  }
+
+  // PRIORITY 3: Not attempted
+  return {
+    type: 'not-started',
+    displayText: 'Not Completed',
+    style: 'grey'
+  }
+}
+
 // Get average mastery for a module (for module card display)
 // Returns { percentage: number (0-100), lessonsWithMastery: number, totalLessons: number }
 export function getModuleMasteryAverage(moduleSlug, lessonSlugs) {
