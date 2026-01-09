@@ -1260,12 +1260,15 @@ export default function AcademyDashboard() {
                   const { isComplete, isLocked, isCurrent, isTestedOut, needsReview, prevModuleTitle } = getModuleState(module, index)
                   // Get lesson masteries for this module
                   let lessonMasteries = []
-                  if (hasLocalModule(module.slug)) {
+                  const hasLocal = hasLocalModule(module.slug)
+                  if (hasLocal) {
                     const localModule = getTrading101Module(module.slug)
                     if (localModule?.lessons) {
                       const lessonSlugs = localModule.lessons.map(l => l.slug)
                       lessonMasteries = getModuleLessonMasteries(module.slug, lessonSlugs)
                     }
+                    // Debug: log what we're passing to ModuleCard
+                    console.log('[ModuleCard Debug]', { slug: module.slug, hasLocal, lessonMasteries, isTestedOut })
                   }
                   return (
                     <ModuleCard

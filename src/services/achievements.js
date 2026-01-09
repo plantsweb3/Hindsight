@@ -337,6 +337,8 @@ export function getModuleLessonMasteries(moduleSlug, lessonSlugs) {
   if (placementSection) {
     const bestScores = getPlacementBestScores()
     placementScore = bestScores[placementSection]
+    // Debug logging
+    console.log('[Mastery Debug]', { moduleSlug, placementSection, bestScores, placementScore, lessonSlugsCount: lessonSlugs?.length })
   }
 
   // Get individual lesson scores
@@ -1007,12 +1009,18 @@ export function getPlacementBestScores() {
     // Try new key first
     let data = localStorage.getItem('placementTestBestScores')
     if (data) {
-      return JSON.parse(data)
+      const parsed = JSON.parse(data)
+      if (parsed && Object.keys(parsed).length > 0) {
+        return parsed
+      }
     }
     // Fall back to legacy key (before best/latest separation)
     data = localStorage.getItem('placementTestScores')
     if (data) {
-      return JSON.parse(data)
+      const parsed = JSON.parse(data)
+      if (parsed && Object.keys(parsed).length > 0) {
+        return parsed
+      }
     }
     // Also check moduleScores in progress (another legacy location)
     const progressData = localStorage.getItem('hindsight_academy_progress')
