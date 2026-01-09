@@ -576,36 +576,16 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
 
       <div className="module-footer">
         {/* Progress dots - colored based on module difficulty level */}
-        {/* Filled = passed (quiz 80%+ OR placement passed), Empty = needs review */}
         <div className="module-dots">
           {Array.from({ length: Math.min(totalLessons, 6) }).map((_, i) => {
             const mastery = lessonMasteries[i]
-            // Dot is filled if:
-            // 1. Quiz-based with 80%+ score
-            // 2. Placement-based with 'passed' status
-            const isPassed = mastery?.status === 'passed'
-            const hasQuizMastery = mastery?.source === 'quiz' && mastery?.percentage >= 80
-            const hasPlacementPass = mastery?.source === 'placement' && mastery?.status === 'passed'
-            const isFilled = isPassed || hasQuizMastery || hasPlacementPass
-            // Dot should be "empty-review" style if placement says review
-            const isReview = mastery?.source === 'placement' && mastery?.status === 'review'
+            const hasMastery = mastery?.percentage != null && mastery.percentage > 0
             const difficultyClass = getDifficultyDotClass(module.difficulty)
-
-            // Build title for tooltip
-            let title = 'Not started'
-            if (mastery?.percentage != null) {
-              title = `${mastery.percentage}%`
-            } else if (mastery?.status === 'passed') {
-              title = 'Passed'
-            } else if (mastery?.status === 'review') {
-              title = 'Needs review'
-            }
-
             return (
               <span
                 key={i}
-                className={`module-dot ${isFilled ? 'filled' : ''} ${isFilled ? difficultyClass : ''} ${isReview ? 'needs-review' : ''}`}
-                title={title}
+                className={`module-dot ${hasMastery ? 'filled' : ''} ${hasMastery ? difficultyClass : ''}`}
+                title={mastery?.percentage != null ? `${mastery.percentage}%` : 'Not started'}
               />
             )
           })}

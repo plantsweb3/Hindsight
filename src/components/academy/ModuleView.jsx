@@ -24,63 +24,47 @@ function getCompletedLessonsForModule(moduleSlug) {
     .map(key => key.replace(prefix, ''))
 }
 
-// Get mastery score for a lesson - checks quiz scores AND placement test
+// Get mastery score for a lesson - ONLY from actual quiz scores, not placement
 function getLessonQuizScore(moduleSlug, lessonSlug) {
-  // Use the unified mastery function that checks both quiz and placement test
+  // First check the unified mastery function for quiz scores only
   const mastery = getLessonMasteryPercentage(moduleSlug, lessonSlug)
 
-  // If no mastery data found, also try legacy key formats
-  if (mastery.percentage === null && mastery.source !== 'placement') {
-    try {
-      const data = localStorage.getItem('hindsight_academy_progress')
-      const allProgress = data ? JSON.parse(data) : {}
-      const lessonScores = allProgress.lessonScores || {}
-
-      // Try different key formats that might be used
-      const possibleKeys = [
-        `${moduleSlug}/${lessonSlug}`,
-        `${moduleSlug}-${lessonSlug}`,
-        lessonSlug
-      ]
-
-      for (const key of possibleKeys) {
-        if (lessonScores[key]?.bestScore != null) {
-          const percentage = Math.round(lessonScores[key].bestScore * 100)
-          return {
-            bestScore: lessonScores[key].bestScore,
-            percentage,
-            mastery: getLessonMastery(lessonScores[key].bestScore, true),
-            source: 'quiz',
-            status: percentage >= 80 ? 'passed' : 'review'
-          }
-        }
-      }
-    } catch (err) {
-      console.error('Error reading lesson scores:', err)
-    }
-    return null
-  }
-
-  // For placement-based, return without percentage but with status
-  if (mastery.source === 'placement') {
-    return {
-      bestScore: null,
-      percentage: null,
-      mastery: null,
-      source: 'placement',
-      status: mastery.status
-    }
-  }
-
-  // For quiz-based, return with percentage and status
-  if (mastery.percentage !== null) {
+  // Only return data if it's from an actual quiz, not placement test
+  // (Placement test gives module-level scores, not per-lesson)
+  if (mastery.source === 'quiz' && mastery.percentage !== null) {
     return {
       bestScore: mastery.percentage / 100,
       percentage: mastery.percentage,
       mastery: getLessonMastery(mastery.percentage / 100, true),
-      source: mastery.source,
-      status: mastery.status
+      source: 'quiz'
     }
+  }
+
+  // Also try legacy key formats for quiz scores
+  try {
+    const data = localStorage.getItem('hindsight_academy_progress')
+    const allProgress = data ? JSON.parse(data) : {}
+    const lessonScores = allProgress.lessonScores || {}
+
+    // Try different key formats that might be used
+    const possibleKeys = [
+      `${moduleSlug}/${lessonSlug}`,
+      `${moduleSlug}-${lessonSlug}`,
+      lessonSlug
+    ]
+
+    for (const key of possibleKeys) {
+      if (lessonScores[key]?.bestScore != null) {
+        return {
+          bestScore: lessonScores[key].bestScore,
+          percentage: Math.round(lessonScores[key].bestScore * 100),
+          mastery: getLessonMastery(lessonScores[key].bestScore, true),
+          source: 'quiz'
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error reading lesson scores:', err)
   }
 
   return null
@@ -90,20 +74,13 @@ function LessonCard({ lesson, moduleSlug, isCompleted, quizScore }) {
   // Determine mastery color for visual indicator
   const getMasteryColor = () => {
     if (!quizScore) return 'gray'
-    // For placement-based, use status
-    if (quizScore.source === 'placement') {
-      return quizScore.status === 'passed' ? 'green' : 'yellow'
-    }
-    // For quiz-based, use percentage
     if (quizScore.percentage >= 100) return 'green'
     if (quizScore.percentage >= 80) return 'yellow'
     return 'blue'
   }
 
   const masteryColor = getMasteryColor()
-  const hasQuizPercentage = quizScore && quizScore.percentage != null
-  const hasPlacementStatus = quizScore?.source === 'placement' && quizScore.status
-  const hasMastery = hasQuizPercentage || hasPlacementStatus
+  const hasMastery = quizScore && quizScore.percentage != null
 
   return (
     <Link
@@ -135,20 +112,13 @@ function LessonCard({ lesson, moduleSlug, isCompleted, quizScore }) {
           </svg>
           {lesson.reading_time} min read
         </span>
-        {/* Show quiz percentage OR placement status */}
-        {hasQuizPercentage ? (
+        {/* Mastery percentage with purple glow - only for actual quiz scores */}
+        {hasMastery ? (
           <span
             className="lesson-mastery-percentage"
             title="From quiz"
           >
             {quizScore.percentage}%
-          </span>
-        ) : hasPlacementStatus ? (
-          <span
-            className={`lesson-placement-status ${quizScore.status === 'passed' ? 'status-passed' : 'status-review'}`}
-            title="From placement test"
-          >
-            {quizScore.status === 'passed' ? 'Passed' : 'Review'}
           </span>
         ) : (
           <span className="lesson-cta">
