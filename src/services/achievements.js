@@ -299,37 +299,46 @@ const MODULE_TO_PLACEMENT_SECTION = {
   'master': 'master'
 }
 
-// Get mastery percentage for a specific lesson
-// Returns { percentage: number (0-100), source: 'quiz'|'placement'|null }
+// Get mastery info for a specific lesson
+// Returns:
+// - For quiz: { percentage: number, source: 'quiz', status: 'passed'|'review' }
+// - For placement: { percentage: null, source: 'placement', status: 'passed'|'review' }
+// - No data: { percentage: null, source: null, status: null }
 export function getLessonMasteryPercentage(moduleSlug, lessonSlug) {
-  // 1. First check for individual lesson quiz score
+  // 1. First check for individual lesson quiz score - ONLY show percentage for actual quizzes
   const lessonProgress = getLessonProgress(moduleSlug, lessonSlug)
   if (lessonProgress && lessonProgress.bestScore != null) {
+    const percentage = Math.round(lessonProgress.bestScore * 100)
     return {
-      percentage: Math.round(lessonProgress.bestScore * 100),
-      source: 'quiz'
+      percentage,
+      source: 'quiz',
+      status: percentage >= 80 ? 'passed' : 'review'
     }
   }
 
-  // 2. Fall back to placement test score for this module
+  // 2. For placement test - only return pass/review status, NOT percentage
+  // This is because the placement test doesn't test individual lessons
   const placementSection = MODULE_TO_PLACEMENT_SECTION[moduleSlug]
   if (placementSection) {
     const bestScores = getPlacementBestScores()
     const sectionScore = bestScores[placementSection]
     if (sectionScore != null && sectionScore > 0) {
+      // 75% threshold for passing a placement section
+      const passed = sectionScore >= 0.75
       return {
-        percentage: Math.round(sectionScore * 100),
-        source: 'placement'
+        percentage: null, // Don't show percentage for placement-based lessons
+        source: 'placement',
+        status: passed ? 'passed' : 'review'
       }
     }
   }
 
   // 3. No mastery data available
-  return { percentage: null, source: null }
+  return { percentage: null, source: null, status: null }
 }
 
 // Get all lesson masteries for a module
-// Returns array of { lessonSlug, percentage, source } for each lesson
+// Returns array of { lessonSlug, percentage, source, status } for each lesson
 export function getModuleLessonMasteries(moduleSlug, lessonSlugs) {
   // First, check if we have placement test scores for this module
   const placementSection = MODULE_TO_PLACEMENT_SECTION[moduleSlug]
@@ -346,28 +355,33 @@ export function getModuleLessonMasteries(moduleSlug, lessonSlugs) {
     const lessonKey = `${moduleSlug}/${slug}`
     const quizScore = lessonScores[lessonKey]
 
-    // Quiz score takes precedence
+    // Quiz score takes precedence - show actual percentage
     if (quizScore && quizScore.bestScore != null) {
+      const percentage = Math.round(quizScore.bestScore * 100)
       return {
         lessonSlug: slug,
-        percentage: Math.round(quizScore.bestScore * 100),
-        source: 'quiz'
+        percentage,
+        source: 'quiz',
+        status: percentage >= 80 ? 'passed' : 'review'
       }
     }
 
-    // Fall back to placement score
+    // Fall back to placement - only pass/review status, no percentage
     if (placementScore != null && placementScore > 0) {
+      const passed = placementScore >= 0.75
       return {
         lessonSlug: slug,
-        percentage: Math.round(placementScore * 100),
-        source: 'placement'
+        percentage: null, // Don't show percentage for placement-based
+        source: 'placement',
+        status: passed ? 'passed' : 'review'
       }
     }
 
     return {
       lessonSlug: slug,
       percentage: null,
-      source: null
+      source: null,
+      status: null
     }
   })
 }

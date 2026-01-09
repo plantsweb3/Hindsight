@@ -30,7 +30,7 @@ function getLessonQuizScore(moduleSlug, lessonSlug) {
   const mastery = getLessonMasteryPercentage(moduleSlug, lessonSlug)
 
   // If no mastery data found, also try legacy key formats
-  if (mastery.percentage === null) {
+  if (mastery.percentage === null && mastery.source !== 'placement') {
     try {
       const data = localStorage.getItem('hindsight_academy_progress')
       const allProgress = data ? JSON.parse(data) : {}
@@ -45,11 +45,13 @@ function getLessonQuizScore(moduleSlug, lessonSlug) {
 
       for (const key of possibleKeys) {
         if (lessonScores[key]?.bestScore != null) {
+          const percentage = Math.round(lessonScores[key].bestScore * 100)
           return {
             bestScore: lessonScores[key].bestScore,
-            percentage: Math.round(lessonScores[key].bestScore * 100),
+            percentage,
             mastery: getLessonMastery(lessonScores[key].bestScore, true),
-            source: 'quiz'
+            source: 'quiz',
+            status: percentage >= 80 ? 'passed' : 'review'
           }
         }
       }
@@ -59,26 +61,49 @@ function getLessonQuizScore(moduleSlug, lessonSlug) {
     return null
   }
 
-  return {
-    bestScore: mastery.percentage / 100,
-    percentage: mastery.percentage,
-    mastery: getLessonMastery(mastery.percentage / 100, true),
-    source: mastery.source
+  // For placement-based, return without percentage but with status
+  if (mastery.source === 'placement') {
+    return {
+      bestScore: null,
+      percentage: null,
+      mastery: null,
+      source: 'placement',
+      status: mastery.status
+    }
   }
+
+  // For quiz-based, return with percentage and status
+  if (mastery.percentage !== null) {
+    return {
+      bestScore: mastery.percentage / 100,
+      percentage: mastery.percentage,
+      mastery: getLessonMastery(mastery.percentage / 100, true),
+      source: mastery.source,
+      status: mastery.status
+    }
+  }
+
+  return null
 }
 
 function LessonCard({ lesson, moduleSlug, isCompleted, quizScore }) {
   // Determine mastery color for visual indicator
   const getMasteryColor = () => {
     if (!quizScore) return 'gray'
+    // For placement-based, use status
+    if (quizScore.source === 'placement') {
+      return quizScore.status === 'passed' ? 'green' : 'yellow'
+    }
+    // For quiz-based, use percentage
     if (quizScore.percentage >= 100) return 'green'
     if (quizScore.percentage >= 80) return 'yellow'
     return 'blue'
   }
 
   const masteryColor = getMasteryColor()
-  const hasMastery = quizScore && quizScore.percentage != null
-  const isFromPlacement = quizScore?.source === 'placement'
+  const hasQuizPercentage = quizScore && quizScore.percentage != null
+  const hasPlacementStatus = quizScore?.source === 'placement' && quizScore.status
+  const hasMastery = hasQuizPercentage || hasPlacementStatus
 
   return (
     <Link
@@ -110,14 +135,20 @@ function LessonCard({ lesson, moduleSlug, isCompleted, quizScore }) {
           </svg>
           {lesson.reading_time} min read
         </span>
-        {/* Mastery percentage with purple glow */}
-        {hasMastery ? (
+        {/* Show quiz percentage OR placement status */}
+        {hasQuizPercentage ? (
           <span
             className="lesson-mastery-percentage"
-            title={isFromPlacement ? 'From placement test' : 'From quiz'}
+            title="From quiz"
           >
             {quizScore.percentage}%
-            {isFromPlacement && <span className="mastery-source-indicator">★</span>}
+          </span>
+        ) : hasPlacementStatus ? (
+          <span
+            className={`lesson-placement-status ${quizScore.status === 'passed' ? 'status-passed' : 'status-review'}`}
+            title="From placement test"
+          >
+            {quizScore.status === 'passed' ? 'Passed' : 'Review'}
           </span>
         ) : (
           <span className="lesson-cta">
