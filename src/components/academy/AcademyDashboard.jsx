@@ -172,7 +172,8 @@ function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dail
 
   // Use mastery stats for the percentage display
   const masteryPercent = masteryStats?.percentage || 0
-  const quizzesAttempted = masteryStats?.quizzesAttempted || 0
+  const correctAnswers = masteryStats?.correctAnswers || 0
+  const totalPossible = masteryStats?.totalPossible || 89
 
   // Use level info for progress bar
   const level = levelInfo?.level || 1
@@ -230,7 +231,7 @@ function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dail
             <span className="hero-stat-label">Total XP</span>
           </div>
         </div>
-        <div className="hero-stat" title={quizzesAttempted > 0 ? `${quizzesAttempted} quizzes attempted` : 'Take quizzes to track mastery'}>
+        <div className="hero-stat" title={correctAnswers > 0 ? `${correctAnswers}/${totalPossible} questions correct` : 'Complete exams to track mastery'}>
           <span className="hero-stat-icon">📊</span>
           <div className="hero-stat-content">
             <span className="hero-stat-value">{masteryPercent}%</span>

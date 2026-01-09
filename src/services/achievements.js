@@ -689,34 +689,51 @@ export function getPlacementTestScores() {
 }
 
 // Calculate overall mastery percentage
-// Includes both lesson quiz scores AND placement test section scores
+// Based on correct answers out of total possible questions
+// Total possible: 25 (placement test) + 64 (master exam) = 89 questions
+// 100% mastery requires perfect scores on both exams
 export function calculateOverallMastery() {
-  const lessonScores = getAllLessonScores()
-  const placementScores = getPlacementTestScores()
+  const PLACEMENT_TOTAL_QUESTIONS = 25
+  const MASTER_EXAM_TOTAL_QUESTIONS = 64
+  const TOTAL_POSSIBLE_QUESTIONS = PLACEMENT_TOTAL_QUESTIONS + MASTER_EXAM_TOTAL_QUESTIONS
 
-  // Collect all scores - from lesson quizzes
-  const allScores = Object.values(lessonScores).map(s => s.bestScore).filter(s => s != null)
+  let correctAnswers = 0
+  let questionsAttempted = 0
 
-  // Also include placement test section scores (they're already 0-1 scale)
-  Object.values(placementScores).forEach(score => {
-    if (score != null && score > 0) {
-      allScores.push(score)
-    }
-  })
-
-  if (allScores.length === 0) {
-    return { percentage: 0, quizzesAttempted: 0, quizzesMastered: 0, label: 'Not Started' }
+  // Count correct answers from placement test
+  try {
+    const placementResults = JSON.parse(localStorage.getItem('placementTestBestQuestionResults') || '{}')
+    const placementQuestions = Object.values(placementResults)
+    questionsAttempted += placementQuestions.length
+    correctAnswers += placementQuestions.filter(q => q.correct === true).length
+  } catch {
+    // Ignore parse errors
   }
 
-  const totalScore = allScores.reduce((sum, s) => sum + s, 0)
-  const averageScore = totalScore / allScores.length
-  const mastered = allScores.filter(s => s >= 1.0).length
+  // Count correct answers from master exam
+  try {
+    const masterExamResults = JSON.parse(localStorage.getItem('masterExamBestQuestionResults') || '{}')
+    const masterExamQuestions = Object.values(masterExamResults)
+    questionsAttempted += masterExamQuestions.length
+    correctAnswers += masterExamQuestions.filter(q => q.correct === true).length
+  } catch {
+    // Ignore parse errors
+  }
+
+  if (questionsAttempted === 0) {
+    return { percentage: 0, questionsAttempted: 0, correctAnswers: 0, totalPossible: TOTAL_POSSIBLE_QUESTIONS, label: 'Not Started' }
+  }
+
+  // Mastery is correct answers out of TOTAL possible (not just attempted)
+  // This means you need to attempt and ace everything for 100%
+  const masteryPercent = Math.round((correctAnswers / TOTAL_POSSIBLE_QUESTIONS) * 100)
 
   return {
-    percentage: Math.round(averageScore * 100),
-    quizzesAttempted: allScores.length,
-    quizzesMastered: mastered,
-    label: `${allScores.length} quizzes`
+    percentage: masteryPercent,
+    questionsAttempted,
+    correctAnswers,
+    totalPossible: TOTAL_POSSIBLE_QUESTIONS,
+    label: `${correctAnswers}/${TOTAL_POSSIBLE_QUESTIONS} correct`
   }
 }
 
