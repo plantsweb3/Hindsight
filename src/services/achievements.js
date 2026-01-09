@@ -147,6 +147,15 @@ export function getLessonProgress(moduleSlug, lessonSlug) {
   }
 }
 
+// Helper to save progress and notify listeners
+function saveProgressAndNotify(progress) {
+  localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify(progress))
+  // Dispatch event to notify all components of the update
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('progressUpdated'))
+  }
+}
+
 // Save lesson quiz score to local storage
 export function saveLessonQuizScore(moduleSlug, lessonSlug, score, totalQuestions) {
   try {
@@ -166,7 +175,7 @@ export function saveLessonQuizScore(moduleSlug, lessonSlug, score, totalQuestion
       lastAttempt: new Date().toISOString()
     }
 
-    localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify(progress))
+    saveProgressAndNotify(progress)
     return progress.lessonScores[key]
   } catch (err) {
     console.error('Failed to save lesson quiz score:', err)
@@ -280,11 +289,20 @@ export function getLocalStats() {
   }
 }
 
+// Helper to save stats and notify listeners
+function saveStatsAndNotify(stats) {
+  localStorage.setItem(LOCAL_STATS_KEY, JSON.stringify(stats))
+  // Dispatch event to notify all components (like XPBar) of the update
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('xpUpdated'))
+  }
+}
+
 // Update local stats
 export function updateLocalStats(updates) {
   const stats = getLocalStats()
   const newStats = { ...stats, ...updates }
-  localStorage.setItem(LOCAL_STATS_KEY, JSON.stringify(newStats))
+  saveStatsAndNotify(newStats)
   return newStats
 }
 
@@ -326,7 +344,7 @@ export function checkDailyReset() {
 
     // Reset daily XP counter
     stats.dailyXpEarned = 0
-    localStorage.setItem(LOCAL_STATS_KEY, JSON.stringify(stats))
+    saveStatsAndNotify(stats)
   }
 
   return stats
@@ -349,7 +367,7 @@ export function addDailyXp(amount) {
     stats.xpBySource.dailyGoalBonus = (stats.xpBySource.dailyGoalBonus || 0) + XP_CONFIG.DAILY_GOAL_COMPLETE_BONUS
   }
 
-  localStorage.setItem(LOCAL_STATS_KEY, JSON.stringify(stats))
+  saveStatsAndNotify(stats)
 
   return {
     dailyXpEarned: stats.dailyXpEarned,
@@ -411,7 +429,7 @@ export function addLocalXp(amount, source = 'unknown') {
   if (!stats.xpBySource) stats.xpBySource = {}
   stats.xpBySource[source] = (stats.xpBySource[source] || 0) + amount
 
-  localStorage.setItem(LOCAL_STATS_KEY, JSON.stringify(stats))
+  saveStatsAndNotify(stats)
 
   const newLevel = getLevelInfo(stats.totalXp)
   const leveledUp = newLevel.level > previousLevel.level
@@ -462,7 +480,7 @@ export function incrementLessonsCompleted() {
   if (!stats.xpBySource) stats.xpBySource = {}
   stats.xpBySource.lesson = (stats.xpBySource.lesson || 0) + XP_CONFIG.LESSON_COMPLETE
 
-  localStorage.setItem(LOCAL_STATS_KEY, JSON.stringify(stats))
+  saveStatsAndNotify(stats)
 
   // Return stats with daily goal info
   stats.dailyGoalJustCompleted = dailyGoalJustCompleted
@@ -514,7 +532,7 @@ export function markModuleCompletedLocal(moduleSlug) {
     if (!stats.xpBySource) stats.xpBySource = {}
     stats.xpBySource.module = (stats.xpBySource.module || 0) + moduleXp
   }
-  localStorage.setItem(LOCAL_STATS_KEY, JSON.stringify(stats))
+  saveStatsAndNotify(stats)
   return stats
 }
 
@@ -765,7 +783,7 @@ export function awardPlacementRewards(placementLevel, sectionScores) {
     }
   }
 
-  localStorage.setItem(LOCAL_STATS_KEY, JSON.stringify(stats))
+  saveStatsAndNotify(stats)
 
   // Check for XP-based achievements (like Rising Star at 500 XP)
   const updatedStats = getLocalStats()

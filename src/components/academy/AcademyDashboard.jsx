@@ -509,24 +509,30 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
 
   return (
     <div className={cardClasses} onClick={handleClick}>
-      {isLocked && (
-        <div className="module-lock-overlay">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-          </svg>
-        </div>
-      )}
+      {/* Badge stack in top-right corner */}
+      <div className="module-badge-stack">
+        {/* Difficulty badge always shows */}
+        <span className={`module-difficulty difficulty-${module.difficulty || 'beginner'}`}>
+          {module.difficulty || 'beginner'}
+        </span>
 
-      {badge && (
-        <div className={`module-badge module-badge-${badge.toLowerCase()}`}>
-          {isComplete && (
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          )}
-          {badge}
-        </div>
-      )}
+        {/* Status badge below difficulty */}
+        {badge && (
+          <div className={`module-badge module-badge-${badge.toLowerCase()}`}>
+            {isComplete && (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
+            {isLocked && (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+              </svg>
+            )}
+            {badge}
+          </div>
+        )}
+      </div>
 
       <div className="module-card-header">
         <div className="module-icon-wrapper">
@@ -539,9 +545,6 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
             </div>
           )}
         </div>
-        <span className={`module-difficulty difficulty-${module.difficulty || 'beginner'}`}>
-          {module.difficulty || 'beginner'}
-        </span>
       </div>
 
       <h3 className="module-title">{module.title}</h3>
@@ -755,6 +758,34 @@ export default function AcademyDashboard() {
   useEffect(() => {
     fetchData()
   }, [token])
+
+  // Listen for progress and XP updates from other components
+  useEffect(() => {
+    const handleProgressUpdate = () => {
+      // Refresh mastery stats when progress changes
+      const mastery = calculateOverallMastery()
+      setMasteryStats(mastery)
+    }
+
+    const handleXpUpdate = () => {
+      // Refresh XP and level info when XP changes
+      const localStats = getLocalStats()
+      const localLevelInfo = getLevelInfo(localStats.totalXp || 0)
+      setXpProgress(prev => ({ ...prev, total: localStats.totalXp || 0 }))
+      setLevelInfo(localLevelInfo)
+      // Also refresh daily goal progress
+      const dailyProgress = getDailyGoalProgress()
+      setDailyGoalProgress(dailyProgress)
+    }
+
+    window.addEventListener('progressUpdated', handleProgressUpdate)
+    window.addEventListener('xpUpdated', handleXpUpdate)
+
+    return () => {
+      window.removeEventListener('progressUpdated', handleProgressUpdate)
+      window.removeEventListener('xpUpdated', handleXpUpdate)
+    }
+  }, [])
 
   // Get user's archetype for fetching
   const userArchetypeSlug = normalizeArchetypeId(user?.primaryArchetype || user?.primary_archetype)
@@ -1075,14 +1106,18 @@ export default function AcademyDashboard() {
     }
 
     // Save to localStorage
-    localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify({
+    const newProgress = {
       ...localProgress,
       testedOutModules: testedOut,
       unlockedForReview: unlockedForReview,
       moduleScores: moduleScores,
       placementLevel,
       placementDate: new Date().toISOString()
-    }))
+    }
+    localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify(newProgress))
+
+    // Dispatch event to notify all components of the update
+    window.dispatchEvent(new Event('progressUpdated'))
   }
 
   // Handle daily goal modal
