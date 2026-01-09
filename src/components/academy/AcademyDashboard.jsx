@@ -6,6 +6,7 @@ import { getArchetypeModule, hasArchetypeModule } from '../../data/academy/arche
 import { hasLocalModule, getTrading101Module } from '../../data/academy/modules'
 import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal } from '../../services/achievements'
 import { getLevelInfo, DAILY_GOALS, DEFAULT_DAILY_GOAL } from '../../config/xpConfig'
+import { getArchetypeRecommendations, getWalletAnalysisInsights } from '../../data/academy/archetypeRecommendations'
 import PlacementTest from './PlacementTest'
 
 // Helper for local progress tracking (same as LessonView/ModuleView)
@@ -619,15 +620,27 @@ function ArchetypeProfileCard({ archetype, onRetakeQuiz }) {
   )
 }
 
-// Archetype Lesson Card (no module tag since they're all from same module)
-function ArchetypeLessonCard({ lesson, moduleSlug }) {
+// Archetype Lesson Card with optional recommendation reason badge
+function ArchetypeLessonCard({ lesson, moduleSlug, reason }) {
+  const difficulty = lesson.difficulty || 'beginner'
+  const readTime = lesson.reading_time || lesson.readTime || 5
+  const xp = lesson.xp || 25
+
   return (
     <Link to={`/academy/${moduleSlug}/${lesson.slug}`} className="archetype-lesson-card glass-card">
+      {reason && (
+        <div className="archetype-lesson-reason">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+          {reason}
+        </div>
+      )}
       <div className="archetype-lesson-header">
-        <span className={`archetype-lesson-difficulty difficulty-${lesson.difficulty}`}>
-          {lesson.difficulty}
+        <span className={`archetype-lesson-difficulty difficulty-${difficulty}`}>
+          {difficulty}
         </span>
-        <span className="archetype-lesson-xp">+10 XP</span>
+        <span className="archetype-lesson-xp">+{xp} XP</span>
       </div>
       <h4 className="archetype-lesson-title">{lesson.title}</h4>
       <p className="archetype-lesson-desc">{lesson.description}</p>
@@ -637,7 +650,7 @@ function ArchetypeLessonCard({ lesson, moduleSlug }) {
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
           </svg>
-          {lesson.reading_time || 5} min read
+          {readTime} min read
         </span>
       </div>
     </Link>
@@ -1131,42 +1144,42 @@ export default function AcademyDashboard() {
                   onRetakeQuiz={() => navigate('/')}
                 />
 
-                {/* Recommended for Your Archetype */}
-                {archetypeModule && archetypeModule.lessons?.length > 0 ? (
+                {/* Recommended for Your Archetype - Personalized */}
+                {archetypeModule && archetypeModule.lessons?.length > 0 && (
                   <section className="archetype-recommended-section">
                     <h3 className="section-header">
                       Recommended for {userArchetypeDisplay}s
                     </h3>
                     <div className="archetype-lessons-grid">
-                      {archetypeModule.lessons.slice(0, 2).map(lesson => (
-                        <ArchetypeLessonCard
-                          key={lesson.id}
-                          lesson={lesson}
-                          moduleSlug={`archetype/${archetypeModule.slug}`}
-                        />
-                      ))}
-                      <ViewAllLessonsCard
-                        moduleSlug={archetypeModule.slug}
-                        moduleTitle={archetypeModule.title}
-                        lessonCount={archetypeModule.lessons.length}
-                        icon={archetypeModule.icon || '📚'}
-                        isArchetype={true}
-                      />
-                    </div>
-                  </section>
-                ) : recommendedLessons.length > 0 && (
-                  <section className="archetype-recommended-section">
-                    <h3 className="section-header">
-                      Recommended for {userArchetypeDisplay}s
-                    </h3>
-                    <div className="archetype-lessons-grid">
-                      {recommendedLessons.slice(0, 3).map(lesson => (
-                        <ArchetypeLessonCard
-                          key={lesson.id}
-                          lesson={lesson}
-                          moduleSlug={lesson.module_slug}
-                        />
-                      ))}
+                      {(() => {
+                        // Get personalized recommendations
+                        const walletInsights = getWalletAnalysisInsights(user?.id)
+                        const recommendations = getArchetypeRecommendations(
+                          userArchetypeId,
+                          archetypeModule,
+                          walletInsights
+                        )
+
+                        return (
+                          <>
+                            {recommendations.map((rec, index) => (
+                              <ArchetypeLessonCard
+                                key={rec.lesson.id || index}
+                                lesson={rec.lesson}
+                                moduleSlug={`archetype/${archetypeModule.slug}`}
+                                reason={rec.reason}
+                              />
+                            ))}
+                            <ViewAllLessonsCard
+                              moduleSlug={archetypeModule.slug}
+                              moduleTitle={`${archetypeModule.title} Mastery`}
+                              lessonCount={archetypeModule.lessons.length}
+                              icon={archetypeModule.icon || '📚'}
+                              isArchetype={true}
+                            />
+                          </>
+                        )
+                      })()}
                     </div>
                   </section>
                 )}
