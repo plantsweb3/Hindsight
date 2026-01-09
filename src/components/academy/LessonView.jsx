@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate, useOutletContext } from 'react-router-dom
 import { useAuth } from '../../contexts/AuthContext'
 import Quiz from './Quiz'
 import { NEWCOMER_QUIZZES, getQuizByLessonSlug } from '../../data/quizzes/newcomer'
-import { getTrading101Lesson, hasLocalModule } from '../../data/academy/modules'
+import { getTrading101Lesson, hasLocalModule, getTrading101LessonQuiz } from '../../data/academy/modules'
 
 function MarkdownContent({ content }) {
   // Simple markdown-to-html conversion for basic formatting
@@ -65,7 +65,9 @@ export default function LessonView() {
   const [xpEarned, setXpEarned] = useState(0)
 
   // Get quiz for this lesson if it exists
-  const quiz = getQuizByLessonSlug(lessonSlug)
+  // Check Trading 101 quizzes first, then fall back to old newcomer system
+  const trading101Quiz = lesson ? getTrading101LessonQuiz(moduleSlug, lesson.id) : null
+  const quiz = trading101Quiz || getQuizByLessonSlug(lessonSlug)
 
   useEffect(() => {
     fetchLesson()

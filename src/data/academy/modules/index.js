@@ -2,13 +2,17 @@
 // Local data files for Trading 101 content
 
 import { newcomerModule } from './newcomer'
+import { apprenticeModule } from './apprentice'
+import { apprenticeQuizzes, getApprenticeQuizByLessonSlug } from './apprentice-quizzes'
 
 // Export individual modules
 export { newcomerModule }
+export { apprenticeModule, apprenticeQuizzes, getApprenticeQuizByLessonSlug }
 
 // All Trading 101 modules
 export const trading101Modules = {
   'newcomer': newcomerModule,
+  'apprentice': apprenticeModule,
 }
 
 // Get module by slug
@@ -44,4 +48,65 @@ export function hasLocalModule(moduleSlug) {
 // Get all available module slugs with local data
 export function getLocalModuleSlugs() {
   return Object.keys(trading101Modules)
+}
+
+// All Trading 101 quizzes
+export const trading101Quizzes = {
+  'apprentice': apprenticeQuizzes,
+}
+
+// Get quiz for a specific Trading 101 lesson
+export function getTrading101LessonQuiz(moduleSlug, lessonId) {
+  const quizData = trading101Quizzes[moduleSlug]
+  if (!quizData || !quizData.lessonQuizzes) return null
+
+  const lessonQuiz = quizData.lessonQuizzes[lessonId]
+  if (!lessonQuiz) return null
+
+  // Transform to match Quiz component expected format
+  return {
+    title: lessonQuiz.lessonTitle || 'Lesson Quiz',
+    lessonSlug: `trading101-${moduleSlug}-${lessonId}`,
+    questions: lessonQuiz.questions.map(q => ({
+      id: q.id,
+      question: q.question,
+      type: 'multiple-choice',
+      options: q.options.map((opt, idx) =>
+        typeof opt === 'string'
+          ? { id: String.fromCharCode(97 + idx), text: opt }
+          : opt
+      ),
+      correctAnswer: typeof q.correctAnswer === 'number'
+        ? String.fromCharCode(97 + q.correctAnswer)
+        : q.correctAnswer,
+      explanation: q.explanation
+    }))
+  }
+}
+
+// Get final test for a Trading 101 module
+export function getTrading101FinalTest(moduleSlug) {
+  const quizData = trading101Quizzes[moduleSlug]
+  if (!quizData || !quizData.finalTest) return null
+
+  const finalTest = quizData.finalTest
+  return {
+    title: finalTest.title || 'Final Assessment',
+    moduleSlug: `trading101-${moduleSlug}-final`,
+    passingScore: finalTest.passingScore || 80,
+    questions: finalTest.questions.map(q => ({
+      id: q.id,
+      question: q.question,
+      type: 'multiple-choice',
+      options: q.options.map((opt, idx) =>
+        typeof opt === 'string'
+          ? { id: String.fromCharCode(97 + idx), text: opt }
+          : opt
+      ),
+      correctAnswer: typeof q.correctAnswer === 'number'
+        ? String.fromCharCode(97 + q.correctAnswer)
+        : q.correctAnswer,
+      explanation: q.explanation
+    }))
+  }
 }
