@@ -476,6 +476,80 @@ export function getLessonCardStatus(moduleId, lessonSlug) {
   }
 }
 
+// Get lesson dot statuses for an archetype module
+// Uses archetype_progress_{archetypeId} localStorage key
+export function getArchetypeLessonDotStatuses(archetypeId, lessonSlugs) {
+  try {
+    const saved = localStorage.getItem(`archetype_progress_${archetypeId}`)
+    const completedSet = saved ? new Set(JSON.parse(saved)) : new Set()
+
+    // Also check for quiz completions
+    const quizSaved = localStorage.getItem(`archetype_quiz_${archetypeId}`)
+    const quizCompletedSet = quizSaved ? new Set(JSON.parse(quizSaved)) : new Set()
+
+    return lessonSlugs.map(slug => {
+      const isCompleted = completedSet.has(slug)
+      const hasQuiz = quizCompletedSet.has(slug)
+
+      return {
+        lessonSlug: slug,
+        filled: isCompleted || hasQuiz,
+        source: hasQuiz ? 'quiz' : (isCompleted ? 'completed' : 'not-started')
+      }
+    })
+  } catch {
+    return lessonSlugs.map(slug => ({
+      lessonSlug: slug,
+      filled: false,
+      source: 'not-started'
+    }))
+  }
+}
+
+// Get archetype lesson card status (same 4-state system as Trading 101)
+export function getArchetypeLessonCardStatus(archetypeId, lessonSlug) {
+  try {
+    // Check quiz completion first
+    const quizSaved = localStorage.getItem(`archetype_quiz_${archetypeId}`)
+    const quizCompletedSet = quizSaved ? new Set(JSON.parse(quizSaved)) : new Set()
+
+    if (quizCompletedSet.has(lessonSlug)) {
+      // TODO: Get actual score if stored
+      return {
+        type: 'completed',
+        displayText: '100%',
+        style: 'green-glow',
+        score: 1.0
+      }
+    }
+
+    // Check lesson completion
+    const saved = localStorage.getItem(`archetype_progress_${archetypeId}`)
+    const completedSet = saved ? new Set(JSON.parse(saved)) : new Set()
+
+    if (completedSet.has(lessonSlug)) {
+      return {
+        type: 'completed',
+        displayText: 'Passed',
+        style: 'green-glow'
+      }
+    }
+
+    // Not attempted
+    return {
+      type: 'not-started',
+      displayText: 'Not Completed',
+      style: 'grey'
+    }
+  } catch {
+    return {
+      type: 'not-started',
+      displayText: 'Not Completed',
+      style: 'grey'
+    }
+  }
+}
+
 // Get average mastery for a module (for module card display)
 // Returns { percentage: number (0-100), lessonsWithMastery: number, totalLessons: number }
 export function getModuleMasteryAverage(moduleSlug, lessonSlugs) {

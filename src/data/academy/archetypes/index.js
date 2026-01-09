@@ -69,3 +69,30 @@ export function getAvailableArchetypes() {
 export function hasArchetypeModule(archetypeId) {
   return archetypeId in archetypeModules
 }
+
+// Archetype-specific dot colors for module cards
+export const ARCHETYPE_DOT_COLORS = {
+  'narrative-front-runner': { filled: '#a855f7', hollow: '#a855f7' }, // purple
+  'diamond-hands': { filled: '#3b82f6', hollow: '#3b82f6' },          // blue
+  'loss-averse': { filled: '#22c55e', hollow: '#22c55e' },            // green
+  'copy-trader': { filled: '#06b6d4', hollow: '#06b6d4' },            // cyan
+  'technical-analyst': { filled: '#6366f1', hollow: '#6366f1' },      // indigo
+  'fomo-trader': { filled: '#f97316', hollow: '#f97316' },            // orange
+  'impulse-trader': { filled: '#eab308', hollow: '#eab308' },         // yellow
+  'scalper': { filled: '#ef4444', hollow: '#ef4444' }                 // red
+}
+
+// Get dot color class for an archetype
+export function getArchetypeDotClass(archetypeId) {
+  const classMap = {
+    'narrative-front-runner': 'dot-archetype-purple',
+    'diamond-hands': 'dot-archetype-blue',
+    'loss-averse': 'dot-archetype-green',
+    'copy-trader': 'dot-archetype-cyan',
+    'technical-analyst': 'dot-archetype-indigo',
+    'fomo-trader': 'dot-archetype-orange',
+    'impulse-trader': 'dot-archetype-yellow',
+    'scalper': 'dot-archetype-red'
+  }
+  return classMap[archetypeId] || 'dot-archetype-purple'
+}

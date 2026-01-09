@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react'
 import { Link, useOutletContext, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAchievements } from '../../contexts/AchievementContext'
-import { getArchetypeModule, hasArchetypeModule } from '../../data/academy/archetypes'
+import { getArchetypeModule, hasArchetypeModule, getArchetypeDotClass, ARCHETYPE_DOT_COLORS } from '../../data/academy/archetypes'
+import { isMasterExamUnlocked, hasMasterExamQuestions } from '../../data/academy/masterExam'
 import { hasLocalModule, getTrading101Module } from '../../data/academy/modules'
-import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores, calculateTotalXP, getPlacementBestScores, getPlacementLatestScores, getModuleLessonMasteries, getModuleLessonDotStatuses } from '../../services/achievements'
+import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores, calculateTotalXP, getPlacementBestScores, getPlacementLatestScores, getModuleLessonMasteries, getModuleLessonDotStatuses, getArchetypeLessonDotStatuses } from '../../services/achievements'
 import { getLevelInfo, DAILY_GOALS, DEFAULT_DAILY_GOAL } from '../../config/xpConfig'
-import { getArchetypeRecommendations, getWalletAnalysisInsights } from '../../data/academy/archetypeRecommendations'
+import { getArchetypeRecommendations, getWalletAnalysisInsights, ARCHETYPE_DEFAULTS } from '../../data/academy/archetypeRecommendations'
 import PlacementTest from './PlacementTest'
 
 // Helper for local progress tracking (same as LessonView/ModuleView)
@@ -768,6 +769,193 @@ function ExpandableArchetypeCard({ archetype, isExpanded, onToggle, userArchetyp
   )
 }
 
+// Compact Hero for Archetype Section
+function ArchetypeHeroCompact({ archetype, onRetakeQuiz }) {
+  const archetypeData = ARCHETYPE_MODULES.find(a => a.id === archetype)
+  if (!archetypeData) return null
+
+  return (
+    <div className="archetype-hero-compact">
+      <span className="archetype-icon">{archetypeData.icon}</span>
+      <div className="archetype-info">
+        <h2 className="archetype-title">{archetypeData.title}</h2>
+        <p className="archetype-tagline">{archetypeData.subtitle}</p>
+        <p className="archetype-desc">{archetypeData.description}</p>
+        <button onClick={onRetakeQuiz} className="retake-quiz-btn">
+          Retake Quiz
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// Lesson Recommendation Card for "Play to strength" and "Recommended" sections
+function LessonRecommendationCard({ lesson, moduleSlug, badge, badgeType }) {
+  if (!lesson) return null
+
+  const readTime = lesson.reading_time || lesson.readTime || 5
+
+  return (
+    <Link to={`/academy/archetype/${moduleSlug}/${lesson.slug}`} className="lesson-recommendation-card">
+      <span className={`recommendation-badge badge-${badgeType}`}>
+        {badgeType === 'strength' && (
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+        )}
+        {badge}
+      </span>
+      <h4 className="recommendation-lesson-title">{lesson.title}</h4>
+      <p className="recommendation-lesson-desc">{lesson.description}</p>
+      <div className="recommendation-lesson-meta">
+        <span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          {readTime} min
+        </span>
+      </div>
+    </Link>
+  )
+}
+
+// Archetype Module Card - Same style as Trading 101 modules
+function ArchetypeModuleCard({ archetype, isUserArchetype = false, onClick }) {
+  const navigate = useNavigate()
+  const dotClass = getArchetypeDotClass(archetype.id)
+  const dotColor = ARCHETYPE_DOT_COLORS[archetype.id] || { filled: '#a855f7', hollow: '#a855f7' }
+
+  // Get archetype module data for lesson slugs
+  const archetypeModuleData = getArchetypeModule(archetype.id)
+  const lessonSlugs = archetypeModuleData?.lessons?.map(l => l.slug) || []
+
+  // Get dot statuses for progress
+  const dotStatuses = getArchetypeLessonDotStatuses(archetype.id, lessonSlugs)
+  const completedCount = dotStatuses.filter(d => d.filled).length
+  const totalLessons = archetype.lessonCount || 8
+  const progressPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0
+  const isMastered = completedCount === totalLessons && totalLessons > 0
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick()
+    } else {
+      navigate(`/academy/archetype/${archetype.id}`)
+    }
+  }
+
+  return (
+    <div
+      className={`archetype-module-card ${isUserArchetype ? 'is-user-archetype' : ''}`}
+      onClick={handleClick}
+    >
+      {/* Badges */}
+      <div className="archetype-module-badges">
+        <span className="archetype-badge-type">Archetype</span>
+        {isMastered && <span className="archetype-badge-mastered">Mastered</span>}
+        {isUserArchetype && <span className="archetype-badge-yours">Your Type</span>}
+      </div>
+
+      {/* Icon */}
+      <span className="archetype-module-icon">{archetype.icon}</span>
+
+      {/* Name & Tagline */}
+      <h3 className="archetype-module-name">{archetype.title}</h3>
+      <p className="archetype-module-tagline">{archetype.subtitle}</p>
+
+      {/* Description */}
+      <p className="archetype-module-desc">{archetype.description}</p>
+
+      {/* 8 Dots */}
+      <div className="archetype-module-dots">
+        {Array.from({ length: Math.min(totalLessons, 8) }).map((_, index) => {
+          const status = dotStatuses[index]
+          const isFilled = status?.filled || false
+          return (
+            <div
+              key={index}
+              className={`module-dot ${isFilled ? 'filled' : 'hollow'} ${dotClass}`}
+              style={{
+                background: isFilled ? dotColor.filled : 'transparent',
+                borderColor: !isFilled ? dotColor.hollow : 'transparent',
+                borderWidth: !isFilled ? '2px' : '0',
+                borderStyle: 'solid'
+              }}
+            />
+          )
+        })}
+      </div>
+
+      {/* Progress Bar */}
+      <div className="archetype-module-progress">
+        <div className="archetype-progress-track">
+          <div
+            className="archetype-progress-fill"
+            style={{
+              width: `${progressPercent}%`,
+              background: dotColor.filled
+            }}
+          />
+        </div>
+        <span className="archetype-progress-label">{completedCount}/{totalLessons}</span>
+      </div>
+    </div>
+  )
+}
+
+// Master Exam Card with fire emoji, red glow, and bounce animation
+function MasterExamCard() {
+  const navigate = useNavigate()
+  const isUnlocked = isMasterExamUnlocked()
+  const hasQuestions = hasMasterExamQuestions()
+
+  const handleClick = () => {
+    if (isUnlocked) {
+      navigate('/academy/archetype-master-exam')
+    }
+  }
+
+  return (
+    <div
+      className={`master-exam-card ${isUnlocked ? '' : 'locked'}`}
+      onClick={handleClick}
+    >
+      {/* Red glow background */}
+      <div className="master-exam-glow" />
+
+      {/* Badge */}
+      <span className="master-exam-badge">Final Exam</span>
+
+      {/* Fire Icon with bounce */}
+      <span className={`master-exam-icon ${isUnlocked ? 'animate-bounce-subtle' : ''}`}>🔥</span>
+
+      {/* Title & Tagline */}
+      <h3 className="master-exam-title">Master Exam</h3>
+      <p className="master-exam-tagline">Prove Your Mastery</p>
+
+      {/* Description */}
+      <p className="master-exam-desc">
+        {isUnlocked
+          ? 'Test your knowledge across all trading styles'
+          : 'Complete Trading 101 to unlock'}
+      </p>
+
+      {/* Lock info or exam info */}
+      {!isUnlocked ? (
+        <div className="master-exam-lock-info">
+          <span>🔒</span>
+          <span>Requires: Trading 101 Master</span>
+        </div>
+      ) : (
+        <div className="master-exam-info">
+          64 questions • Skip ahead on any archetype
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Main Dashboard Component
 export default function AcademyDashboard() {
   const { isAuthenticated, user, openAuthModal } = useOutletContext()
@@ -1329,118 +1517,128 @@ export default function AcademyDashboard() {
           </>
         )}
 
-        {/* Learn by Archetype Tab */}
+        {/* Learn by Archetype Tab - Redesigned */}
         {activeTab === 'by-archetype' && (
           <>
-            {/* Archetype Profile Card */}
             {isAuthenticated && userArchetypeId ? (
               <>
-                <ArchetypeProfileCard
+                {/* Section 1: Compact Hero */}
+                <ArchetypeHeroCompact
                   archetype={userArchetypeId}
                   onRetakeQuiz={() => navigate('/')}
                 />
 
-                {/* Recommended for Your Archetype - Personalized */}
-                {archetypeModule && archetypeModule.lessons?.length > 0 && (
-                  <section className="archetype-recommended-section">
-                    <h3 className="section-header">
+                {/* Section 2: Your Archetype (Green Border) */}
+                {archetypeModule && (
+                  <section className="your-archetype-section">
+                    <h3 className="section-title">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                      </svg>
                       Recommended for {userArchetypeDisplay}s
                     </h3>
-                    <div className="archetype-lessons-grid">
+                    <div className="your-archetype-grid">
+                      {/* Card 1: Play to your strength */}
                       {(() => {
-                        // Get personalized recommendations
-                        const walletInsights = getWalletAnalysisInsights(user?.id)
-                        const recommendations = getArchetypeRecommendations(
-                          userArchetypeId,
-                          archetypeModule,
-                          walletInsights
-                        )
+                        const defaults = ARCHETYPE_DEFAULTS[userArchetypeId]
+                        const strengthSlug = defaults?.strengthLesson?.lessonSlug
+                        const strengthLesson = archetypeModule.lessons?.find(l => l.slug === strengthSlug)
+                        return strengthLesson ? (
+                          <LessonRecommendationCard
+                            lesson={strengthLesson}
+                            moduleSlug={archetypeModule.slug}
+                            badge="Play to your strength"
+                            badgeType="strength"
+                          />
+                        ) : null
+                      })()}
 
-                        return (
-                          <>
-                            {recommendations.map((rec, index) => (
-                              <ArchetypeLessonCard
-                                key={rec.lesson.id || index}
-                                lesson={rec.lesson}
-                                moduleSlug={`archetype/${archetypeModule.slug}`}
-                                reason={rec.reason}
-                              />
-                            ))}
-                            <ViewAllLessonsCard
-                              moduleSlug={archetypeModule.slug}
-                              moduleTitle={`${archetypeModule.title} Mastery`}
-                              lessonCount={archetypeModule.lessons.length}
-                              icon={archetypeModule.icon || '📚'}
-                              isArchetype={true}
-                            />
-                          </>
-                        )
+                      {/* Card 2: Recommended for you (pitfall) */}
+                      {(() => {
+                        const defaults = ARCHETYPE_DEFAULTS[userArchetypeId]
+                        const pitfallSlug = defaults?.pitfallLesson?.lessonSlug
+                        const pitfallLesson = archetypeModule.lessons?.find(l => l.slug === pitfallSlug)
+                        return pitfallLesson ? (
+                          <LessonRecommendationCard
+                            lesson={pitfallLesson}
+                            moduleSlug={archetypeModule.slug}
+                            badge="Recommended for you"
+                            badgeType="recommended"
+                          />
+                        ) : null
+                      })()}
+
+                      {/* Card 3: User's Archetype Module Card */}
+                      {(() => {
+                        const userArchetypeData = ARCHETYPE_MODULES.find(a => a.id === userArchetypeId)
+                        return userArchetypeData ? (
+                          <ArchetypeModuleCard
+                            archetype={userArchetypeData}
+                            isUserArchetype={true}
+                          />
+                        ) : null
                       })()}
                     </div>
                   </section>
                 )}
 
-                {/* Explore Other Archetypes */}
-                <section className="explore-archetypes-section">
-                  <h3 className="section-header">Want to step outside your comfort zone?</h3>
-                  <p className="section-subheader">Learn strategies from other trading styles</p>
-                  <div className="expandable-archetypes">
-                    {otherArchetypes.map(archetype => (
-                      <ExpandableArchetypeCard
+                {/* Section 3: All Archetypes Grid (3x3) */}
+                <section className="all-archetypes-section">
+                  <h2 className="section-header">All Trading Styles</h2>
+                  <div className="archetypes-grid-3x3">
+                    {ARCHETYPE_MODULES.map(archetype => (
+                      <ArchetypeModuleCard
                         key={archetype.id}
                         archetype={archetype}
-                        isExpanded={expandedArchetype === archetype.id}
-                        onToggle={() => setExpandedArchetype(
-                          expandedArchetype === archetype.id ? null : archetype.id
-                        )}
-                        userArchetype={userArchetypeId}
+                        isUserArchetype={archetype.id === userArchetypeId}
                       />
                     ))}
+                    {/* Master Exam as 9th card */}
+                    <MasterExamCard />
                   </div>
                 </section>
               </>
             ) : (
               /* No archetype / not logged in */
-              <div className="archetype-cta-section">
-                <div className="archetype-cta-card glass-card">
-                  <span className="archetype-cta-icon">🎯</span>
-                  <h2 className="archetype-cta-title">
-                    {isAuthenticated ? 'Discover Your Trading Personality' : 'Get Personalized Recommendations'}
-                  </h2>
-                  <p className="archetype-cta-desc">
-                    {isAuthenticated
-                      ? 'Take the archetype quiz to unlock personalized lessons tailored to your trading style'
-                      : 'Sign in and take the personality quiz to get recommendations for your trading style'
-                    }
-                  </p>
-                  {isAuthenticated ? (
-                    <Link to="/" className="archetype-cta-btn">Take the Quiz</Link>
-                  ) : (
-                    <button onClick={() => openAuthModal('signup')} className="archetype-cta-btn">
-                      Sign In
-                    </button>
-                  )}
+              <>
+                <div className="archetype-cta-section">
+                  <div className="archetype-cta-card glass-card">
+                    <span className="archetype-cta-icon">🎯</span>
+                    <h2 className="archetype-cta-title">
+                      {isAuthenticated ? 'Discover Your Trading Personality' : 'Get Personalized Recommendations'}
+                    </h2>
+                    <p className="archetype-cta-desc">
+                      {isAuthenticated
+                        ? 'Take the archetype quiz to unlock personalized lessons tailored to your trading style'
+                        : 'Sign in and take the personality quiz to get recommendations for your trading style'
+                      }
+                    </p>
+                    {isAuthenticated ? (
+                      <Link to="/" className="archetype-cta-btn">Take the Quiz</Link>
+                    ) : (
+                      <button onClick={() => openAuthModal('signup')} className="archetype-cta-btn">
+                        Sign In
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                {/* Show all archetypes as browsable */}
-                <section className="browse-archetypes-section">
-                  <h3 className="section-header">Browse All Archetypes</h3>
-                  <div className="archetype-browse-grid">
+                {/* All Archetypes Grid for non-authenticated users */}
+                <section className="all-archetypes-section">
+                  <h2 className="section-header">All Trading Styles</h2>
+                  <div className="archetypes-grid-3x3">
                     {ARCHETYPE_MODULES.map(archetype => (
-                      <Link
+                      <ArchetypeModuleCard
                         key={archetype.id}
-                        to={`/academy/archetype/${archetype.id}`}
-                        className="archetype-browse-card glass-card"
-                      >
-                        <span className="archetype-browse-icon">{archetype.icon}</span>
-                        <h4 className="archetype-browse-name">{archetype.title}</h4>
-                        <p className="archetype-browse-tagline">{archetype.tagline}</p>
-                        <span className="archetype-browse-count">{archetype.lessonCount} lessons</span>
-                      </Link>
+                        archetype={archetype}
+                        isUserArchetype={false}
+                      />
                     ))}
+                    {/* Master Exam as 9th card */}
+                    <MasterExamCard />
                   </div>
                 </section>
-              </div>
+              </>
             )}
           </>
         )}
