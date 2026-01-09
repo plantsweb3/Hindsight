@@ -4,20 +4,37 @@ import { XP_CONFIG, ACHIEVEMENT_XP, getLevelInfo, DAILY_GOALS, DEFAULT_DAILY_GOA
 // ==============================================
 // CALCULATED XP SYSTEM
 // XP is NEVER stored as a total - always calculated from actual progress
+//
+// IMPORTANT: XP falls into two categories:
+// 1. KNOWLEDGE XP - Based on demonstrated knowledge (lessons, quizzes, placement test)
+// 2. CONSISTENCY XP - Based on returning regularly (streaks, daily goals)
+//
+// The placement test ONLY awards KNOWLEDGE XP, never CONSISTENCY XP.
+// This ensures the leaderboard reflects actual knowledge, not just grinding.
 // ==============================================
 
-// XP values for placement test modules (matching MODULE_TEST_OUT_XP below)
+// XP values for placement test modules
+// Each module represents: 5 lessons (125 XP) + 5 quiz passes (50 XP) + module bonus
+// These are KNOWLEDGE-BASED rewards only
 const PLACEMENT_MODULE_XP = {
-  newcomer: 225,
-  apprentice: 250,
-  trader: 275,
-  specialist: 325,
-  master: 375
+  newcomer: 225,    // 125 + 50 + 50 module bonus
+  apprentice: 250,  // 125 + 50 + 75 module bonus
+  trader: 275,      // 125 + 50 + 100 module bonus
+  specialist: 325,  // 125 + 50 + 150 module bonus
+  master: 375       // 125 + 50 + 200 module bonus
 }
 
+// Perfect score bonus per section (5 quizzes × 25 XP = 125 XP max per module)
+const PLACEMENT_PERFECT_BONUS_PER_MODULE = 125
+
 // Calculate total XP from all sources - this is the SINGLE SOURCE OF TRUTH
+// XP is calculated from BEST scores only - retakes don't add XP, they can only improve it
 export function calculateTotalXP() {
   let totalXP = 0
+
+  // ==============================================
+  // KNOWLEDGE XP (from demonstrated learning)
+  // ==============================================
 
   // 1. XP from completed lessons (25 XP each)
   const progressData = localStorage.getItem('hindsight_academy_progress')
@@ -26,6 +43,7 @@ export function calculateTotalXP() {
   totalXP += completedLessons.length * XP_CONFIG.LESSON_COMPLETE
 
   // 2. XP from quiz scores (10 XP for pass 80%+, 25 bonus for 100%)
+  // Uses BEST score only - retakes don't stack XP
   const lessonScores = progress.lessonScores || {}
   Object.values(lessonScores).forEach(scoreData => {
     const bestScore = scoreData.bestScore || 0
@@ -37,38 +55,38 @@ export function calculateTotalXP() {
     }
   })
 
-  // 3. XP from achievements
-  const achievementsData = localStorage.getItem('hindsight_achievements')
-  const achievements = achievementsData ? JSON.parse(achievementsData) : []
-  achievements.forEach(achId => {
-    totalXP += ACHIEVEMENT_XP[achId] || 0
-  })
-
-  // 4. XP from placement test - uses BEST scores (highest ever achieved)
-  // This ensures XP can only go up, never down from retakes
+  // 3. XP from placement test - KNOWLEDGE XP only
+  // Uses BEST scores - each module can only contribute XP ONCE
+  // Retakes update best scores but don't stack XP
   const placementCompleted = localStorage.getItem('placementTestCompleted') === 'true'
   if (placementCompleted) {
-    // Use best scores for XP calculation (not latest scores)
     const bestScoresData = localStorage.getItem('placementTestBestScores')
     const bestScores = bestScoresData ? JSON.parse(bestScoresData) : {}
     const modules = ['newcomer', 'apprentice', 'trader', 'specialist', 'master']
 
     modules.forEach(moduleId => {
-      const score = bestScores[moduleId]
-      // Only award XP for modules PASSED (75%+)
+      const score = bestScores[moduleId] || 0
+
+      // Base XP for passing the module (75%+)
       if (score >= 0.75) {
         totalXP += PLACEMENT_MODULE_XP[moduleId]
+      }
+
+      // Perfect score bonus for 100% on a module section
+      // This rewards exceptional knowledge demonstration
+      if (score >= 1.0) {
+        totalXP += PLACEMENT_PERFECT_BONUS_PER_MODULE
       }
     })
   }
 
-  // 5. XP from module completions (only for modules completed through lessons, not placement)
+  // 4. XP from module completions (through actual lessons, not placement)
+  // Prevents double-counting with placement test XP
   const statsData = localStorage.getItem('hindsight_academy_stats')
   const stats = statsData ? JSON.parse(statsData) : {}
   const completedModules = stats.completedModules || []
-
-  // Only count modules that were completed through lessons (not via placement test)
   const testedOutModules = progress.testedOutModules || []
+
   completedModules.forEach(moduleSlug => {
     // Don't double-count modules that were tested out via placement
     if (!testedOutModules.includes(moduleSlug)) {
@@ -77,9 +95,25 @@ export function calculateTotalXP() {
     }
   })
 
-  // 6. XP from daily goal bonuses (tracked separately)
+  // 5. XP from knowledge-based achievements
+  const achievementsData = localStorage.getItem('hindsight_achievements')
+  const achievements = achievementsData ? JSON.parse(achievementsData) : []
+  achievements.forEach(achId => {
+    totalXP += ACHIEVEMENT_XP[achId] || 0
+  })
+
+  // ==============================================
+  // CONSISTENCY XP (from returning regularly)
+  // NOTE: Placement test does NOT award any of these
+  // ==============================================
+
+  // 6. XP from daily goal completion bonuses
   const dailyBonusesClaimed = stats.dailyBonusesClaimed || 0
   totalXP += dailyBonusesClaimed * XP_CONFIG.DAILY_GOAL_COMPLETE_BONUS
+
+  // Note: Streak XP is awarded through achievements (on-fire, week-warrior, monthly-master)
+  // These are already included in the achievements section above
+  // Placement test deliberately does NOT award streak achievements
 
   return totalXP
 }
@@ -829,10 +863,18 @@ export function calculatePlacementAchievements(placementLevel, sectionScores) {
     achievements.push('expert-trader')
   }
 
-  // Note: We deliberately do NOT award time-based achievements:
-  // - on-fire (3 day streak)
-  // - week-warrior (7 day streak)
-  // - monthly-master (30 day streak)
+  // ==============================================
+  // IMPORTANT: Placement test ONLY awards KNOWLEDGE achievements
+  // We deliberately do NOT award CONSISTENCY/STREAK achievements:
+  // - on-fire (3 day streak) - requires returning 3 days
+  // - week-warrior (7 day streak) - requires returning 7 days
+  // - monthly-master (30 day streak) - requires returning 30 days
+  // - dedicated-learner (50 lessons) - only from actual lessons, not placement
+  //
+  // This ensures the XP leaderboard reflects:
+  // 1. KNOWLEDGE - What you know (placement test can demonstrate this)
+  // 2. CONSISTENCY - How regularly you learn (must be earned over time)
+  // ==============================================
 
   return achievements
 }
