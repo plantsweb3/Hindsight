@@ -281,6 +281,117 @@ export function getLessonProgress(moduleSlug, lessonSlug) {
   }
 }
 
+// ==============================================
+// LESSON MASTERY FROM QUIZ OR PLACEMENT TEST
+// ==============================================
+// Gets mastery percentage for a lesson from:
+// 1. Individual lesson quiz score (if they took the quiz)
+// 2. OR placement test section score (if they tested out of the module)
+//
+// This ensures mastery is displayed regardless of how the user learned.
+
+// Map module slugs to placement test section names
+const MODULE_TO_PLACEMENT_SECTION = {
+  'newcomer': 'newcomer',
+  'apprentice': 'apprentice',
+  'trader': 'trader',
+  'specialist': 'specialist',
+  'master': 'master'
+}
+
+// Get mastery percentage for a specific lesson
+// Returns { percentage: number (0-100), source: 'quiz'|'placement'|null }
+export function getLessonMasteryPercentage(moduleSlug, lessonSlug) {
+  // 1. First check for individual lesson quiz score
+  const lessonProgress = getLessonProgress(moduleSlug, lessonSlug)
+  if (lessonProgress && lessonProgress.bestScore != null) {
+    return {
+      percentage: Math.round(lessonProgress.bestScore * 100),
+      source: 'quiz'
+    }
+  }
+
+  // 2. Fall back to placement test score for this module
+  const placementSection = MODULE_TO_PLACEMENT_SECTION[moduleSlug]
+  if (placementSection) {
+    const bestScores = getPlacementBestScores()
+    const sectionScore = bestScores[placementSection]
+    if (sectionScore != null && sectionScore > 0) {
+      return {
+        percentage: Math.round(sectionScore * 100),
+        source: 'placement'
+      }
+    }
+  }
+
+  // 3. No mastery data available
+  return { percentage: null, source: null }
+}
+
+// Get all lesson masteries for a module
+// Returns array of { lessonSlug, percentage, source } for each lesson
+export function getModuleLessonMasteries(moduleSlug, lessonSlugs) {
+  // First, check if we have placement test scores for this module
+  const placementSection = MODULE_TO_PLACEMENT_SECTION[moduleSlug]
+  let placementScore = null
+  if (placementSection) {
+    const bestScores = getPlacementBestScores()
+    placementScore = bestScores[placementSection]
+  }
+
+  // Get individual lesson scores
+  const lessonScores = getAllLessonScores()
+
+  return lessonSlugs.map(slug => {
+    const lessonKey = `${moduleSlug}/${slug}`
+    const quizScore = lessonScores[lessonKey]
+
+    // Quiz score takes precedence
+    if (quizScore && quizScore.bestScore != null) {
+      return {
+        lessonSlug: slug,
+        percentage: Math.round(quizScore.bestScore * 100),
+        source: 'quiz'
+      }
+    }
+
+    // Fall back to placement score
+    if (placementScore != null && placementScore > 0) {
+      return {
+        lessonSlug: slug,
+        percentage: Math.round(placementScore * 100),
+        source: 'placement'
+      }
+    }
+
+    return {
+      lessonSlug: slug,
+      percentage: null,
+      source: null
+    }
+  })
+}
+
+// Get average mastery for a module (for module card display)
+// Returns { percentage: number (0-100), lessonsWithMastery: number, totalLessons: number }
+export function getModuleMasteryAverage(moduleSlug, lessonSlugs) {
+  const masteries = getModuleLessonMasteries(moduleSlug, lessonSlugs)
+  const withMastery = masteries.filter(m => m.percentage != null)
+
+  if (withMastery.length === 0) {
+    return { percentage: 0, lessonsWithMastery: 0, totalLessons: lessonSlugs.length }
+  }
+
+  const total = withMastery.reduce((sum, m) => sum + m.percentage, 0)
+  const average = Math.round(total / withMastery.length)
+
+  return {
+    percentage: average,
+    lessonsWithMastery: withMastery.length,
+    totalLessons: lessonSlugs.length
+  }
+}
+
 // Helper to save progress and notify listeners
 function saveProgressAndNotify(progress) {
   localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify(progress))

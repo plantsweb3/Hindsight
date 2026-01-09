@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useParams, useOutletContext } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { getTrading101Module, hasLocalModule } from '../../data/academy/modules'
-import { getLessonProgress, getLessonMastery, LESSON_MASTERY } from '../../services/achievements'
+import { getLessonProgress, getLessonMastery, getLessonMasteryPercentage, LESSON_MASTERY } from '../../services/achievements'
 
 // Helper for local progress tracking (same as LessonView)
 const LOCAL_PROGRESS_KEY = 'hindsight_academy_progress'
@@ -24,13 +24,13 @@ function getCompletedLessonsForModule(moduleSlug) {
     .map(key => key.replace(prefix, ''))
 }
 
-// Get quiz score for a lesson - checks multiple possible key formats
+// Get mastery score for a lesson - checks quiz scores AND placement test
 function getLessonQuizScore(moduleSlug, lessonSlug) {
-  // Try the standard format first
-  let progress = getLessonProgress(moduleSlug, lessonSlug)
+  // Use the unified mastery function that checks both quiz and placement test
+  const mastery = getLessonMasteryPercentage(moduleSlug, lessonSlug)
 
-  // If no progress found, also check localStorage directly with debug
-  if (!progress) {
+  // If no mastery data found, also try legacy key formats
+  if (mastery.percentage === null) {
     try {
       const data = localStorage.getItem('hindsight_academy_progress')
       const allProgress = data ? JSON.parse(data) : {}
@@ -44,22 +44,26 @@ function getLessonQuizScore(moduleSlug, lessonSlug) {
       ]
 
       for (const key of possibleKeys) {
-        if (lessonScores[key]) {
-          progress = lessonScores[key]
-          break
+        if (lessonScores[key]?.bestScore != null) {
+          return {
+            bestScore: lessonScores[key].bestScore,
+            percentage: Math.round(lessonScores[key].bestScore * 100),
+            mastery: getLessonMastery(lessonScores[key].bestScore, true),
+            source: 'quiz'
+          }
         }
       }
     } catch (err) {
       console.error('Error reading lesson scores:', err)
     }
+    return null
   }
 
-  if (!progress || progress.bestScore == null) return null
-
   return {
-    bestScore: progress.bestScore,
-    percentage: Math.round(progress.bestScore * 100),
-    mastery: getLessonMastery(progress.bestScore, true)
+    bestScore: mastery.percentage / 100,
+    percentage: mastery.percentage,
+    mastery: getLessonMastery(mastery.percentage / 100, true),
+    source: mastery.source
   }
 }
 
@@ -73,6 +77,8 @@ function LessonCard({ lesson, moduleSlug, isCompleted, quizScore }) {
   }
 
   const masteryColor = getMasteryColor()
+  const hasMastery = quizScore && quizScore.percentage != null
+  const isFromPlacement = quizScore?.source === 'placement'
 
   return (
     <Link
@@ -84,11 +90,6 @@ function LessonCard({ lesson, moduleSlug, isCompleted, quizScore }) {
           {lesson.difficulty}
         </span>
         <div className="lesson-status-badges">
-          {quizScore && (
-            <span className={`quiz-score-badge score-${masteryColor}`}>
-              {quizScore.percentage}%
-            </span>
-          )}
           {isCompleted && (
             <span className="lesson-completed-badge">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -109,12 +110,23 @@ function LessonCard({ lesson, moduleSlug, isCompleted, quizScore }) {
           </svg>
           {lesson.reading_time} min read
         </span>
-        <span className="lesson-cta">
-          {isCompleted ? 'Review' : 'Start'}
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </span>
+        {/* Mastery percentage with purple glow */}
+        {hasMastery ? (
+          <span
+            className="lesson-mastery-percentage"
+            title={isFromPlacement ? 'From placement test' : 'From quiz'}
+          >
+            {quizScore.percentage}%
+            {isFromPlacement && <span className="mastery-source-indicator">★</span>}
+          </span>
+        ) : (
+          <span className="lesson-cta">
+            {isCompleted ? 'Review' : 'Start'}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </span>
+        )}
       </div>
     </Link>
   )

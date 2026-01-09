@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useAchievements } from '../../contexts/AchievementContext'
 import { getArchetypeModule, hasArchetypeModule } from '../../data/academy/archetypes'
 import { hasLocalModule, getTrading101Module } from '../../data/academy/modules'
-import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores, calculateTotalXP, getPlacementBestScores, getPlacementLatestScores } from '../../services/achievements'
+import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores, calculateTotalXP, getPlacementBestScores, getPlacementLatestScores, getModuleLessonMasteries } from '../../services/achievements'
 import { getLevelInfo, DAILY_GOALS, DEFAULT_DAILY_GOAL } from '../../config/xpConfig'
 import { getArchetypeRecommendations, getWalletAnalysisInsights } from '../../data/academy/archetypeRecommendations'
 import PlacementTest from './PlacementTest'
@@ -470,11 +470,26 @@ function LockedModulePopup({ module, onClose, onGoToNextLesson, onPlacementTest 
   )
 }
 
+// Helper to get mastery color class
+function getMasteryColorClass(percentage) {
+  if (percentage === null || percentage === undefined) return 'mastery-not-started'
+  if (percentage >= 100) return 'mastery-mastered'
+  if (percentage >= 80) return 'mastery-completed-partial'
+  if (percentage > 0) return 'mastery-in-progress'
+  return 'mastery-not-started'
+}
+
 // Enhanced Module Card Component
-function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent = false, isComplete = false, isTestedOut = false, needsReview = false, onLockedClick }) {
+function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent = false, isComplete = false, isTestedOut = false, needsReview = false, onLockedClick, lessonMasteries = [] }) {
   const navigate = useNavigate()
   const totalLessons = module.lesson_count || 0
   const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
+
+  // Calculate average mastery percentage for display
+  const masteriesWithScores = lessonMasteries.filter(m => m.percentage != null)
+  const avgMastery = masteriesWithScores.length > 0
+    ? Math.round(masteriesWithScores.reduce((sum, m) => sum + m.percentage, 0) / masteriesWithScores.length)
+    : null
 
   const cardClasses = [
     'module-card',
@@ -565,17 +580,32 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
       <p className="module-description">{module.description}</p>
 
       <div className="module-footer">
+        {/* Mastery dots - colored based on individual lesson mastery */}
         <div className="module-dots">
-          {Array.from({ length: Math.min(totalLessons, 6) }).map((_, i) => (
-            <span key={i} className={`module-dot ${i < completedLessons ? 'filled' : ''}`} />
-          ))}
+          {Array.from({ length: Math.min(totalLessons, 6) }).map((_, i) => {
+            const mastery = lessonMasteries[i]
+            const masteryClass = mastery ? getMasteryColorClass(mastery.percentage) : 'mastery-not-started'
+            const isFilled = i < completedLessons
+            return (
+              <span
+                key={i}
+                className={`module-dot ${isFilled ? 'filled' : ''} ${masteryClass}`}
+                title={mastery?.percentage != null ? `${mastery.percentage}%` : 'Not started'}
+              />
+            )
+          })}
           {totalLessons > 6 && <span className="module-dot-more">+{totalLessons - 6}</span>}
         </div>
         <div className="module-progress-row">
           <div className="module-progress-track">
             <div className="module-progress-fill" style={{ width: `${progress}%` }} />
           </div>
-          <span className="module-progress-label">{completedLessons}/{totalLessons}</span>
+          {/* Show mastery percentage with purple glow if available */}
+          {avgMastery !== null ? (
+            <span className="module-mastery-label">{avgMastery}%</span>
+          ) : (
+            <span className="module-progress-label">{completedLessons}/{totalLessons}</span>
+          )}
         </div>
       </div>
     </div>
@@ -1228,6 +1258,15 @@ export default function AcademyDashboard() {
               <div className="modules-grid">
                 {modules.map((module, index) => {
                   const { isComplete, isLocked, isCurrent, isTestedOut, needsReview, prevModuleTitle } = getModuleState(module, index)
+                  // Get lesson masteries for this module
+                  let lessonMasteries = []
+                  if (hasLocalModule(module.slug)) {
+                    const localModule = getTrading101Module(module.slug)
+                    if (localModule?.lessons) {
+                      const lessonSlugs = localModule.lessons.map(l => l.slug)
+                      lessonMasteries = getModuleLessonMasteries(module.slug, lessonSlugs)
+                    }
+                  }
                   return (
                     <ModuleCard
                       key={module.id}
@@ -1239,6 +1278,7 @@ export default function AcademyDashboard() {
                       isTestedOut={isTestedOut}
                       needsReview={needsReview}
                       onLockedClick={() => handleLockedModuleClick(module, prevModuleTitle)}
+                      lessonMasteries={lessonMasteries}
                     />
                   )
                 })}
