@@ -12112,6 +12112,94 @@ input, button {
   border-radius: 10px;
 }
 
+.hero-stat-clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hero-stat-clickable:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.hero-stat-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hero-stats-row-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Daily Goal Stat Card */
+.daily-goal-stat {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.daily-goal-stat .hero-stat-header {
+  justify-content: space-between;
+}
+
+.daily-goal-stat .hero-stat-value {
+  font-size: 1rem;
+}
+
+.daily-goal-stat .hero-stat-value svg {
+  color: #22c55e;
+}
+
+.daily-goal-stat.complete {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.daily-goal-stat.complete .hero-stat-label {
+  color: #22c55e;
+}
+
+.daily-goal-progress-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.daily-goal-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.daily-goal-stat.complete .daily-goal-progress-fill {
+  background: linear-gradient(90deg, #22c55e, #4ade80);
+}
+
+/* Achievement Stat Card */
+.achievement-stat {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.achievement-stat .hero-stat-header {
+  justify-content: space-between;
+}
+
+.achievement-stat .hero-stat-icon {
+  color: #fbbf24;
+}
+
+.achievement-stat .hero-stat-value {
+  font-size: 1rem;
+  color: #fbbf24;
+}
+
 .hero-stat-icon {
   font-size: 1.25rem;
   flex-shrink: 0;
@@ -13476,6 +13564,202 @@ input, button {
 
   .locked-popup-title {
     font-size: 1.25rem;
+  }
+}
+
+/* ========================================
+   Daily Goal Modal
+   ======================================== */
+
+.daily-goal-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+
+.daily-goal-modal {
+  position: relative;
+  max-width: 480px;
+  width: 100%;
+  padding: 2rem;
+  background: linear-gradient(145deg, rgba(30, 30, 40, 0.98), rgba(20, 20, 28, 0.98));
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 1rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.daily-goal-modal .modal-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.5rem;
+  color: #71717a;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.daily-goal-modal .modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.daily-goal-modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.5rem;
+}
+
+.daily-goal-modal-subtitle {
+  font-size: 0.9375rem;
+  color: #a1a1aa;
+  margin: 0 0 1.5rem;
+}
+
+.daily-goal-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.daily-goal-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.daily-goal-option:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.daily-goal-option.selected {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+.daily-goal-option.current::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+}
+
+.current-badge {
+  position: absolute;
+  top: -8px;
+  right: 12px;
+  background: #22c55e;
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.goal-option-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.goal-option-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.goal-option-xp {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #a78bfa;
+}
+
+.goal-option-time {
+  font-size: 0.8125rem;
+  color: #71717a;
+}
+
+.goal-option-desc {
+  font-size: 0.75rem;
+  color: #52525b;
+}
+
+.goal-option-check {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.daily-goal-save-btn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.daily-goal-save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+}
+
+@media (max-width: 480px) {
+  .daily-goal-modal {
+    padding: 1.5rem;
+    margin: 0.5rem;
+  }
+
+  .daily-goal-modal-title {
+    font-size: 1.25rem;
+  }
+
+  .daily-goal-option {
+    padding: 0.875rem 1rem;
+  }
+
+  .goal-option-name {
+    font-size: 0.9375rem;
   }
 }
 

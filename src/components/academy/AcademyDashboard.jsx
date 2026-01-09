@@ -4,8 +4,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useAchievements } from '../../contexts/AchievementContext'
 import { getArchetypeModule, hasArchetypeModule } from '../../data/academy/archetypes'
 import { hasLocalModule, getTrading101Module } from '../../data/academy/modules'
-import { ACHIEVEMENTS, getLocalAchievements, getLocalStats } from '../../services/achievements'
-import { getLevelInfo } from '../../config/xpConfig'
+import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal } from '../../services/achievements'
+import { getLevelInfo, DAILY_GOALS, DEFAULT_DAILY_GOAL } from '../../config/xpConfig'
 
 // Helper for local progress tracking (same as LessonView/ModuleView)
 const LOCAL_PROGRESS_KEY = 'hindsight_academy_progress'
@@ -30,9 +30,6 @@ const ACADEMY_TABS = [
   { id: 'trading-101', label: 'Trading 101', subtitle: 'Structured path from beginner to pro' },
   { id: 'by-archetype', label: 'Learn by Archetype', subtitle: 'Personalized for your style' }
 ]
-
-// Daily XP goal
-const DAILY_XP_GOAL = 30
 
 // Archetype display name formatting
 const ARCHETYPE_DISPLAY_NAMES = {
@@ -167,7 +164,7 @@ function normalizeArchetypeId(archetype) {
 }
 
 // Hero Stats Grid Component - Level-first display
-function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons }) {
+function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dailyGoalProgress, earnedAchievements, onDailyGoalClick, onAchievementsClick }) {
   const completionPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
   const hasStreak = (xpProgress?.streak || 0) > 0
 
@@ -177,6 +174,16 @@ function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons }) {
   const progressPercent = levelInfo?.progressPercent || 0
   const xpToNext = levelInfo?.xpToNextLevel || 0
   const isMaxLevel = levelInfo?.isMaxLevel || false
+
+  // Daily goal info
+  const dailyXpEarned = dailyGoalProgress?.dailyXpEarned || 0
+  const goalXp = dailyGoalProgress?.goalXp || 100
+  const dailyGoalComplete = dailyGoalProgress?.isComplete || false
+  const dailyProgressPercent = dailyGoalProgress?.progressPercent || 0
+
+  // Achievement count
+  const earnedCount = earnedAchievements?.length || 0
+  const totalAchievements = Object.keys(ACHIEVEMENTS).length
 
   return (
     <div className="hero-stats-container">
@@ -201,7 +208,7 @@ function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons }) {
         </div>
       </div>
 
-      {/* Secondary: Quick Stats */}
+      {/* Secondary: Quick Stats Row 1 */}
       <div className="hero-stats-grid">
         <div className="hero-stat">
           <span className={`hero-stat-icon ${hasStreak ? 'streak-active' : ''}`}>🔥</span>
@@ -225,60 +232,118 @@ function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons }) {
           </div>
         </div>
       </div>
+
+      {/* Tertiary: Daily Goal + Achievements Row */}
+      <div className="hero-stats-grid hero-stats-row-2">
+        {/* Daily Goal Card */}
+        <div
+          className={`hero-stat hero-stat-clickable daily-goal-stat ${dailyGoalComplete ? 'complete' : ''}`}
+          onClick={onDailyGoalClick}
+        >
+          <div className="hero-stat-header">
+            <span className="hero-stat-icon">🎯</span>
+            <span className="hero-stat-value">
+              {dailyGoalComplete ? (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </>
+              ) : (
+                `${dailyXpEarned} / ${goalXp}`
+              )}
+            </span>
+          </div>
+          <span className="hero-stat-label">
+            {dailyGoalComplete ? 'Goal Complete!' : 'Daily Goal'}
+          </span>
+          <div className="daily-goal-progress-bar">
+            <div
+              className="daily-goal-progress-fill"
+              style={{ width: `${dailyProgressPercent}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Achievements Card */}
+        <div
+          className="hero-stat hero-stat-clickable achievement-stat"
+          onClick={onAchievementsClick}
+        >
+          <div className="hero-stat-header">
+            <span className="hero-stat-icon">🏆</span>
+            <span className="hero-stat-value">{earnedCount} / {totalAchievements}</span>
+          </div>
+          <span className="hero-stat-label">Achievements</span>
+        </div>
+      </div>
     </div>
   )
 }
 
-// Daily Goal Ring Component
-function DailyGoalRing({ dailyXp = 0 }) {
-  const progress = Math.min((dailyXp / DAILY_XP_GOAL) * 100, 100)
-  const isComplete = dailyXp >= DAILY_XP_GOAL
-  const circumference = 2 * Math.PI * 40
+// Daily Goal Selection Modal
+function DailyGoalModal({ isOpen, onClose, currentGoalId, onSave }) {
+  const [selectedGoal, setSelectedGoal] = useState(currentGoalId || DEFAULT_DAILY_GOAL)
+
+  if (!isOpen) return null
+
+  const handleSave = () => {
+    onSave(selectedGoal)
+    onClose()
+  }
 
   return (
-    <div className={`daily-goal-ring ${isComplete ? 'complete' : ''}`}>
-      <svg viewBox="0 0 100 100" className="goal-svg">
-        <circle
-          cx="50"
-          cy="50"
-          r="40"
-          fill="none"
-          stroke="rgba(255,255,255,0.1)"
-          strokeWidth="8"
-        />
-        <circle
-          cx="50"
-          cy="50"
-          r="40"
-          fill="none"
-          stroke={isComplete ? '#22c55e' : '#8b5cf6'}
-          strokeWidth="8"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference - (progress / 100) * circumference}
-          transform="rotate(-90 50 50)"
-          className="goal-progress-circle"
-        />
-      </svg>
-      <div className="goal-ring-inner">
-        {isComplete ? (
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3">
-            <polyline points="20 6 9 17 4 12" />
+    <div className="daily-goal-modal-overlay" onClick={onClose}>
+      <div className="daily-goal-modal glass-card" onClick={e => e.stopPropagation()}>
+        <button className="modal-close-btn" onClick={onClose}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
-        ) : (
-          <>
-            <span className="goal-current">{dailyXp}</span>
-            <span className="goal-target">/{DAILY_XP_GOAL}</span>
-          </>
-        )}
+        </button>
+
+        <h2 className="daily-goal-modal-title">Set Your Daily Goal</h2>
+        <p className="daily-goal-modal-subtitle">
+          How much time can you dedicate to learning each day?
+        </p>
+
+        <div className="daily-goal-options">
+          {Object.values(DAILY_GOALS).map(goal => (
+            <button
+              key={goal.id}
+              className={`daily-goal-option ${selectedGoal === goal.id ? 'selected' : ''} ${currentGoalId === goal.id ? 'current' : ''}`}
+              onClick={() => setSelectedGoal(goal.id)}
+            >
+              {currentGoalId === goal.id && (
+                <span className="current-badge">Current</span>
+              )}
+              <div className="goal-option-header">
+                <span className="goal-option-name">{goal.name}</span>
+                <span className="goal-option-xp">{goal.xp} XP</span>
+              </div>
+              <span className="goal-option-time">{goal.time}</span>
+              <span className="goal-option-desc">{goal.description}</span>
+              {selectedGoal === goal.id && (
+                <div className="goal-option-check">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+
+        <button className="daily-goal-save-btn" onClick={handleSave}>
+          Save Goal
+        </button>
       </div>
-      <span className="goal-label">Daily XP</span>
     </div>
   )
 }
 
 // Hero Section Component
-function HeroSection({ user, xpProgress, levelInfo, totalLessons, completedLessons, dailyXp, nextLesson, openAuthModal }) {
+function HeroSection({ user, xpProgress, levelInfo, totalLessons, completedLessons, dailyGoalProgress, earnedAchievements, nextLesson, openAuthModal, onDailyGoalClick, onAchievementsClick }) {
   const navigate = useNavigate()
 
   const getMotivationalText = () => {
@@ -340,8 +405,11 @@ function HeroSection({ user, xpProgress, levelInfo, totalLessons, completedLesso
           levelInfo={levelInfo}
           totalLessons={totalLessons}
           completedLessons={completedLessons}
+          dailyGoalProgress={dailyGoalProgress}
+          earnedAchievements={earnedAchievements}
+          onDailyGoalClick={onDailyGoalClick}
+          onAchievementsClick={onAchievementsClick}
         />
-        <DailyGoalRing dailyXp={dailyXp} />
       </div>
     </section>
   )
@@ -635,11 +703,12 @@ export default function AcademyDashboard() {
   const [xpProgress, setXpProgress] = useState(null)
   const [levelInfo, setLevelInfo] = useState(null)
   const [achievements, setAchievements] = useState([])
-  const [dailyXp, setDailyXp] = useState(0)
+  const [dailyGoalProgress, setDailyGoalProgress] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [expandedArchetype, setExpandedArchetype] = useState(null)
   const [lockedModulePopup, setLockedModulePopup] = useState(null)
+  const [showDailyGoalModal, setShowDailyGoalModal] = useState(false)
 
   // Tab state with localStorage persistence
   const [activeTab, setActiveTab] = useState(() => {
@@ -715,6 +784,10 @@ export default function AcademyDashboard() {
         const localStats = getLocalStats()
         const localXp = localStats.totalXp || 0
 
+        // Load daily goal progress
+        const dailyProgress = getDailyGoalProgress()
+        setDailyGoalProgress(dailyProgress)
+
         if (xpProgressRes.ok) {
           const xpData = await xpProgressRes.json()
           // Use local XP if higher (user may have completed local modules)
@@ -724,11 +797,6 @@ export default function AcademyDashboard() {
 
           setXpProgress({ ...xpData.xp, total: totalXp })
           setLevelInfo(mergedLevelInfo)
-
-          const today = new Date().toISOString().split('T')[0]
-          if (xpData.xp?.lastActivity === today || localStats.lastActivityDate === today) {
-            setDailyXp(Math.min(totalXp % 100, DAILY_XP_GOAL))
-          }
         } else {
           // Fallback to local XP if API fails
           const localLevelInfo = getLevelInfo(localXp)
@@ -782,6 +850,9 @@ export default function AcademyDashboard() {
         const localLevelInfo = getLevelInfo(localStats.totalXp || 0)
         setXpProgress({ total: localStats.totalXp || 0, streak: localStats.currentStreak || 0 })
         setLevelInfo(localLevelInfo)
+        // Load daily goal progress
+        const dailyProgress = getDailyGoalProgress()
+        setDailyGoalProgress(dailyProgress)
       }
     } catch (err) {
       console.error('Failed to fetch academy data:', err)
@@ -865,6 +936,26 @@ export default function AcademyDashboard() {
     navigate('/academy')
   }
 
+  // Handle daily goal modal
+  const handleDailyGoalClick = () => {
+    setShowDailyGoalModal(true)
+  }
+
+  const handleSaveDailyGoal = (goalId) => {
+    setDailyGoal(goalId)
+    // Refresh daily goal progress
+    const newProgress = getDailyGoalProgress()
+    setDailyGoalProgress(newProgress)
+  }
+
+  // Handle scroll to achievements section
+  const handleAchievementsClick = () => {
+    const achievementsSection = document.querySelector('.achievement-showcase')
+    if (achievementsSection) {
+      achievementsSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   // Filter archetypes for "Explore Other Archetypes" section
   const otherArchetypes = ARCHETYPE_MODULES.filter(a => a.id !== userArchetypeId)
 
@@ -895,9 +986,12 @@ export default function AcademyDashboard() {
         levelInfo={levelInfo}
         totalLessons={totalLessons}
         completedLessons={completedLessons}
-        dailyXp={dailyXp}
+        dailyGoalProgress={dailyGoalProgress}
+        earnedAchievements={achievements}
         nextLesson={nextLesson}
         openAuthModal={openAuthModal}
+        onDailyGoalClick={handleDailyGoalClick}
+        onAchievementsClick={handleAchievementsClick}
       />
 
       {/* Tab Navigation */}
@@ -1072,6 +1166,14 @@ export default function AcademyDashboard() {
           onPlacementTest={handlePlacementTest}
         />
       )}
+
+      {/* Daily Goal Modal */}
+      <DailyGoalModal
+        isOpen={showDailyGoalModal}
+        onClose={() => setShowDailyGoalModal(false)}
+        currentGoalId={dailyGoalProgress?.goalId}
+        onSave={handleSaveDailyGoal}
+      />
     </div>
   )
 }

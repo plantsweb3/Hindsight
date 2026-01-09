@@ -39,7 +39,52 @@ export const XP_CONFIG = {
   // Retake rules
   ALLOW_RETAKES: true,
   XP_ON_IMPROVEMENT_ONLY: true,
+
+  // Daily goal bonus
+  DAILY_GOAL_COMPLETE_BONUS: 5,
 }
+
+// Daily goal options
+export const DAILY_GOALS = {
+  casual: {
+    id: 'casual',
+    name: 'Casual',
+    time: '10 min/day',
+    xp: 50,
+    description: '1-2 lessons per day'
+  },
+  regular: {
+    id: 'regular',
+    name: 'Regular',
+    time: '20 min/day',
+    xp: 100,
+    description: '2-3 lessons per day'
+  },
+  committed: {
+    id: 'committed',
+    name: 'Committed',
+    time: '30 min/day',
+    xp: 150,
+    description: '3-4 lessons per day'
+  },
+  intense: {
+    id: 'intense',
+    name: 'Intense',
+    time: '45 min/day',
+    xp: 225,
+    description: '5-6 lessons per day'
+  },
+  allIn: {
+    id: 'allIn',
+    name: 'All-In',
+    time: '60+ min/day',
+    xp: 300,
+    description: 'Full study session'
+  }
+}
+
+// Default daily goal for new users
+export const DEFAULT_DAILY_GOAL = 'regular'
 
 // Achievement XP rewards (must match achievements.js)
 export const ACHIEVEMENT_XP = {
