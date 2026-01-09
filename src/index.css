@@ -15810,20 +15810,125 @@ input, button {
   min-height: 220px;
 }
 
-.archetype-module-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(139, 92, 246, 0.4);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+/* Color-specific glowing borders for archetype cards */
+.archetype-module-card.dot-archetype-purple {
+  border-color: rgba(168, 85, 247, 0.25);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.1);
+}
+.archetype-module-card.dot-archetype-purple:hover {
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.2), 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
+.archetype-module-card.dot-archetype-blue {
+  border-color: rgba(59, 130, 246, 0.25);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.1);
+}
+.archetype-module-card.dot-archetype-blue:hover {
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.2), 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.archetype-module-card.dot-archetype-green {
+  border-color: rgba(34, 197, 94, 0.25);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.1);
+}
+.archetype-module-card.dot-archetype-green:hover {
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.2), 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.archetype-module-card.dot-archetype-cyan {
+  border-color: rgba(6, 182, 212, 0.25);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.1);
+}
+.archetype-module-card.dot-archetype-cyan:hover {
+  border-color: rgba(6, 182, 212, 0.5);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.2), 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.archetype-module-card.dot-archetype-indigo {
+  border-color: rgba(99, 102, 241, 0.25);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.1);
+}
+.archetype-module-card.dot-archetype-indigo:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.2), 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.archetype-module-card.dot-archetype-orange {
+  border-color: rgba(249, 115, 22, 0.25);
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.1);
+}
+.archetype-module-card.dot-archetype-orange:hover {
+  border-color: rgba(249, 115, 22, 0.5);
+  box-shadow: 0 0 20px rgba(249, 115, 22, 0.2), 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.archetype-module-card.dot-archetype-yellow {
+  border-color: rgba(234, 179, 8, 0.25);
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.1);
+}
+.archetype-module-card.dot-archetype-yellow:hover {
+  border-color: rgba(234, 179, 8, 0.5);
+  box-shadow: 0 0 20px rgba(234, 179, 8, 0.2), 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.archetype-module-card.dot-archetype-red {
+  border-color: rgba(239, 68, 68, 0.25);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.1);
+}
+.archetype-module-card.dot-archetype-red:hover {
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.2), 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* User's archetype gets extra glow and bounce animation */
 .archetype-module-card.is-user-archetype {
-  border-color: rgba(34, 197, 94, 0.4);
-  box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
+  animation: card-bounce-subtle 3s ease-in-out infinite;
+}
+
+.archetype-module-card.is-user-archetype.dot-archetype-purple {
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.25), 0 0 40px rgba(168, 85, 247, 0.1);
+}
+.archetype-module-card.is-user-archetype.dot-archetype-blue {
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.25), 0 0 40px rgba(59, 130, 246, 0.1);
+}
+.archetype-module-card.is-user-archetype.dot-archetype-green {
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 0 0 25px rgba(34, 197, 94, 0.25), 0 0 40px rgba(34, 197, 94, 0.1);
+}
+.archetype-module-card.is-user-archetype.dot-archetype-cyan {
+  border-color: rgba(6, 182, 212, 0.5);
+  box-shadow: 0 0 25px rgba(6, 182, 212, 0.25), 0 0 40px rgba(6, 182, 212, 0.1);
+}
+.archetype-module-card.is-user-archetype.dot-archetype-indigo {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 25px rgba(99, 102, 241, 0.25), 0 0 40px rgba(99, 102, 241, 0.1);
+}
+.archetype-module-card.is-user-archetype.dot-archetype-orange {
+  border-color: rgba(249, 115, 22, 0.5);
+  box-shadow: 0 0 25px rgba(249, 115, 22, 0.25), 0 0 40px rgba(249, 115, 22, 0.1);
+}
+.archetype-module-card.is-user-archetype.dot-archetype-yellow {
+  border-color: rgba(234, 179, 8, 0.5);
+  box-shadow: 0 0 25px rgba(234, 179, 8, 0.25), 0 0 40px rgba(234, 179, 8, 0.1);
+}
+.archetype-module-card.is-user-archetype.dot-archetype-red {
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.25), 0 0 40px rgba(239, 68, 68, 0.1);
+}
+
+@keyframes card-bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
 }
 
 .archetype-module-card.is-user-archetype:hover {
-  border-color: rgba(34, 197, 94, 0.6);
-  box-shadow: 0 0 30px rgba(34, 197, 94, 0.15);
+  animation: none;
+  transform: translateY(-6px);
 }
 
 .archetype-module-badges {

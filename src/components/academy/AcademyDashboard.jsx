@@ -847,7 +847,7 @@ function ArchetypeModuleCard({ archetype, isUserArchetype = false, onClick }) {
 
   return (
     <div
-      className={`archetype-module-card ${isUserArchetype ? 'is-user-archetype' : ''}`}
+      className={`archetype-module-card ${dotClass} ${isUserArchetype ? 'is-user-archetype' : ''}`}
       onClick={handleClick}
     >
       {/* Badges */}
