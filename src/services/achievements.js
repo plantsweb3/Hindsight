@@ -480,21 +480,56 @@ export function getLessonCardStatus(moduleId, lessonSlug) {
 // Uses archetype_progress_{archetypeId} localStorage key
 export function getArchetypeLessonDotStatuses(archetypeId, lessonSlugs) {
   try {
+    // Check lesson quiz scores
+    const quizScores = JSON.parse(localStorage.getItem('archetypeLessonScores') || '{}')
+
+    // Check lesson completion (legacy)
     const saved = localStorage.getItem(`archetype_progress_${archetypeId}`)
     const completedSet = saved ? new Set(JSON.parse(saved)) : new Set()
 
-    // Also check for quiz completions
-    const quizSaved = localStorage.getItem(`archetype_quiz_${archetypeId}`)
-    const quizCompletedSet = quizSaved ? new Set(JSON.parse(quizSaved)) : new Set()
+    // Check Master Exam results
+    const masterExamResults = JSON.parse(localStorage.getItem('masterExamBestQuestionResults') || '{}')
 
     return lessonSlugs.map(slug => {
-      const isCompleted = completedSet.has(slug)
-      const hasQuiz = quizCompletedSet.has(slug)
+      const lessonKey = `${archetypeId}/${slug}`
+      const quizScore = quizScores[lessonKey]
 
+      // Priority 1: Quiz completion with score
+      if (quizScore && quizScore.bestScore != null) {
+        return {
+          lessonSlug: slug,
+          filled: true,
+          source: 'quiz',
+          score: quizScore.bestScore
+        }
+      }
+
+      // Priority 2: Legacy completion
+      if (completedSet.has(slug)) {
+        return {
+          lessonSlug: slug,
+          filled: true,
+          source: 'completed'
+        }
+      }
+
+      // Priority 3: Master Exam result
+      const examResult = Object.values(masterExamResults).find(
+        r => r.archetypeId === archetypeId && r.lessonSlug === slug
+      )
+      if (examResult) {
+        return {
+          lessonSlug: slug,
+          filled: examResult.correct,
+          source: examResult.correct ? 'exam-passed' : 'exam-failed'
+        }
+      }
+
+      // Not started
       return {
         lessonSlug: slug,
-        filled: isCompleted || hasQuiz,
-        source: hasQuiz ? 'quiz' : (isCompleted ? 'completed' : 'not-started')
+        filled: false,
+        source: 'not-started'
       }
     })
   } catch {
@@ -509,21 +544,22 @@ export function getArchetypeLessonDotStatuses(archetypeId, lessonSlugs) {
 // Get archetype lesson card status (same 4-state system as Trading 101)
 export function getArchetypeLessonCardStatus(archetypeId, lessonSlug) {
   try {
-    // Check quiz completion first
-    const quizSaved = localStorage.getItem(`archetype_quiz_${archetypeId}`)
-    const quizCompletedSet = quizSaved ? new Set(JSON.parse(quizSaved)) : new Set()
+    // PRIORITY 1: Check actual lesson quiz completion with score
+    const quizScores = JSON.parse(localStorage.getItem('archetypeLessonScores') || '{}')
+    const lessonKey = `${archetypeId}/${lessonSlug}`
+    const quizScore = quizScores[lessonKey]
 
-    if (quizCompletedSet.has(lessonSlug)) {
-      // TODO: Get actual score if stored
+    if (quizScore && quizScore.bestScore != null) {
+      const percentage = Math.round(quizScore.bestScore * 100)
       return {
         type: 'completed',
-        displayText: '100%',
+        displayText: `${percentage}%`,
         style: 'green-glow',
-        score: 1.0
+        score: quizScore.bestScore
       }
     }
 
-    // Check lesson completion
+    // PRIORITY 2: Check lesson completion (legacy)
     const saved = localStorage.getItem(`archetype_progress_${archetypeId}`)
     const completedSet = saved ? new Set(JSON.parse(saved)) : new Set()
 
@@ -535,7 +571,29 @@ export function getArchetypeLessonCardStatus(archetypeId, lessonSlug) {
       }
     }
 
-    // Not attempted
+    // PRIORITY 3: Check Master Exam question results
+    const masterExamResults = JSON.parse(localStorage.getItem('masterExamBestQuestionResults') || '{}')
+    const matchingResult = Object.values(masterExamResults).find(
+      r => r.archetypeId === archetypeId && r.lessonSlug === lessonSlug
+    )
+
+    if (matchingResult) {
+      if (matchingResult.correct) {
+        return {
+          type: 'exam-passed',
+          displayText: 'Passed',
+          style: 'green-glow'
+        }
+      } else {
+        return {
+          type: 'exam-failed',
+          displayText: 'Review',
+          style: 'yellow'
+        }
+      }
+    }
+
+    // PRIORITY 4: Not attempted
     return {
       type: 'not-started',
       displayText: 'Not Completed',
