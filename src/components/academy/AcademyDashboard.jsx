@@ -2,6 +2,25 @@ import { useState, useEffect } from 'react'
 import { Link, useOutletContext, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { getArchetypeModule, hasArchetypeModule } from '../../data/academy/archetypes'
+import { hasLocalModule, getTrading101Module } from '../../data/academy/modules'
+
+// Helper for local progress tracking (same as LessonView/ModuleView)
+const LOCAL_PROGRESS_KEY = 'hindsight_academy_progress'
+
+function getLocalProgress() {
+  try {
+    const data = localStorage.getItem(LOCAL_PROGRESS_KEY)
+    return data ? JSON.parse(data) : { completedLessons: [] }
+  } catch {
+    return { completedLessons: [] }
+  }
+}
+
+function getCompletedCountForModule(moduleSlug) {
+  const progress = getLocalProgress()
+  const prefix = `${moduleSlug}/`
+  return progress.completedLessons.filter(key => key.startsWith(prefix)).length
+}
 
 // Tab configuration
 const ACADEMY_TABS = [
@@ -636,6 +655,15 @@ export default function AcademyDashboard() {
       const modulesData = await modulesRes.json()
       setModules(modulesData.modules || [])
 
+      // Always load localStorage progress for local modules (works without auth)
+      const localProgressMap = {}
+      const allModules = modulesData.modules || []
+      allModules.forEach(m => {
+        if (hasLocalModule(m.slug)) {
+          localProgressMap[m.id] = getCompletedCountForModule(m.slug)
+        }
+      })
+
       if (token) {
         const headers = { 'Authorization': `Bearer ${token}` }
 
@@ -656,12 +684,18 @@ export default function AcademyDashboard() {
 
         if (progressRes.ok) {
           const progressData = await progressRes.json()
-          const progressMap = {}
+          const progressMap = { ...localProgressMap } // Start with local progress
           const moduleProgressArray = progressData.progress?.moduleProgress || []
           moduleProgressArray.forEach(m => {
-            progressMap[m.id] = m.completed_lessons || 0
+            // Only use API progress for non-local modules
+            if (!hasLocalModule(allModules.find(mod => mod.id === m.id)?.slug)) {
+              progressMap[m.id] = m.completed_lessons || 0
+            }
           })
           setProgress(progressMap)
+        } else {
+          // If API fails, still use local progress
+          setProgress(localProgressMap)
         }
 
         if (xpProgressRes.ok) {
@@ -704,6 +738,9 @@ export default function AcademyDashboard() {
           const archetypeData = await archetypeModuleRes.json()
           setArchetypeModule(archetypeData.module || null)
         }
+      } else {
+        // Not authenticated - still use local progress for local modules
+        setProgress(localProgressMap)
       }
     } catch (err) {
       console.error('Failed to fetch academy data:', err)
