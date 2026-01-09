@@ -483,13 +483,16 @@ function getMasteryColorClass(percentage) {
 function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent = false, isComplete = false, isTestedOut = false, needsReview = false, onLockedClick, lessonMasteries = [] }) {
   const navigate = useNavigate()
   const totalLessons = module.lesson_count || 0
-  const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
+  const completionProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
 
   // Calculate average mastery percentage for display
   const masteriesWithScores = lessonMasteries.filter(m => m.percentage != null)
   const avgMastery = masteriesWithScores.length > 0
     ? Math.round(masteriesWithScores.reduce((sum, m) => sum + m.percentage, 0) / masteriesWithScores.length)
     : null
+
+  // Use mastery for progress bar if available, otherwise use completion
+  const progressBarPercent = avgMastery !== null ? avgMastery : completionProgress
 
   const cardClasses = [
     'module-card',
@@ -598,7 +601,7 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
         </div>
         <div className="module-progress-row">
           <div className="module-progress-track">
-            <div className="module-progress-fill" style={{ width: `${progress}%` }} />
+            <div className="module-progress-fill" style={{ width: `${progressBarPercent}%` }} />
           </div>
           {/* Show mastery percentage with purple glow if available */}
           {avgMastery !== null ? (
@@ -1260,15 +1263,12 @@ export default function AcademyDashboard() {
                   const { isComplete, isLocked, isCurrent, isTestedOut, needsReview, prevModuleTitle } = getModuleState(module, index)
                   // Get lesson masteries for this module
                   let lessonMasteries = []
-                  const hasLocal = hasLocalModule(module.slug)
-                  if (hasLocal) {
+                  if (hasLocalModule(module.slug)) {
                     const localModule = getTrading101Module(module.slug)
                     if (localModule?.lessons) {
                       const lessonSlugs = localModule.lessons.map(l => l.slug)
                       lessonMasteries = getModuleLessonMasteries(module.slug, lessonSlugs)
                     }
-                    // Debug: log what we're passing to ModuleCard
-                    console.log('[ModuleCard Debug]', { slug: module.slug, hasLocal, lessonMasteries, isTestedOut })
                   }
                   return (
                     <ModuleCard

@@ -337,8 +337,6 @@ export function getModuleLessonMasteries(moduleSlug, lessonSlugs) {
   if (placementSection) {
     const bestScores = getPlacementBestScores()
     placementScore = bestScores[placementSection]
-    // Debug logging
-    console.log('[Mastery Debug]', { moduleSlug, placementSection, bestScores, placementScore, lessonSlugsCount: lessonSlugs?.length })
   }
 
   // Get individual lesson scores
