@@ -470,13 +470,16 @@ function LockedModulePopup({ module, onClose, onGoToNextLesson, onPlacementTest 
   )
 }
 
-// Helper to get mastery color class
-function getMasteryColorClass(percentage) {
-  if (percentage === null || percentage === undefined) return 'mastery-not-started'
-  if (percentage >= 100) return 'mastery-mastered'
-  if (percentage >= 80) return 'mastery-completed-partial'
-  if (percentage > 0) return 'mastery-in-progress'
-  return 'mastery-not-started'
+// Helper to get dot color class based on difficulty level
+function getDifficultyDotClass(difficulty) {
+  switch (difficulty) {
+    case 'beginner': return 'dot-beginner'      // green
+    case 'beginner+': return 'dot-beginner-plus' // blue
+    case 'intermediate': return 'dot-intermediate' // yellow
+    case 'advanced': return 'dot-advanced'      // orange
+    case 'expert': return 'dot-expert'          // red/pink
+    default: return 'dot-beginner'
+  }
 }
 
 // Enhanced Module Card Component
@@ -527,27 +530,16 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
 
   return (
     <div className={cardClasses} onClick={handleClick}>
-      {/* Badge stack in top-right corner - using inline styles to guarantee spacing */}
-      <div style={{
-        position: 'absolute',
-        top: '12px',
-        right: '12px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-end',
-        zIndex: 5
-      }}>
+      {/* Badge stack in top-right corner */}
+      <div className="module-badge-stack">
         {/* Difficulty badge always shows */}
         <span className={`module-difficulty difficulty-${module.difficulty || 'beginner'}`}>
           {module.difficulty || 'beginner'}
         </span>
 
-        {/* Status badge below difficulty - explicit margin-top for spacing */}
+        {/* Status badge below difficulty */}
         {badge && (
-          <div
-            className={`module-badge module-badge-${badge.toLowerCase()}`}
-            style={{ marginTop: '8px' }}
-          >
+          <div className={`module-badge module-badge-${badge.toLowerCase()}`}>
             {isComplete && (
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                 <polyline points="20 6 9 17 4 12" />
@@ -583,16 +575,16 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
       <p className="module-description">{module.description}</p>
 
       <div className="module-footer">
-        {/* Mastery dots - colored based on individual lesson mastery */}
+        {/* Progress dots - colored based on module difficulty level */}
         <div className="module-dots">
           {Array.from({ length: Math.min(totalLessons, 6) }).map((_, i) => {
             const mastery = lessonMasteries[i]
-            const masteryClass = mastery ? getMasteryColorClass(mastery.percentage) : 'mastery-not-started'
-            const isFilled = i < completedLessons
+            const hasMastery = mastery?.percentage != null && mastery.percentage > 0
+            const difficultyClass = getDifficultyDotClass(module.difficulty)
             return (
               <span
                 key={i}
-                className={`module-dot ${isFilled ? 'filled' : ''} ${masteryClass}`}
+                className={`module-dot ${hasMastery ? 'filled' : ''} ${hasMastery ? difficultyClass : ''}`}
                 title={mastery?.percentage != null ? `${mastery.percentage}%` : 'Not started'}
               />
             )

@@ -12522,6 +12522,27 @@ input, button {
   background: #8b5cf6;
 }
 
+/* Difficulty-based dot colors */
+.module-dot.filled.dot-beginner {
+  background: #22c55e; /* green */
+}
+
+.module-dot.filled.dot-beginner-plus {
+  background: #3b82f6; /* blue */
+}
+
+.module-dot.filled.dot-intermediate {
+  background: #eab308; /* yellow */
+}
+
+.module-dot.filled.dot-advanced {
+  background: #f97316; /* orange */
+}
+
+.module-dot.filled.dot-expert {
+  background: #ef4444; /* red */
+}
+
 .module-dot-more {
   font-size: 0.625rem;
   color: #71717a;
@@ -12566,10 +12587,6 @@ input, button {
   align-items: flex-end;
   gap: 0.5rem;
   z-index: 5;
-}
-
-.module-badge-stack .module-difficulty {
-  position: relative;
 }
 
 /* Module Badges */
