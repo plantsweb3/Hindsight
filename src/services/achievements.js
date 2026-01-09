@@ -90,6 +90,121 @@ const TRADING_101_MODULES = ['newcomer', 'apprentice', 'trader', 'specialist', '
 // Local storage key for tracking achievements (for local modules)
 const LOCAL_ACHIEVEMENTS_KEY = 'hindsight_achievements'
 const LOCAL_STATS_KEY = 'hindsight_academy_stats'
+const LOCAL_PROGRESS_KEY = 'hindsight_academy_progress'
+
+// ==============================================
+// LESSON MASTERY SYSTEM
+// ==============================================
+
+export const LESSON_MASTERY = {
+  NOT_STARTED: {
+    status: 'not-started',
+    color: 'gray',
+    label: 'Not Started'
+  },
+  IN_PROGRESS: {
+    status: 'in-progress',
+    color: 'blue',
+    label: 'In Progress'
+  },
+  COMPLETED_PARTIAL: {
+    status: 'completed-partial',
+    color: 'yellow',
+    label: 'Completed',
+    threshold: 0.80
+  },
+  MASTERED: {
+    status: 'mastered',
+    color: 'green',
+    label: 'Mastered',
+    threshold: 1.0
+  }
+}
+
+// Get lesson mastery based on quiz score
+export function getLessonMastery(quizScore, isCompleted = false) {
+  if (quizScore === null || quizScore === undefined) {
+    return isCompleted ? LESSON_MASTERY.IN_PROGRESS : LESSON_MASTERY.NOT_STARTED
+  }
+  if (quizScore >= 1.0) {
+    return LESSON_MASTERY.MASTERED
+  }
+  if (quizScore >= 0.80) {
+    return LESSON_MASTERY.COMPLETED_PARTIAL
+  }
+  return LESSON_MASTERY.IN_PROGRESS
+}
+
+// Get lesson progress from local storage
+export function getLessonProgress(moduleSlug, lessonSlug) {
+  try {
+    const data = localStorage.getItem(LOCAL_PROGRESS_KEY)
+    const progress = data ? JSON.parse(data) : {}
+    const key = `${moduleSlug}/${lessonSlug}`
+    return progress.lessonScores?.[key] || null
+  } catch {
+    return null
+  }
+}
+
+// Save lesson quiz score to local storage
+export function saveLessonQuizScore(moduleSlug, lessonSlug, score, totalQuestions) {
+  try {
+    const data = localStorage.getItem(LOCAL_PROGRESS_KEY)
+    const progress = data ? JSON.parse(data) : { completedLessons: [], lessonScores: {} }
+    const key = `${moduleSlug}/${lessonSlug}`
+
+    const normalizedScore = score / totalQuestions
+    const existing = progress.lessonScores?.[key]
+
+    if (!progress.lessonScores) progress.lessonScores = {}
+
+    progress.lessonScores[key] = {
+      score: normalizedScore,
+      bestScore: Math.max(normalizedScore, existing?.bestScore || 0),
+      attempts: (existing?.attempts || 0) + 1,
+      lastAttempt: new Date().toISOString()
+    }
+
+    localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify(progress))
+    return progress.lessonScores[key]
+  } catch (err) {
+    console.error('Failed to save lesson quiz score:', err)
+    return null
+  }
+}
+
+// Get all lesson scores for mastery calculation
+export function getAllLessonScores() {
+  try {
+    const data = localStorage.getItem(LOCAL_PROGRESS_KEY)
+    const progress = data ? JSON.parse(data) : {}
+    return progress.lessonScores || {}
+  } catch {
+    return {}
+  }
+}
+
+// Calculate overall mastery percentage
+export function calculateOverallMastery() {
+  const lessonScores = getAllLessonScores()
+  const scores = Object.values(lessonScores)
+
+  if (scores.length === 0) {
+    return { percentage: 0, quizzesAttempted: 0, quizzesMastered: 0, label: 'Not Started' }
+  }
+
+  const totalScore = scores.reduce((sum, s) => sum + (s.bestScore || 0), 0)
+  const averageScore = totalScore / scores.length
+  const mastered = scores.filter(s => s.bestScore >= 1.0).length
+
+  return {
+    percentage: Math.round(averageScore * 100),
+    quizzesAttempted: scores.length,
+    quizzesMastered: mastered,
+    label: `${scores.length} quizzes`
+  }
+}
 
 // Get local achievements
 export function getLocalAchievements() {

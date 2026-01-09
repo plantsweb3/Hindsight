@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useAchievements } from '../../contexts/AchievementContext'
 import { getArchetypeModule, hasArchetypeModule } from '../../data/academy/archetypes'
 import { hasLocalModule, getTrading101Module } from '../../data/academy/modules'
-import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal } from '../../services/achievements'
+import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores } from '../../services/achievements'
 import { getLevelInfo, DAILY_GOALS, DEFAULT_DAILY_GOAL } from '../../config/xpConfig'
 import { getArchetypeRecommendations, getWalletAnalysisInsights } from '../../data/academy/archetypeRecommendations'
 import PlacementTest from './PlacementTest'
@@ -166,9 +166,12 @@ function normalizeArchetypeId(archetype) {
 }
 
 // Hero Stats Grid Component - Level-first display
-function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dailyGoalProgress, earnedAchievements, onDailyGoalClick, onAchievementsClick }) {
-  const completionPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
+function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dailyGoalProgress, earnedAchievements, onDailyGoalClick, onAchievementsClick, masteryStats }) {
   const hasStreak = (xpProgress?.streak || 0) > 0
+
+  // Use mastery stats for the percentage display
+  const masteryPercent = masteryStats?.percentage || 0
+  const quizzesAttempted = masteryStats?.quizzesAttempted || 0
 
   // Use level info for progress bar
   const level = levelInfo?.level || 1
@@ -226,11 +229,11 @@ function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dail
             <span className="hero-stat-label">Total XP</span>
           </div>
         </div>
-        <div className="hero-stat">
+        <div className="hero-stat" title={quizzesAttempted > 0 ? `${quizzesAttempted} quizzes attempted` : 'Take quizzes to track mastery'}>
           <span className="hero-stat-icon">📊</span>
           <div className="hero-stat-content">
-            <span className="hero-stat-value">{completionPercent}%</span>
-            <span className="hero-stat-label">Complete</span>
+            <span className="hero-stat-value">{masteryPercent}%</span>
+            <span className="hero-stat-label">Mastery</span>
           </div>
         </div>
       </div>
@@ -345,7 +348,7 @@ function DailyGoalModal({ isOpen, onClose, currentGoalId, onSave }) {
 }
 
 // Hero Section Component
-function HeroSection({ user, xpProgress, levelInfo, totalLessons, completedLessons, dailyGoalProgress, earnedAchievements, nextLesson, openAuthModal, onDailyGoalClick, onAchievementsClick }) {
+function HeroSection({ user, xpProgress, levelInfo, totalLessons, completedLessons, dailyGoalProgress, earnedAchievements, nextLesson, openAuthModal, onDailyGoalClick, onAchievementsClick, masteryStats }) {
   const navigate = useNavigate()
 
   const getMotivationalText = () => {
@@ -411,6 +414,7 @@ function HeroSection({ user, xpProgress, levelInfo, totalLessons, completedLesso
           earnedAchievements={earnedAchievements}
           onDailyGoalClick={onDailyGoalClick}
           onAchievementsClick={onAchievementsClick}
+          masteryStats={masteryStats}
         />
       </div>
     </section>
@@ -467,7 +471,7 @@ function LockedModulePopup({ module, onClose, onGoToNextLesson, onPlacementTest 
 }
 
 // Enhanced Module Card Component
-function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent = false, isComplete = false, isTestedOut = false, onLockedClick }) {
+function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent = false, isComplete = false, isTestedOut = false, needsReview = false, onLockedClick }) {
   const navigate = useNavigate()
   const totalLessons = module.lesson_count || 0
   const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
@@ -478,6 +482,7 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
     isCurrent && 'module-current',
     isComplete && 'module-complete',
     isTestedOut && !isComplete && 'module-tested-out',
+    needsReview && !isComplete && !isTestedOut && 'module-needs-review',
     isLocked && 'module-locked',
     module.is_pro === 1 && 'module-pro'
   ].filter(Boolean).join(' ')
@@ -494,6 +499,7 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
   const getBadgeText = () => {
     if (isComplete) return 'COMPLETE'
     if (isTestedOut && !isComplete) return 'SKIPPED'
+    if (needsReview && !isComplete && !isTestedOut) return 'REVIEW'
     if (isCurrent) return 'CONTINUE'
     if (isLocked) return 'LOCKED'
     return null
@@ -728,6 +734,7 @@ export default function AcademyDashboard() {
   const [levelInfo, setLevelInfo] = useState(null)
   const [achievements, setAchievements] = useState([])
   const [dailyGoalProgress, setDailyGoalProgress] = useState(null)
+  const [masteryStats, setMasteryStats] = useState({ percentage: 0, quizzesAttempted: 0, quizzesMastered: 0 })
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [expandedArchetype, setExpandedArchetype] = useState(null)
@@ -813,6 +820,10 @@ export default function AcademyDashboard() {
         const dailyProgress = getDailyGoalProgress()
         setDailyGoalProgress(dailyProgress)
 
+        // Load mastery stats
+        const mastery = calculateOverallMastery()
+        setMasteryStats(mastery)
+
         if (xpProgressRes.ok) {
           const xpData = await xpProgressRes.json()
           // Use local XP if higher (user may have completed local modules)
@@ -878,6 +889,9 @@ export default function AcademyDashboard() {
         // Load daily goal progress
         const dailyProgress = getDailyGoalProgress()
         setDailyGoalProgress(dailyProgress)
+        // Load mastery stats
+        const mastery = calculateOverallMastery()
+        setMasteryStats(mastery)
       }
     } catch (err) {
       console.error('Failed to fetch academy data:', err)
@@ -925,7 +939,9 @@ export default function AcademyDashboard() {
     // Check if module was tested out via placement test
     const localProgress = getLocalProgress()
     const testedOutModules = localProgress.testedOutModules || []
+    const unlockedForReview = localProgress.unlockedForReview || []
     const isTestedOut = testedOutModules.includes(module.slug)
+    const isUnlockedForReview = unlockedForReview.includes(module.slug)
 
     // Check if previous modules are complete or tested out for locking
     let prevComplete = true
@@ -934,18 +950,38 @@ export default function AcademyDashboard() {
       const prevModule = modules[i]
       const prevProgress = progress[prevModule.id] || 0
       const prevTestedOut = testedOutModules.includes(prevModule.slug)
-      if (prevProgress < (prevModule.lesson_count || 0) && !prevTestedOut) {
+      const prevUnlockedForReview = unlockedForReview.includes(prevModule.slug)
+      if (prevProgress < (prevModule.lesson_count || 0) && !prevTestedOut && !prevUnlockedForReview) {
         prevComplete = false
         prevModuleTitle = prevModule.title
         break
       }
     }
 
-    const isLocked = index > 0 && !prevComplete && !isComplete && !isTestedOut
-    const isCurrent = !isComplete && !isLocked && (prevComplete || isTestedOut)
+    // A module is unlocked if: tested out, unlocked for review, complete, or previous complete
+    const isUnlocked = isTestedOut || isUnlockedForReview || isComplete || prevComplete
+    const isLocked = index > 0 && !isUnlocked
+    const isCurrent = !isComplete && !isLocked && (prevComplete || isTestedOut || isUnlockedForReview)
+    const needsReview = isUnlockedForReview && !isTestedOut && !isComplete
 
-    return { isComplete, isLocked, isCurrent, isTestedOut, prevModuleTitle }
+    return { isComplete, isLocked, isCurrent, isTestedOut, isUnlockedForReview, needsReview, prevModuleTitle }
   }
+
+  // Check if all modules are complete (for showing "Refine Your Edge" card)
+  const isAllModulesComplete = () => {
+    const localProgress = getLocalProgress()
+    const testedOutModules = localProgress.testedOutModules || []
+
+    return modules.every((module, index) => {
+      const moduleCompleted = progress[module.id] || 0
+      const total = module.lesson_count || 0
+      const isComplete = moduleCompleted >= total && total > 0
+      const isTestedOut = testedOutModules.includes(module.slug)
+      return isComplete || isTestedOut
+    })
+  }
+
+  const allModulesComplete = modules.length > 0 && isAllModulesComplete()
 
   // Handle locked module click
   const handleLockedModuleClick = (module, prevModuleTitle) => {
@@ -969,8 +1005,12 @@ export default function AcademyDashboard() {
   // Handle placement test completion
   const handlePlacementComplete = (placementLevel, rewards) => {
     setShowPlacementTest(false)
-    // Apply placement results - unlock modules up to placement level
-    applyPlacementResult(placementLevel)
+    // Apply placement results - unlock modules based on section scores
+    if (rewards?.sectionScores) {
+      applyPlacementResult(placementLevel, rewards.sectionScores)
+    } else {
+      applyPlacementResult(placementLevel)
+    }
 
     // Update local state with new achievements if any were awarded
     if (rewards?.achievements?.length > 0) {
@@ -981,30 +1021,65 @@ export default function AcademyDashboard() {
     fetchData()
   }
 
-  // Apply placement test results - unlock modules up to placement level
-  const applyPlacementResult = (placementLevel) => {
-    const UNLOCK_ORDER = ['newcomer', 'apprentice', 'trader', 'specialist', 'master']
-    const placementIndex = UNLOCK_ORDER.indexOf(placementLevel)
+  // Navigate to module from placement results
+  const handleNavigateToModule = (moduleSlug) => {
+    setShowPlacementTest(false)
+    navigate(`/academy/${moduleSlug}`)
+  }
 
-    if (placementIndex <= 0) return // No modules to unlock
+  // Apply placement test results - unlock modules based on section scores
+  const applyPlacementResult = (placementLevel, sectionScores = null) => {
+    const UNLOCK_ORDER = ['newcomer', 'apprentice', 'trader', 'specialist', 'master']
+    const passThreshold = 0.75
 
     // Get local progress
     const localProgress = getLocalProgress()
 
-    // Mark modules as "tested out" (not completed, but unlocked)
+    // Initialize arrays if they don't exist
     const testedOut = localProgress.testedOutModules || []
-    const moduleSlugs = modules.slice(0, placementIndex).map(m => m.slug)
+    const unlockedForReview = localProgress.unlockedForReview || []
+    const moduleScores = localProgress.moduleScores || {}
 
-    moduleSlugs.forEach(slug => {
-      if (!testedOut.includes(slug)) {
-        testedOut.push(slug)
+    if (sectionScores) {
+      // Unlock modules based on individual section scores
+      UNLOCK_ORDER.forEach(level => {
+        const score = sectionScores[level]
+        if (score > 0) {
+          // Save the score
+          moduleScores[level] = score
+
+          if (score >= passThreshold) {
+            // Passed - mark as tested out
+            if (!testedOut.includes(level)) {
+              testedOut.push(level)
+            }
+          } else {
+            // Attempted but didn't pass - unlock for review
+            if (!unlockedForReview.includes(level)) {
+              unlockedForReview.push(level)
+            }
+          }
+        }
+      })
+    } else {
+      // Fallback: Unlock based on placement level index
+      const placementIndex = UNLOCK_ORDER.indexOf(placementLevel)
+      if (placementIndex > 0) {
+        const moduleSlugs = UNLOCK_ORDER.slice(0, placementIndex)
+        moduleSlugs.forEach(slug => {
+          if (!testedOut.includes(slug)) {
+            testedOut.push(slug)
+          }
+        })
       }
-    })
+    }
 
     // Save to localStorage
     localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify({
       ...localProgress,
       testedOutModules: testedOut,
+      unlockedForReview: unlockedForReview,
+      moduleScores: moduleScores,
       placementLevel,
       placementDate: new Date().toISOString()
     }))
@@ -1039,6 +1114,7 @@ export default function AcademyDashboard() {
       <PlacementTest
         onComplete={handlePlacementComplete}
         onCancel={() => setShowPlacementTest(false)}
+        onNavigateToModule={handleNavigateToModule}
       />
     )
   }
@@ -1076,6 +1152,7 @@ export default function AcademyDashboard() {
         openAuthModal={openAuthModal}
         onDailyGoalClick={handleDailyGoalClick}
         onAchievementsClick={handleAchievementsClick}
+        masteryStats={masteryStats}
       />
 
       {/* Tab Navigation */}
@@ -1115,7 +1192,7 @@ export default function AcademyDashboard() {
             <section className="modules-section">
               <div className="modules-grid">
                 {modules.map((module, index) => {
-                  const { isComplete, isLocked, isCurrent, isTestedOut, prevModuleTitle } = getModuleState(module, index)
+                  const { isComplete, isLocked, isCurrent, isTestedOut, needsReview, prevModuleTitle } = getModuleState(module, index)
                   return (
                     <ModuleCard
                       key={module.id}
@@ -1125,10 +1202,47 @@ export default function AcademyDashboard() {
                       isLocked={isLocked}
                       isCurrent={isCurrent}
                       isTestedOut={isTestedOut}
+                      needsReview={needsReview}
                       onLockedClick={() => handleLockedModuleClick(module, prevModuleTitle)}
                     />
                   )
                 })}
+
+                {/* Refine Your Edge - 6th Module Card */}
+                <div
+                  className={`module-card glass-card refine-edge-card ${!allModulesComplete ? 'module-locked' : ''}`}
+                  onClick={() => allModulesComplete && setActiveTab('by-archetype')}
+                >
+                  {!allModulesComplete && (
+                    <div className="module-lock-overlay">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                      </svg>
+                    </div>
+                  )}
+
+                  <div className={`module-badge module-badge-${allModulesComplete ? 'next-step' : 'locked'}`}>
+                    {allModulesComplete ? 'NEXT STEP' : 'COMPLETE ALL'}
+                  </div>
+
+                  <div className="module-card-header">
+                    <div className="module-icon-wrapper refine-edge-icon">
+                      <span className="module-icon">🎯</span>
+                    </div>
+                  </div>
+
+                  <h3 className="module-title">Refine Your Edge</h3>
+                  <p className="module-subtitle refine-edge-subtitle">PERSONALIZED MASTERY</p>
+                  <p className="module-description">
+                    Master your unique trading style with archetype-specific lessons
+                  </p>
+
+                  <div className="module-footer refine-edge-footer">
+                    <span className="refine-edge-cta">
+                      {allModulesComplete ? 'Explore Your Archetype →' : 'Complete Trading 101 to unlock'}
+                    </span>
+                  </div>
+                </div>
               </div>
             </section>
 

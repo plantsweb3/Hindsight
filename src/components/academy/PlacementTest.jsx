@@ -31,8 +31,35 @@ function QuestionCard({ question, selected, onSelect, questionNumber }) {
   )
 }
 
+// Module info for review recommendations
+const MODULE_INFO = {
+  newcomer: { id: 'newcomer', name: 'Newcomer', fullName: 'Your First Steps', slug: 'newcomer' },
+  apprentice: { id: 'apprentice', name: 'Apprentice', fullName: 'Research & Defense', slug: 'apprentice' },
+  trader: { id: 'trader', name: 'Trader', fullName: 'Strategy & Execution', slug: 'trader' },
+  specialist: { id: 'specialist', name: 'Specialist', fullName: 'Psychology & Edge', slug: 'specialist' },
+  master: { id: 'master', name: 'Master', fullName: 'Scale & Optimize', slug: 'master' }
+}
+
+// Get modules that need review based on section scores
+function getModulesNeedingReview(sectionScores) {
+  const levels = ['newcomer', 'apprentice', 'trader', 'specialist', 'master']
+
+  return levels
+    .filter(level => {
+      const score = sectionScores[level]
+      // Show review recommendation if score is between 0 and 100% (not perfect)
+      return score > 0 && score < 1.0
+    })
+    .map(level => ({
+      ...MODULE_INFO[level],
+      score: sectionScores[level],
+      priority: sectionScores[level] < 0.5 ? 'high' : sectionScores[level] < 0.75 ? 'medium' : 'low'
+    }))
+    .sort((a, b) => a.score - b.score) // Lowest scores first
+}
+
 // Results Component
-function PlacementResults({ answers, onAccept, onStartFromBeginning }) {
+function PlacementResults({ answers, onAccept, onStartFromBeginning, onNavigateToModule }) {
   const placementLevel = determinePlacement(answers)
   const levelInfo = LEVEL_INFO[placementLevel]
 
@@ -51,6 +78,12 @@ function PlacementResults({ answers, onAccept, onStartFromBeginning }) {
   // Check for perfect scores
   const hasPerfectScore = Object.values(sectionScoresRaw).some(score => score === 1.0)
 
+  // Get modules that passed (75%+) - these are unlocked as "tested out"
+  const passedModules = levels.filter(level => sectionScoresRaw[level] >= PLACEMENT_TEST.passingThreshold)
+
+  // Get modules needing review (attempted but not perfect)
+  const modulesNeedingReview = getModulesNeedingReview(sectionScoresRaw)
+
   // Calculate scores for display
   const sectionScores = PLACEMENT_TEST.sections.map(section => {
     const score = sectionScoresRaw[section.level]
@@ -64,21 +97,21 @@ function PlacementResults({ answers, onAccept, onStartFromBeginning }) {
     }
   })
 
-  // Get list of modules tested out of
-  const testedOutModules = levels.slice(0, modulesTestedOut).map(level => {
+  // Get list of modules tested out of (passed 75%+)
+  const testedOutModules = passedModules.map(level => {
     const info = LEVEL_INFO[level]
     return { level, name: info?.name || level, icon: info?.icon || '📚' }
   })
 
   // Determine which achievements would be earned
   const potentialAchievements = []
-  if (modulesTestedOut >= 1) {
+  if (passedModules.length >= 1) {
     potentialAchievements.push('first-steps', 'module-master')
   }
   if (hasPerfectScore) {
     potentialAchievements.push('perfect-score')
   }
-  if (modulesTestedOut >= 5) {
+  if (passedModules.length >= 5) {
     potentialAchievements.push('expert-trader')
   }
 
@@ -108,10 +141,10 @@ function PlacementResults({ answers, onAccept, onStartFromBeginning }) {
       )}
 
       {/* Modules Tested Out */}
-      {modulesTestedOut > 0 && (
+      {testedOutModules.length > 0 && (
         <div className="placement-modules-unlocked">
           <h3 className="modules-unlocked-title">
-            You tested out of {modulesTestedOut} module{modulesTestedOut > 1 ? 's' : ''}:
+            You tested out of {testedOutModules.length} module{testedOutModules.length > 1 ? 's' : ''}:
           </h3>
           <div className="modules-unlocked-list">
             {testedOutModules.map(mod => (
@@ -145,6 +178,50 @@ function PlacementResults({ answers, onAccept, onStartFromBeginning }) {
                 </div>
               )
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Review Recommendations */}
+      {modulesNeedingReview.length > 0 && (
+        <div className="placement-review-recommendations">
+          <h3 className="review-recommendations-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            Recommended Review
+          </h3>
+          <p className="review-recommendations-desc">
+            Based on your answers, consider reviewing these areas:
+          </p>
+          <div className="review-modules-list">
+            {modulesNeedingReview.map(mod => (
+              <div key={mod.id} className={`review-module-card priority-${mod.priority}`}>
+                <div className="review-module-header">
+                  <span className="review-module-name">{mod.fullName}</span>
+                  <span className={`review-module-score score-${mod.priority}`}>
+                    {Math.round(mod.score * 100)}%
+                  </span>
+                </div>
+                <p className="review-module-reason">
+                  {mod.score < 0.5
+                    ? 'Needs significant review'
+                    : mod.score < 0.75
+                    ? 'Some gaps to fill'
+                    : 'Minor topics to review'}
+                </p>
+                <button
+                  className="review-module-btn"
+                  onClick={() => onNavigateToModule && onNavigateToModule(mod.slug)}
+                >
+                  Review {mod.name}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -200,7 +277,7 @@ function PlacementResults({ answers, onAccept, onStartFromBeginning }) {
 }
 
 // Main Placement Test Component
-export default function PlacementTest({ onComplete, onCancel }) {
+export default function PlacementTest({ onComplete, onCancel, onNavigateToModule }) {
   const [currentSection, setCurrentSection] = useState(0)
   const [answers, setAnswers] = useState({})
   const [showResults, setShowResults] = useState(false)
@@ -282,6 +359,7 @@ export default function PlacementTest({ onComplete, onCancel }) {
           answers={answers}
           onAccept={handleAcceptPlacement}
           onStartFromBeginning={handleStartFromBeginning}
+          onNavigateToModule={onNavigateToModule}
         />
       </div>
     )

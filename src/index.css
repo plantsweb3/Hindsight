@@ -14456,6 +14456,72 @@ input, button {
   border: 1px solid rgba(234, 179, 8, 0.3);
 }
 
+.module-badge-review {
+  background: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+  border: 1px solid rgba(251, 146, 60, 0.3);
+}
+
+/* Module needs review styling */
+.module-needs-review {
+  border-color: rgba(251, 146, 60, 0.3);
+}
+
+.module-needs-review:hover {
+  border-color: rgba(251, 146, 60, 0.5);
+}
+
+/* Refine Your Edge card styling */
+.refine-edge-card {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(236, 72, 153, 0.15));
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.refine-edge-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(139, 92, 246, 0.1) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+.refine-edge-card:hover {
+  border-color: rgba(139, 92, 246, 0.5);
+  transform: translateY(-2px);
+}
+
+.refine-edge-card .module-badge {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.3));
+  border: 1px solid rgba(139, 92, 246, 0.5);
+  color: #c4b5fd;
+}
+
+/* Lesson mastery color coding for dots */
+.module-dot.mastery-not-started {
+  background: rgba(113, 113, 122, 0.3);
+  border: 1px solid rgba(113, 113, 122, 0.5);
+}
+
+.module-dot.mastery-in-progress {
+  background: rgba(59, 130, 246, 0.4);
+  border: 1px solid rgba(59, 130, 246, 0.6);
+}
+
+.module-dot.mastery-completed-partial {
+  background: rgba(234, 179, 8, 0.4);
+  border: 1px solid rgba(234, 179, 8, 0.6);
+}
+
+.module-dot.mastery-mastered {
+  background: rgba(34, 197, 94, 0.4);
+  border: 1px solid rgba(34, 197, 94, 0.6);
+}
+
 /* ========================================
    Placement Test Styles
    ======================================== */
@@ -15048,6 +15114,125 @@ input, button {
   color: #52525b;
   margin: 0.75rem 0 0;
   text-align: left;
+}
+
+/* Review Recommendations */
+.placement-review-recommendations {
+  width: 100%;
+  max-width: 480px;
+  background: rgba(251, 146, 60, 0.08);
+  border: 1px solid rgba(251, 146, 60, 0.25);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.review-recommendations-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #fb923c;
+  margin: 0 0 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.review-recommendations-subtitle {
+  font-size: 0.8125rem;
+  color: #a1a1aa;
+  margin: 0 0 1rem;
+}
+
+.review-recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.review-module-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.review-module-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(251, 146, 60, 0.3);
+}
+
+.review-module-card.high-priority {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.review-module-card.medium-priority {
+  border-color: rgba(251, 146, 60, 0.3);
+}
+
+.review-module-card.low-priority {
+  border-color: rgba(234, 179, 8, 0.3);
+}
+
+.review-module-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.review-module-info {
+  flex: 1;
+  text-align: left;
+}
+
+.review-module-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 0.25rem;
+}
+
+.review-module-reason {
+  font-size: 0.75rem;
+  color: #a1a1aa;
+}
+
+.review-module-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.review-score-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fb923c;
+}
+
+.review-score-value.low {
+  color: #ef4444;
+}
+
+.review-score-value.medium {
+  color: #fb923c;
+}
+
+.review-score-value.high {
+  color: #eab308;
+}
+
+.review-score-label {
+  font-size: 0.6875rem;
+  color: #71717a;
+  text-transform: uppercase;
+}
+
+.review-module-arrow {
+  color: #52525b;
+  flex-shrink: 0;
 }
 
 .result-description {
