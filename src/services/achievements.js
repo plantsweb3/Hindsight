@@ -185,24 +185,46 @@ export function getAllLessonScores() {
   }
 }
 
+// Get placement test scores from localStorage
+export function getPlacementTestScores() {
+  try {
+    const data = localStorage.getItem(LOCAL_PROGRESS_KEY)
+    const progress = data ? JSON.parse(data) : {}
+    return progress.moduleScores || {}
+  } catch {
+    return {}
+  }
+}
+
 // Calculate overall mastery percentage
+// Includes both lesson quiz scores AND placement test section scores
 export function calculateOverallMastery() {
   const lessonScores = getAllLessonScores()
-  const scores = Object.values(lessonScores)
+  const placementScores = getPlacementTestScores()
 
-  if (scores.length === 0) {
+  // Collect all scores - from lesson quizzes
+  const allScores = Object.values(lessonScores).map(s => s.bestScore).filter(s => s != null)
+
+  // Also include placement test section scores (they're already 0-1 scale)
+  Object.values(placementScores).forEach(score => {
+    if (score != null && score > 0) {
+      allScores.push(score)
+    }
+  })
+
+  if (allScores.length === 0) {
     return { percentage: 0, quizzesAttempted: 0, quizzesMastered: 0, label: 'Not Started' }
   }
 
-  const totalScore = scores.reduce((sum, s) => sum + (s.bestScore || 0), 0)
-  const averageScore = totalScore / scores.length
-  const mastered = scores.filter(s => s.bestScore >= 1.0).length
+  const totalScore = allScores.reduce((sum, s) => sum + s, 0)
+  const averageScore = totalScore / allScores.length
+  const mastered = allScores.filter(s => s >= 1.0).length
 
   return {
     percentage: Math.round(averageScore * 100),
-    quizzesAttempted: scores.length,
+    quizzesAttempted: allScores.length,
     quizzesMastered: mastered,
-    label: `${scores.length} quizzes`
+    label: `${allScores.length} quizzes`
   }
 }
 

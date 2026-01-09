@@ -343,7 +343,8 @@ export default function PlacementTest({ onComplete, onCancel, onNavigateToModule
   const handleAcceptPlacement = (level, sectionScores) => {
     // Award XP and achievements for tested out modules
     const rewards = awardPlacementRewards(level, sectionScores)
-    onComplete(level, rewards)
+    // Include section scores in rewards so AcademyDashboard can unlock modules
+    onComplete(level, { ...rewards, sectionScores })
   }
 
   // Start from beginning - no rewards

@@ -5,6 +5,7 @@ import { useAchievements } from '../../contexts/AchievementContext'
 import Quiz from './Quiz'
 import { NEWCOMER_QUIZZES, getQuizByLessonSlug } from '../../data/quizzes/newcomer'
 import { getTrading101Lesson, hasLocalModule, getTrading101LessonQuiz } from '../../data/academy/modules'
+import { saveLessonQuizScore, getLessonProgress } from '../../services/achievements'
 
 // Helper for local progress tracking
 const LOCAL_PROGRESS_KEY = 'hindsight_academy_progress'
@@ -110,10 +111,10 @@ export default function LessonView() {
 
   // Fetch quiz scores when lesson loads
   useEffect(() => {
-    if (token && quiz) {
+    if (quiz) {
       fetchQuizScore()
     }
-  }, [token, lessonSlug])
+  }, [token, lessonSlug, moduleSlug])
 
   const fetchLesson = async () => {
     setIsLoading(true)
@@ -171,19 +172,31 @@ export default function LessonView() {
   }
 
   const fetchQuizScore = async () => {
-    try {
-      const res = await fetch('/api/academy/quiz/scores', {
-        headers: { 'Authorization': `Bearer ${token}` }
+    // First check localStorage for local modules
+    const localScore = getLessonProgress(moduleSlug, lessonSlug)
+    if (localScore) {
+      setQuizScore({
+        best_score: Math.round(localScore.bestScore * 5), // Convert to 0-5 scale
+        best_xp_earned: localScore.bestScore >= 0.8 ? 10 : 0
       })
-      if (res.ok) {
-        const data = await res.json()
-        const score = data.scores?.find(s => s.quiz_id === lessonSlug)
-        if (score) {
-          setQuizScore(score)
+    }
+
+    // Also try API if authenticated
+    if (token) {
+      try {
+        const res = await fetch('/api/academy/quiz/scores', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          const score = data.scores?.find(s => s.quiz_id === lessonSlug)
+          if (score) {
+            setQuizScore(score)
+          }
         }
+      } catch (err) {
+        console.error('Failed to fetch quiz score:', err)
       }
-    } catch (err) {
-      console.error('Failed to fetch quiz score:', err)
     }
   }
 
@@ -231,6 +244,10 @@ export default function LessonView() {
   }
 
   const handleQuizComplete = (results) => {
+    // Save quiz score to localStorage for mastery tracking
+    const totalQuestions = quiz?.questions?.length || 5
+    saveLessonQuizScore(moduleSlug, lessonSlug, results.score, totalQuestions)
+
     setQuizScore({
       best_score: results.score,
       best_xp_earned: results.xpEarned

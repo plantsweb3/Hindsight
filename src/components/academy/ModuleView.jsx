@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useParams, useOutletContext } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { getTrading101Module, hasLocalModule } from '../../data/academy/modules'
+import { getLessonProgress, getLessonMastery, LESSON_MASTERY } from '../../services/achievements'
 
 // Helper for local progress tracking (same as LessonView)
 const LOCAL_PROGRESS_KEY = 'hindsight_academy_progress'
@@ -23,24 +24,52 @@ function getCompletedLessonsForModule(moduleSlug) {
     .map(key => key.replace(prefix, ''))
 }
 
-function LessonCard({ lesson, moduleSlug, isCompleted }) {
+// Get quiz score for a lesson
+function getLessonQuizScore(moduleSlug, lessonSlug) {
+  const progress = getLessonProgress(moduleSlug, lessonSlug)
+  if (!progress) return null
+  return {
+    bestScore: progress.bestScore,
+    percentage: Math.round(progress.bestScore * 100),
+    mastery: getLessonMastery(progress.bestScore, true)
+  }
+}
+
+function LessonCard({ lesson, moduleSlug, isCompleted, quizScore }) {
+  // Determine mastery color for visual indicator
+  const getMasteryColor = () => {
+    if (!quizScore) return 'gray'
+    if (quizScore.percentage >= 100) return 'green'
+    if (quizScore.percentage >= 80) return 'yellow'
+    return 'blue'
+  }
+
+  const masteryColor = getMasteryColor()
+
   return (
     <Link
       to={`/academy/${moduleSlug}/${lesson.slug}`}
-      className={`lesson-card glass-card ${isCompleted ? 'lesson-completed' : ''}`}
+      className={`lesson-card glass-card ${isCompleted ? 'lesson-completed' : ''} lesson-mastery-${masteryColor}`}
     >
       <div className="lesson-card-header">
         <span className={`lesson-difficulty difficulty-${lesson.difficulty}`}>
           {lesson.difficulty}
         </span>
-        {isCompleted && (
-          <span className="lesson-completed-badge">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-            Completed
-          </span>
-        )}
+        <div className="lesson-status-badges">
+          {quizScore && (
+            <span className={`quiz-score-badge score-${masteryColor}`}>
+              {quizScore.percentage}%
+            </span>
+          )}
+          {isCompleted && (
+            <span className="lesson-completed-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Completed
+            </span>
+          )}
+        </div>
       </div>
       <h3 className="lesson-card-title">{lesson.title}</h3>
       <p className="lesson-card-desc">{lesson.description}</p>
@@ -229,16 +258,20 @@ export default function ModuleView() {
       <section className="lessons-section">
         <h2 className="lessons-title">Lessons</h2>
         <div className="lessons-list">
-          {module.lessons?.map((lesson, index) => (
-            <div key={lesson.id} className="lesson-item">
-              <span className="lesson-number">{index + 1}</span>
-              <LessonCard
-                lesson={lesson}
-                moduleSlug={moduleSlug}
-                isCompleted={completedLessonIds.has(lesson.id) || completedLessonIds.has(lesson.slug)}
-              />
-            </div>
-          ))}
+          {module.lessons?.map((lesson, index) => {
+            const quizScore = getLessonQuizScore(moduleSlug, lesson.slug)
+            return (
+              <div key={lesson.id} className="lesson-item">
+                <span className="lesson-number">{index + 1}</span>
+                <LessonCard
+                  lesson={lesson}
+                  moduleSlug={moduleSlug}
+                  isCompleted={completedLessonIds.has(lesson.id) || completedLessonIds.has(lesson.slug)}
+                  quizScore={quizScore}
+                />
+              </div>
+            )
+          })}
         </div>
       </section>
     </div>

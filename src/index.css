@@ -10113,6 +10113,72 @@ input, button {
   color: #22c55e;
 }
 
+.lesson-status-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Quiz Score Badges */
+.quiz-score-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+}
+
+.score-green {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.score-yellow {
+  color: #eab308;
+  background: rgba(234, 179, 8, 0.15);
+}
+
+.score-blue {
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.15);
+}
+
+.score-gray {
+  color: #71717a;
+  background: rgba(113, 113, 122, 0.15);
+}
+
+/* Lesson Card Mastery Colors - Left Border Indicator */
+.lesson-card {
+  position: relative;
+}
+
+.lesson-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 4px 0 0 4px;
+  background: rgba(113, 113, 122, 0.3);
+}
+
+.lesson-mastery-green::before {
+  background: #22c55e;
+}
+
+.lesson-mastery-yellow::before {
+  background: #eab308;
+}
+
+.lesson-mastery-blue::before {
+  background: #6366f1;
+}
+
+.lesson-mastery-gray::before {
+  background: rgba(113, 113, 122, 0.3);
+}
+
 .lesson-card-title {
   font-size: 1rem;
   font-weight: 600;
