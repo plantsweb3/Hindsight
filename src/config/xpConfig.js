@@ -100,27 +100,39 @@ export const ACHIEVEMENT_XP = {
   'dedicated-learner': 200,
 }
 
+// Level Thresholds - Updated for better progression feel
+//
+// Design Rationale:
+// - Newcomer (1-2): Just starting, 0-249 XP
+// - Apprentice (3-4): Learning basics, 250-599 XP
+// - Trader (5-6): Has foundational knowledge, 600-1099 XP
+// - Specialist (7-8): Solid understanding, 1100-1799 XP
+// - Master (9-10): Advanced knowledge, 1800-2999 XP
+// - Expert (11-12): Comprehensive mastery, 3000-5499 XP
+// - Grandmaster (13-14): Elite tier, 5500-9999 XP
+// - Legend (15): Maximum achievement, 10000+ XP
+//
+// Expected outcomes:
+// - Aces placement test (~1000-1200 XP) → Specialist (Level 7)
+// - Passes most modules (~600-800 XP) → Trader (Level 5-6)
+// - Completes all content + consistency → Expert/Grandmaster
+// - Legend requires significant time investment
 export const LEVEL_THRESHOLDS = [
   { level: 1, xpRequired: 0, title: 'Newcomer' },
-  { level: 2, xpRequired: 50, title: 'Newcomer' },
-  { level: 3, xpRequired: 150, title: 'Newcomer' },
-  { level: 4, xpRequired: 300, title: 'Apprentice' },
-  { level: 5, xpRequired: 500, title: 'Apprentice' },
-  { level: 6, xpRequired: 750, title: 'Apprentice' },
-  { level: 7, xpRequired: 1000, title: 'Trader' },
-  { level: 8, xpRequired: 1500, title: 'Trader' },
-  { level: 9, xpRequired: 2000, title: 'Trader' },
-  { level: 10, xpRequired: 3000, title: 'Specialist' },
-  { level: 11, xpRequired: 4000, title: 'Specialist' },
-  { level: 12, xpRequired: 5500, title: 'Specialist' },
-  { level: 13, xpRequired: 7000, title: 'Master' },
-  { level: 14, xpRequired: 9000, title: 'Master' },
-  { level: 15, xpRequired: 11000, title: 'Master' },
-  { level: 16, xpRequired: 14000, title: 'Grandmaster' },
-  { level: 17, xpRequired: 17000, title: 'Grandmaster' },
-  { level: 18, xpRequired: 21000, title: 'Grandmaster' },
-  { level: 19, xpRequired: 25000, title: 'Legend' },
-  { level: 20, xpRequired: 30000, title: 'Legend' },
+  { level: 2, xpRequired: 100, title: 'Newcomer' },
+  { level: 3, xpRequired: 250, title: 'Apprentice' },
+  { level: 4, xpRequired: 400, title: 'Apprentice' },
+  { level: 5, xpRequired: 600, title: 'Trader' },
+  { level: 6, xpRequired: 850, title: 'Trader' },
+  { level: 7, xpRequired: 1100, title: 'Specialist' },
+  { level: 8, xpRequired: 1400, title: 'Specialist' },
+  { level: 9, xpRequired: 1800, title: 'Master' },
+  { level: 10, xpRequired: 2300, title: 'Master' },
+  { level: 11, xpRequired: 3000, title: 'Expert' },
+  { level: 12, xpRequired: 4000, title: 'Expert' },
+  { level: 13, xpRequired: 5500, title: 'Grandmaster' },
+  { level: 14, xpRequired: 7500, title: 'Grandmaster' },
+  { level: 15, xpRequired: 10000, title: 'Legend' },
 ]
 
 export const ACHIEVEMENTS = {

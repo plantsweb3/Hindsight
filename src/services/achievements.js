@@ -704,8 +704,9 @@ export function checkAchievements(stats, earnedAchievements = [], event = null, 
     newAchievements.push('module-master')
   }
 
-  // Rising Star - 500 XP
-  if (!earnedAchievements.includes('rising-star') && stats.totalXp >= 500) {
+  // Rising Star - 500 XP (use calculated XP, not stored total)
+  const calculatedXpForCheck = calculateTotalXP()
+  if (!earnedAchievements.includes('rising-star') && calculatedXpForCheck >= 500) {
     newAchievements.push('rising-star')
   }
 
