@@ -486,16 +486,16 @@ function getDifficultyDotClass(difficulty) {
 function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent = false, isComplete = false, isTestedOut = false, needsReview = false, onLockedClick, lessonMasteries = [], lessonDotStatuses = [] }) {
   const navigate = useNavigate()
   const totalLessons = module.lesson_count || 0
-  const completionProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
 
-  // Calculate average mastery percentage for display
-  const masteriesWithScores = lessonMasteries.filter(m => m.percentage != null)
-  const avgMastery = masteriesWithScores.length > 0
-    ? Math.round(masteriesWithScores.reduce((sum, m) => sum + m.percentage, 0) / masteriesWithScores.length)
-    : null
+  // Calculate progress from dot statuses (filled = passed)
+  const passedLessons = lessonDotStatuses.filter(d => d?.filled === true).length
+  const hasAnyProgress = passedLessons > 0 || lessonDotStatuses.some(d => d?.source && d.source !== 'not-started')
 
-  // Use mastery for progress bar if available, otherwise use completion
-  const progressBarPercent = avgMastery !== null ? avgMastery : completionProgress
+  // Calculate percentage based on passed lessons
+  const progressPercent = totalLessons > 0 ? Math.round((passedLessons / totalLessons) * 100) : 0
+
+  // Use this for both progress bar and display
+  const progressBarPercent = progressPercent
 
   const cardClasses = [
     'module-card',
@@ -608,11 +608,11 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
           <div className="module-progress-track">
             <div className="module-progress-fill" style={{ width: `${progressBarPercent}%` }} />
           </div>
-          {/* Show mastery percentage with purple glow if available */}
-          {avgMastery !== null ? (
-            <span className="module-mastery-label">{avgMastery}%</span>
+          {/* Show purple glowing percentage when there's progress */}
+          {hasAnyProgress ? (
+            <span className="module-mastery-label">{progressPercent}%</span>
           ) : (
-            <span className="module-progress-label">{completedLessons}/{totalLessons}</span>
+            <span className="module-progress-label">0/{totalLessons}</span>
           )}
         </div>
       </div>
