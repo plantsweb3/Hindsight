@@ -100,7 +100,7 @@ export default function LessonView() {
         })
         if (progressRes.ok) {
           const progressData = await progressRes.json()
-          const completed = progressData.progress?.some(p => p.lesson_id === lessonData.lesson.id)
+          const completed = progressData.progress?.completedLessonIds?.includes(lessonData.lesson.id)
           setIsCompleted(completed)
         }
       }
