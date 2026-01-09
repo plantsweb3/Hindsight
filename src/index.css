@@ -12543,6 +12543,32 @@ input, button {
   background: #ef4444; /* red */
 }
 
+/* Hollow dots - transparent with colored border */
+.module-dot.hollow {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.module-dot.hollow.dot-beginner {
+  border-color: #22c55e; /* green */
+}
+
+.module-dot.hollow.dot-beginner-plus {
+  border-color: #3b82f6; /* blue */
+}
+
+.module-dot.hollow.dot-intermediate {
+  border-color: #eab308; /* yellow */
+}
+
+.module-dot.hollow.dot-advanced {
+  border-color: #f97316; /* orange */
+}
+
+.module-dot.hollow.dot-expert {
+  border-color: #ef4444; /* red */
+}
+
 .module-dot-more {
   font-size: 0.625rem;
   color: #71717a;

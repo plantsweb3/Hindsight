@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { PLACEMENT_TEST, determinePlacement, calculateSectionScore, LEVEL_INFO } from '../../data/academy/placementTest'
+import { PLACEMENT_TEST, determinePlacement, calculateSectionScore, LEVEL_INFO, savePlacementQuestionResults } from '../../data/academy/placementTest'
 import { calculatePlacementXP, awardPlacementRewards, ACHIEVEMENTS, hasCompletedPlacementTest } from '../../services/achievements'
 
 // Question Card Component
@@ -350,10 +350,12 @@ export default function PlacementTest({ onComplete, onCancel, onNavigateToModule
 
   // Accept placement and continue - awards XP and achievements
   const handleAcceptPlacement = (level, sectionScores) => {
+    // Save individual question results for per-lesson tracking
+    const questionResults = savePlacementQuestionResults(answers)
     // Award XP and achievements for tested out modules
     const rewards = awardPlacementRewards(level, sectionScores)
-    // Include section scores in rewards so AcademyDashboard can unlock modules
-    onComplete(level, { ...rewards, sectionScores })
+    // Include section scores and question results in rewards
+    onComplete(level, { ...rewards, sectionScores, questionResults })
   }
 
   // Start from beginning - no rewards

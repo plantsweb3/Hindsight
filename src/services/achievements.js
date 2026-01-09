@@ -368,6 +368,59 @@ export function getModuleLessonMasteries(moduleSlug, lessonSlugs) {
   })
 }
 
+// Get lesson dot status for module cards
+// Determines if a dot should be filled (passed) or hollow (needs review/not started)
+// Priority: 1. Lesson quiz completion, 2. Placement test results
+export function getLessonDotStatus(moduleId, lessonSlug) {
+  // PRIORITY 1: Check if user completed the actual lesson quiz
+  const lessonScores = getAllLessonScores()
+  const lessonKey = `${moduleId}/${lessonSlug}`
+  const quizScore = lessonScores[lessonKey]
+
+  if (quizScore && quizScore.bestScore != null) {
+    // Lesson was completed via quiz - filled if passed (80%+)
+    const passed = quizScore.bestScore >= 0.8
+    return {
+      filled: passed,
+      source: passed ? 'quiz-passed' : 'quiz-failed',
+      percentage: Math.round(quizScore.bestScore * 100)
+    }
+  }
+
+  // PRIORITY 2: Check placement test results for this lesson
+  try {
+    const bestQuestionResults = JSON.parse(localStorage.getItem('placementTestBestQuestionResults') || '{}')
+
+    // Find the question that maps to this lesson
+    const matchingResult = Object.values(bestQuestionResults).find(
+      result => result.moduleId === moduleId && result.lessonSlug === lessonSlug
+    )
+
+    if (matchingResult) {
+      return {
+        filled: matchingResult.correct,
+        source: matchingResult.correct ? 'placement-passed' : 'placement-failed'
+      }
+    }
+  } catch {
+    // Ignore errors
+  }
+
+  // PRIORITY 3: Not attempted
+  return {
+    filled: false,
+    source: 'not-started'
+  }
+}
+
+// Get all lesson dot statuses for a module
+export function getModuleLessonDotStatuses(moduleId, lessonSlugs) {
+  return lessonSlugs.map(slug => ({
+    lessonSlug: slug,
+    ...getLessonDotStatus(moduleId, slug)
+  }))
+}
+
 // Get average mastery for a module (for module card display)
 // Returns { percentage: number (0-100), lessonsWithMastery: number, totalLessons: number }
 export function getModuleMasteryAverage(moduleSlug, lessonSlugs) {

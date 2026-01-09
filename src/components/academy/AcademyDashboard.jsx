@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useAchievements } from '../../contexts/AchievementContext'
 import { getArchetypeModule, hasArchetypeModule } from '../../data/academy/archetypes'
 import { hasLocalModule, getTrading101Module } from '../../data/academy/modules'
-import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores, calculateTotalXP, getPlacementBestScores, getPlacementLatestScores, getModuleLessonMasteries } from '../../services/achievements'
+import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores, calculateTotalXP, getPlacementBestScores, getPlacementLatestScores, getModuleLessonMasteries, getModuleLessonDotStatuses } from '../../services/achievements'
 import { getLevelInfo, DAILY_GOALS, DEFAULT_DAILY_GOAL } from '../../config/xpConfig'
 import { getArchetypeRecommendations, getWalletAnalysisInsights } from '../../data/academy/archetypeRecommendations'
 import PlacementTest from './PlacementTest'
@@ -483,7 +483,7 @@ function getDifficultyDotClass(difficulty) {
 }
 
 // Enhanced Module Card Component
-function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent = false, isComplete = false, isTestedOut = false, needsReview = false, onLockedClick, lessonMasteries = [] }) {
+function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent = false, isComplete = false, isTestedOut = false, needsReview = false, onLockedClick, lessonMasteries = [], lessonDotStatuses = [] }) {
   const navigate = useNavigate()
   const totalLessons = module.lesson_count || 0
   const completionProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
@@ -575,17 +575,30 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
       <p className="module-description">{module.description}</p>
 
       <div className="module-footer">
-        {/* Progress dots - colored based on module difficulty level */}
+        {/* Progress dots - color = difficulty, fill = passed/failed */}
         <div className="module-dots">
           {Array.from({ length: Math.min(totalLessons, 6) }).map((_, i) => {
-            const mastery = lessonMasteries[i]
-            const hasMastery = mastery?.percentage != null && mastery.percentage > 0
+            const dotStatus = lessonDotStatuses[i]
             const difficultyClass = getDifficultyDotClass(module.difficulty)
+            const isFilled = dotStatus?.filled === true
+
+            // Build tooltip based on source
+            let tooltip = 'Not started'
+            if (dotStatus?.source === 'quiz-passed') {
+              tooltip = `${dotStatus.percentage}% - Passed`
+            } else if (dotStatus?.source === 'quiz-failed') {
+              tooltip = `${dotStatus.percentage}% - Needs review`
+            } else if (dotStatus?.source === 'placement-passed') {
+              tooltip = 'Tested out'
+            } else if (dotStatus?.source === 'placement-failed') {
+              tooltip = 'Needs review'
+            }
+
             return (
               <span
                 key={i}
-                className={`module-dot ${hasMastery ? 'filled' : ''} ${hasMastery ? difficultyClass : ''}`}
-                title={mastery?.percentage != null ? `${mastery.percentage}%` : 'Not started'}
+                className={`module-dot ${isFilled ? 'filled' : 'hollow'} ${difficultyClass}`}
+                title={tooltip}
               />
             )
           })}
@@ -1253,13 +1266,15 @@ export default function AcademyDashboard() {
               <div className="modules-grid">
                 {modules.map((module, index) => {
                   const { isComplete, isLocked, isCurrent, isTestedOut, needsReview, prevModuleTitle } = getModuleState(module, index)
-                  // Get lesson masteries for this module
+                  // Get lesson masteries and dot statuses for this module
                   let lessonMasteries = []
+                  let lessonDotStatuses = []
                   if (hasLocalModule(module.slug)) {
                     const localModule = getTrading101Module(module.slug)
                     if (localModule?.lessons) {
                       const lessonSlugs = localModule.lessons.map(l => l.slug)
                       lessonMasteries = getModuleLessonMasteries(module.slug, lessonSlugs)
+                      lessonDotStatuses = getModuleLessonDotStatuses(module.slug, lessonSlugs)
                     }
                   }
                   return (
@@ -1274,6 +1289,7 @@ export default function AcademyDashboard() {
                       needsReview={needsReview}
                       onLockedClick={() => handleLockedModuleClick(module, prevModuleTitle)}
                       lessonMasteries={lessonMasteries}
+                      lessonDotStatuses={lessonDotStatuses}
                     />
                   )
                 })}
