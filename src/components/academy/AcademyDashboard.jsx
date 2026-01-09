@@ -608,12 +608,8 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
           <div className="module-progress-track">
             <div className="module-progress-fill" style={{ width: `${progressBarPercent}%` }} />
           </div>
-          {/* Show purple glowing percentage when there's progress */}
-          {hasAnyProgress ? (
-            <span className="module-mastery-label">{progressPercent}%</span>
-          ) : (
-            <span className="module-progress-label">0/{totalLessons}</span>
-          )}
+          {/* Always show purple glowing percentage */}
+          <span className="module-mastery-label">{progressPercent}%</span>
         </div>
       </div>
     </div>
