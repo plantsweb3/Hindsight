@@ -852,7 +852,7 @@ function ArchetypeModuleCard({ archetype, isUserArchetype = false, onClick }) {
     >
       {/* Badges */}
       <div className="archetype-module-badges">
-        <span className="archetype-badge-type">Archetype</span>
+        <span className={`archetype-badge-type ${dotClass}`}>Archetype</span>
         {isMastered && <span className="archetype-badge-mastered">Mastered</span>}
         {isUserArchetype && <span className="archetype-badge-yours">Your Type</span>}
       </div>
