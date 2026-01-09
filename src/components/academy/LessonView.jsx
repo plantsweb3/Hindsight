@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate, useOutletContext } from 'react-router-dom
 import { useAuth } from '../../contexts/AuthContext'
 import Quiz from './Quiz'
 import { NEWCOMER_QUIZZES, getQuizByLessonSlug } from '../../data/quizzes/newcomer'
+import { getTrading101Lesson, hasLocalModule } from '../../data/academy/modules'
 
 function MarkdownContent({ content }) {
   // Simple markdown-to-html conversion for basic formatting
@@ -82,18 +83,31 @@ export default function LessonView() {
     setError('')
 
     try {
-      // Fetch lesson
-      const lessonRes = await fetch(`/api/academy/lessons/${moduleSlug}/${lessonSlug}`)
-      if (!lessonRes.ok) {
-        if (lessonRes.status === 404) {
-          throw new Error('Lesson not found')
+      let lessonData = null
+
+      // Check for local data first
+      if (hasLocalModule(moduleSlug)) {
+        const localLesson = getTrading101Lesson(moduleSlug, lessonSlug)
+        if (localLesson) {
+          lessonData = { lesson: localLesson }
         }
-        throw new Error('Failed to fetch lesson')
       }
-      const lessonData = await lessonRes.json()
+
+      // Fall back to API if no local data
+      if (!lessonData) {
+        const lessonRes = await fetch(`/api/academy/lessons/${moduleSlug}/${lessonSlug}`)
+        if (!lessonRes.ok) {
+          if (lessonRes.status === 404) {
+            throw new Error('Lesson not found')
+          }
+          throw new Error('Failed to fetch lesson')
+        }
+        lessonData = await lessonRes.json()
+      }
+
       setLesson(lessonData.lesson)
 
-      // Check if completed
+      // Check if completed (still use API for progress tracking)
       if (token) {
         const progressRes = await fetch('/api/academy/progress', {
           headers: { 'Authorization': `Bearer ${token}` }

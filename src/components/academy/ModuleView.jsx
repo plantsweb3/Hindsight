@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams, useOutletContext } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { getTrading101Module, hasLocalModule } from '../../data/academy/modules'
 
 function LessonCard({ lesson, moduleSlug, isCompleted }) {
   return (
@@ -60,15 +61,41 @@ export default function ModuleView() {
     setError('')
 
     try {
-      // Fetch module with lessons
-      const moduleRes = await fetch(`/api/academy/modules/${moduleSlug}`)
-      if (!moduleRes.ok) {
-        if (moduleRes.status === 404) {
-          throw new Error('Module not found')
+      let moduleData = null
+
+      // Check for local data first
+      if (hasLocalModule(moduleSlug)) {
+        const localModule = getTrading101Module(moduleSlug)
+        if (localModule) {
+          // Transform local module to match API format
+          moduleData = {
+            module: {
+              ...localModule,
+              lessons: localModule.lessons.map(l => ({
+                id: l.id,
+                title: l.title,
+                slug: l.slug,
+                description: l.description,
+                reading_time: l.readTime,
+                difficulty: l.difficulty
+              }))
+            }
+          }
         }
-        throw new Error('Failed to fetch module')
       }
-      const moduleData = await moduleRes.json()
+
+      // Fall back to API if no local data
+      if (!moduleData) {
+        const moduleRes = await fetch(`/api/academy/modules/${moduleSlug}`)
+        if (!moduleRes.ok) {
+          if (moduleRes.status === 404) {
+            throw new Error('Module not found')
+          }
+          throw new Error('Failed to fetch module')
+        }
+        moduleData = await moduleRes.json()
+      }
+
       setModule(moduleData.module)
 
       // If authenticated, fetch progress
