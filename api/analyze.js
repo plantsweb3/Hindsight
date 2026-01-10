@@ -527,13 +527,22 @@ export default async function handler(req, res) {
 
   console.log(`Analyzing: ${walletAddress}`)
 
+  // Track execution time to avoid timeout
+  const startTime = Date.now()
+  const MAX_EXECUTION_TIME = 280000 // 280 seconds (leave 20s buffer for response)
+
+  const isApproachingTimeout = () => {
+    const elapsed = Date.now() - startTime
+    return elapsed > MAX_EXECUTION_TIME
+  }
+
   try {
     const connection = new Connection(RPC_URL, 'confirmed')
     const pubkey = new PublicKey(walletAddress)
 
     // Fetch transaction history with pagination
-    // Default to fetching up to 1000 transactions (10 pages of 100)
-    const MAX_SIGNATURES = 1000
+    // Reduced from 1000 to 500 for better performance and timeout avoidance
+    const MAX_SIGNATURES = 500
     const PAGE_SIZE = 100
     let allSignatures = []
     let lastSignature = null
@@ -542,6 +551,12 @@ export default async function handler(req, res) {
     console.log(`Fetching transaction history (up to ${MAX_SIGNATURES} transactions)...`)
 
     while (allSignatures.length < MAX_SIGNATURES) {
+      // Check timeout before fetching more signatures
+      if (isApproachingTimeout()) {
+        console.log(`Approaching timeout, stopping signature fetch at ${allSignatures.length} signatures`)
+        break
+      }
+
       const options = { limit: PAGE_SIZE }
       if (lastSignature) {
         options.before = lastSignature
@@ -568,7 +583,7 @@ export default async function handler(req, res) {
 
       // Small delay to avoid rate limiting
       if (allSignatures.length < MAX_SIGNATURES) {
-        await new Promise(r => setTimeout(r, 100))
+        await new Promise(r => setTimeout(r, 50))
       }
     }
 
@@ -599,10 +614,18 @@ export default async function handler(req, res) {
     }
 
     const trades = []
+    let processedCount = 0
 
     // Process transactions in batches to avoid overwhelming the RPC
-    const BATCH_SIZE = 20
+    // Increased batch size for better throughput
+    const BATCH_SIZE = 25
     for (let i = 0; i < allSignatures.length; i += BATCH_SIZE) {
+      // Check timeout before processing more batches
+      if (isApproachingTimeout()) {
+        console.log(`Approaching timeout, stopping at ${processedCount}/${allSignatures.length} transactions processed`)
+        break
+      }
+
       const batch = allSignatures.slice(i, i + BATCH_SIZE)
       const batchPromises = batch.map(async (sig, idx) => {
         try {
@@ -617,35 +640,49 @@ export default async function handler(req, res) {
             }
           }
         } catch (err) {
-          console.warn(`Error fetching tx ${i + idx}: ${err.message}`)
+          // Silently skip failed transactions to avoid log spam
+          return null
         }
         return null
       })
 
       const results = await Promise.all(batchPromises)
       trades.push(...results.filter(Boolean))
+      processedCount += batch.length
 
       if (i + BATCH_SIZE < allSignatures.length) {
         // Progress log every 100 txs
         if ((i + BATCH_SIZE) % 100 === 0) {
-          console.log(`Processed ${i + BATCH_SIZE}/${allSignatures.length} transactions, found ${trades.length} trades`)
+          const elapsed = Math.round((Date.now() - startTime) / 1000)
+          console.log(`[${elapsed}s] Processed ${processedCount}/${allSignatures.length} transactions, found ${trades.length} trades`)
         }
-        await new Promise(r => setTimeout(r, 50))
+        await new Promise(r => setTimeout(r, 25))
       }
     }
 
-    console.log(`Found ${trades.length} DEX trades from ${allSignatures.length} transactions (${historyDays} days)`)
+    const elapsed = Math.round((Date.now() - startTime) / 1000)
+    console.log(`[${elapsed}s] Found ${trades.length} DEX trades from ${processedCount}/${allSignatures.length} transactions (${historyDays} days)`)
 
-    // Resolve token names
+    // Track if we have partial results due to timeout
+    const isPartialResult = processedCount < allSignatures.length
+
+    // Resolve token names (skip if approaching timeout)
     const allMints = trades.flatMap(t => t.changes.map(c => c.mint))
-    await resolveTokenNames(allMints)
+    if (!isApproachingTimeout()) {
+      await resolveTokenNames(allMints)
+    }
 
     // Calculate PnL
     calculatePnL(trades)
     const pnlStats = calculatePnLStats(trades)
 
-    // Analyze open positions
-    const openPositions = await analyzeOpenPositions(walletAddress, trades)
+    // Analyze open positions (skip if approaching timeout to ensure we return data)
+    let openPositions = { positions: [], summary: null }
+    if (!isApproachingTimeout()) {
+      openPositions = await analyzeOpenPositions(walletAddress, trades)
+    } else {
+      console.log('Skipping open positions analysis due to timeout')
+    }
 
     // Add token symbols to trades
     const tradesWithSymbols = trades.map(trade => ({
@@ -657,10 +694,14 @@ export default async function handler(req, res) {
       }))
     }))
 
+    const totalElapsed = Math.round((Date.now() - startTime) / 1000)
+    console.log(`[${totalElapsed}s] Analysis complete, returning ${trades.length} trades`)
+
     const result = {
       walletAddress,
       stats: {
         totalTransactions: allSignatures.length,
+        processedTransactions: processedCount,
         dexTrades: trades.length,
         buys: trades.filter(t => t.type === 'buy').length,
         sells: trades.filter(t => t.type === 'sell').length,
@@ -669,6 +710,8 @@ export default async function handler(req, res) {
         newestTradeDate: newestDate?.toISOString() || null,
         ...pnlStats,
         ...openPositions.summary,
+        isPartialResult,
+        processingTimeSeconds: totalElapsed,
       },
       trades: tradesWithSymbols,
       openPositions: openPositions.positions,
