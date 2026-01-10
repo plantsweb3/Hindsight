@@ -310,6 +310,9 @@ export async function initDb() {
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_quiz_best_scores_user_id ON quiz_best_scores(user_id)`)
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_user_achievements_user_id ON user_achievements(user_id)`)
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_module_completions_user_id ON module_completions(user_id)`)
+
+  // Run one-time XP backfill for existing users (only runs once)
+  await runOneTimeXpBackfill()
 }
 
 // User functions
@@ -2323,6 +2326,137 @@ export async function syncUserXp(userId, totalXp, level) {
   }
 
   return { updated: false, currentXp: current.total_xp }
+}
+
+// Achievement XP values (must match src/config/xpConfig.js)
+const ACHIEVEMENT_XP = {
+  'first-steps': 25,
+  'on-fire': 50,
+  'week-warrior': 100,
+  'monthly-master': 500,
+  'perfect-score': 50,
+  'module-master': 100,
+  'rising-star': 25,
+  'expert-trader': 250,
+  'knowledge-seeker': 100,
+  'dedicated-learner': 200,
+}
+
+// One-time XP backfill for all users from server-side data
+// Calculates XP from quiz_best_scores, module_completions, and user_achievements
+export async function backfillXpForAllUsers() {
+  console.log('[DB] Starting XP backfill for all users...')
+
+  // Get all users
+  const usersResult = await getDb().execute(`SELECT id, username FROM users`)
+  const users = usersResult.rows
+
+  let updated = 0
+  let skipped = 0
+
+  for (const user of users) {
+    const userId = user.id
+
+    // Sum XP from quiz_best_scores
+    const quizXpResult = await getDb().execute({
+      sql: `SELECT COALESCE(SUM(best_xp_earned), 0) as total FROM quiz_best_scores WHERE user_id = ?`,
+      args: [userId],
+    })
+    const quizXp = quizXpResult.rows[0]?.total || 0
+
+    // Sum XP from module_completions
+    const moduleXpResult = await getDb().execute({
+      sql: `SELECT COALESCE(SUM(final_test_xp), 0) as total FROM module_completions WHERE user_id = ?`,
+      args: [userId],
+    })
+    const moduleXp = moduleXpResult.rows[0]?.total || 0
+
+    // Sum XP from achievements
+    const achievementsResult = await getDb().execute({
+      sql: `SELECT achievement_id FROM user_achievements WHERE user_id = ?`,
+      args: [userId],
+    })
+    let achievementXp = 0
+    for (const row of achievementsResult.rows) {
+      achievementXp += ACHIEVEMENT_XP[row.achievement_id] || 0
+    }
+
+    const calculatedXp = quizXp + moduleXp + achievementXp
+
+    if (calculatedXp === 0) {
+      skipped++
+      continue
+    }
+
+    // Get current XP
+    const current = await getUserXpProgress(userId)
+
+    // Only update if calculated XP is higher
+    if (calculatedXp > current.total_xp) {
+      // Calculate level from XP (simplified - matches xpConfig.js)
+      const LEVEL_THRESHOLDS = [0, 100, 250, 400, 600, 850, 1100, 1400, 1800, 2300, 3000, 4000, 5500, 7500, 10000]
+      let level = 1
+      for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
+        if (calculatedXp >= LEVEL_THRESHOLDS[i]) {
+          level = i + 1
+          break
+        }
+      }
+
+      await getDb().execute({
+        sql: `UPDATE user_xp_progress
+              SET total_xp = ?, current_level = ?, updated_at = CURRENT_TIMESTAMP
+              WHERE user_id = ?`,
+        args: [calculatedXp, level, userId],
+      })
+      console.log(`[DB] Updated ${user.username}: ${current.total_xp} -> ${calculatedXp} XP (quiz: ${quizXp}, module: ${moduleXp}, ach: ${achievementXp})`)
+      updated++
+    } else {
+      skipped++
+    }
+  }
+
+  console.log(`[DB] XP backfill complete. Updated: ${updated}, Skipped: ${skipped}`)
+  return { updated, skipped }
+}
+
+// Run the one-time XP backfill if not already done
+export async function runOneTimeXpBackfill() {
+  // Check if we've already run the backfill using a simple marker in the db
+  // We'll check if there's a system_flags table with a backfill_complete flag
+  try {
+    await getDb().execute(`
+      CREATE TABLE IF NOT EXISTS system_flags (
+        flag_name TEXT PRIMARY KEY,
+        flag_value TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+
+    const flagResult = await getDb().execute({
+      sql: `SELECT flag_value FROM system_flags WHERE flag_name = ?`,
+      args: ['xp_backfill_complete'],
+    })
+
+    if (flagResult.rows.length > 0) {
+      console.log('[DB] XP backfill already completed, skipping')
+      return { alreadyComplete: true }
+    }
+
+    // Run the backfill
+    const result = await backfillXpForAllUsers()
+
+    // Mark as complete
+    await getDb().execute({
+      sql: `INSERT INTO system_flags (flag_name, flag_value) VALUES (?, ?)`,
+      args: ['xp_backfill_complete', new Date().toISOString()],
+    })
+
+    return { ...result, alreadyComplete: false }
+  } catch (err) {
+    console.error('[DB] Error during XP backfill:', err)
+    return { error: err.message }
+  }
 }
 
 export default getDb
