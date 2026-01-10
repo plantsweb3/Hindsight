@@ -805,7 +805,7 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
 
   const handleSaveEntry = async (entryId, updates) => {
     const res = await fetch(`${API_URL}/${entryId}`, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
@@ -823,17 +823,20 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
     // Award XP for saving journal entry notes
     const xpResult = awardJournalEntryXp(entryId, hasReflection)
 
-    // Show XP toast if XP was awarded
-    if (xpResult.xpAwarded > 0) {
-      setXpToast({
-        xp: xpResult.xpAwarded,
-        hasBonus: xpResult.bonusXp > 0,
-        remaining: xpResult.remaining
-      })
-      // Auto-hide toast after 3 seconds
-      setTimeout(() => setXpToast(null), 3000)
+    // Show XP toast with navigation options
+    setXpToast({
+      xp: xpResult.xpAwarded,
+      hasBonus: xpResult.bonusXp > 0,
+      remaining: xpResult.remaining,
+      showNav: true,
+      reason: xpResult.reason // 'already_awarded' or 'daily_limit_reached' if no XP
+    })
 
-      // Sync XP to server for leaderboard
+    // Auto-dismiss toast after 8 seconds
+    setTimeout(() => setXpToast(null), 8000)
+
+    // Sync XP to server for leaderboard
+    if (xpResult.xpAwarded > 0) {
       syncXpToServer(token)
     }
 
@@ -947,14 +950,35 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
 
       {/* XP Toast Animation */}
       {xpToast && (
-        <div className="xp-toast">
-          <div className="xp-toast-content">
-            <span className="xp-toast-icon">⚡</span>
-            <span className="xp-toast-amount">+{xpToast.xp} XP</span>
-            {xpToast.hasBonus && <span className="xp-toast-bonus">(+5 reflection bonus!)</span>}
+        <div className="xp-toast xp-toast-success">
+          <button className="xp-toast-close" onClick={() => setXpToast(null)}>×</button>
+          <div className="xp-toast-header">
+            <span className="xp-toast-icon">✓</span>
+            <span className="xp-toast-title">Entry Saved!</span>
           </div>
-          {xpToast.remaining > 0 && (
-            <div className="xp-toast-remaining">{xpToast.remaining} entries left today</div>
+          <div className="xp-toast-content">
+            {xpToast.xp > 0 ? (
+              <>
+                <span className="xp-toast-amount">+{xpToast.xp} XP</span>
+                {xpToast.hasBonus && <span className="xp-toast-bonus">+5 reflection bonus!</span>}
+              </>
+            ) : (
+              <span className="xp-toast-info">
+                {xpToast.reason === 'already_awarded'
+                  ? 'XP already earned for this entry'
+                  : 'Daily XP limit reached'}
+              </span>
+            )}
+          </div>
+          {xpToast.showNav && (
+            <div className="xp-toast-nav">
+              <button className="xp-toast-nav-btn" onClick={() => setXpToast(null)}>
+                Log Another Trade
+              </button>
+              <button className="xp-toast-nav-btn secondary" onClick={() => { setXpToast(null); handleDashboard(); }}>
+                Return to Copilot
+              </button>
+            </div>
           )}
         </div>
       )}
