@@ -323,6 +323,102 @@ function ArchetypeHero({ user, onRetakeQuiz }) {
   )
 }
 
+// Journal Section - Shows unjournaled trades waiting for reflection
+function JournalSection({ trades, user, onOpenJournal, onJournalTrade }) {
+  const hasWallet = user?.savedWallets?.length > 0
+
+  // Filter trades that don't have reflection notes
+  const unjournaled = (trades || []).filter(trade =>
+    !trade.thesis && !trade.lessonLearned && !trade.exitReasoning
+  ).slice(0, 3)
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return ''
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  }
+
+  // State 3: No wallet connected
+  if (!hasWallet) {
+    return (
+      <div className="journal-section">
+        <div className="journal-section-header">
+          <h3 className="journal-section-title">
+            <span className="journal-section-icon">📝</span>
+            Journal
+          </h3>
+        </div>
+        <div className="journal-section-empty">
+          <p>Connect a wallet to start tracking and journaling your trades</p>
+          <button className="journal-section-cta" onClick={onOpenJournal}>
+            Connect Wallet
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // State 2: All caught up
+  if (unjournaled.length === 0) {
+    return (
+      <div className="journal-section">
+        <div className="journal-section-header">
+          <h3 className="journal-section-title">
+            <span className="journal-section-icon">📝</span>
+            Journal
+          </h3>
+          <a href="#" className="journal-section-link" onClick={(e) => { e.preventDefault(); onOpenJournal(); }}>
+            View All →
+          </a>
+        </div>
+        <div className="journal-section-caught-up">
+          <div className="caught-up-icon">✓</div>
+          <h4>All caught up!</h4>
+          <p>You've reflected on all your recent trades.</p>
+        </div>
+      </div>
+    )
+  }
+
+  // State 1: Unjournaled trades exist
+  return (
+    <div className="journal-section">
+      <div className="journal-section-header">
+        <h3 className="journal-section-title">
+          <span className="journal-section-icon">📝</span>
+          Journal
+        </h3>
+        <a href="#" className="journal-section-link" onClick={(e) => { e.preventDefault(); onOpenJournal(); }}>
+          View All →
+        </a>
+      </div>
+      <p className="journal-section-subheader">
+        You have {unjournaled.length} trade{unjournaled.length !== 1 ? 's' : ''} waiting for reflection
+      </p>
+      <div className="journal-trade-cards">
+        {unjournaled.map((trade) => (
+          <div key={trade.id} className="journal-trade-card">
+            <div className={`journal-trade-pnl ${(trade.pnlPercent || 0) >= 0 ? 'positive' : 'negative'}`}>
+              {(trade.pnlPercent || 0) >= 0 ? '+' : ''}{(trade.pnlPercent || 0).toFixed(0)}%
+            </div>
+            <div className="journal-trade-info">
+              <span className="journal-trade-token">{trade.tokenName || 'Unknown'}</span>
+              <span className="journal-trade-date">{formatDate(trade.exitTime || trade.createdAt)}</span>
+            </div>
+            <button
+              className="journal-trade-add-btn"
+              onClick={() => onJournalTrade?.(trade)}
+            >
+              Add Notes
+            </button>
+          </div>
+        ))}
+      </div>
+      <p className="journal-section-footer">+15 XP per entry</p>
+    </div>
+  )
+}
+
 // Recent Activity Feed
 function RecentActivityFeed({ activities }) {
   const formatRelativeTime = (dateStr) => {
@@ -1072,6 +1168,14 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
           <>
             {/* Row 1: Stats Bar */}
             <StatsBar stats={stats} levelInfo={levelInfo} onXpClick={() => setShowXpPopup(true)} />
+
+            {/* Row 1.5: Journal Section */}
+            <JournalSection
+              trades={trades}
+              user={user}
+              onOpenJournal={onOpenJournal}
+              onJournalTrade={handleJournalTrade}
+            />
 
             {/* Row 2: Archetype Hero */}
             <ArchetypeHero user={user} onRetakeQuiz={onRetakeQuiz} />

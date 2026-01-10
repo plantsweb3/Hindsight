@@ -6642,6 +6642,203 @@ input, button {
 }
 
 /* ==========================================
+   JOURNAL SECTION (Copilot)
+   ========================================== */
+
+.journal-section {
+  background: rgba(24, 24, 27, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.journal-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.journal-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f5f5f5;
+  margin: 0;
+}
+
+.journal-section-icon {
+  font-size: 1.25rem;
+}
+
+.journal-section-link {
+  font-size: 0.85rem;
+  color: #a78bfa;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.journal-section-link:hover {
+  color: #c4b5fd;
+}
+
+.journal-section-subheader {
+  font-size: 0.9rem;
+  color: #71717a;
+  margin: 0 0 1rem 0;
+}
+
+.journal-trade-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.journal-trade-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(39, 39, 42, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0.5rem;
+  padding: 0.875rem 1rem;
+}
+
+.journal-trade-pnl {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  flex-shrink: 0;
+}
+
+.journal-trade-pnl.positive {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.journal-trade-pnl.negative {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.journal-trade-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.journal-trade-token {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #f5f5f5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.journal-trade-date {
+  font-size: 0.75rem;
+  color: #71717a;
+}
+
+.journal-trade-add-btn {
+  background: none;
+  border: none;
+  color: #a78bfa;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.journal-trade-add-btn:hover {
+  color: #c4b5fd;
+}
+
+.journal-section-footer {
+  font-size: 0.8rem;
+  color: #52525b;
+  margin: 0;
+  text-align: center;
+}
+
+/* Empty/Caught Up States */
+.journal-section-empty,
+.journal-section-caught-up {
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+.journal-section-empty p,
+.journal-section-caught-up p {
+  color: #71717a;
+  font-size: 0.9rem;
+  margin: 0 0 1rem 0;
+}
+
+.journal-section-caught-up h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f5f5f5;
+  margin: 0.5rem 0;
+}
+
+.caught-up-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+  font-size: 1.5rem;
+  font-weight: bold;
+  border-radius: 50%;
+  margin: 0 auto 0.75rem;
+}
+
+.journal-section-cta {
+  background: #7c3aed;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.journal-section-cta:hover {
+  background: #8b5cf6;
+}
+
+/* Journal Section Mobile */
+@media (max-width: 768px) {
+  .journal-section {
+    padding: 1.25rem;
+  }
+
+  .journal-trade-cards {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .journal-trade-card {
+    padding: 0.75rem;
+  }
+}
+
+/* ==========================================
    TRADE TABLE WITH PROPER COLUMNS
    ========================================== */
 
