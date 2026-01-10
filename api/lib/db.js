@@ -1,5 +1,8 @@
 import { createClient } from '@libsql/client'
 
+// TODO: Update SIGHT_CA with actual contract address at launch
+const SIGHT_CA = 'PLACEHOLDER_UPDATE_AT_LAUNCH'
+
 // Turso database connection (lazy initialization)
 let db = null
 
@@ -506,6 +509,12 @@ export async function getJournalEntries(userId, filters = {}) {
   let sql = `SELECT * FROM trade_journal WHERE user_id = ?`
   const args = [userId]
 
+  // Exclude $SIGHT token from results (skip if placeholder)
+  if (SIGHT_CA !== 'PLACEHOLDER_UPDATE_AT_LAUNCH') {
+    sql += ` AND (token_address IS NULL OR token_address != ?)`
+    args.push(SIGHT_CA)
+  }
+
   // Filter by wallet address
   if (filters.walletAddress) {
     sql += ` AND wallet_address = ?`
@@ -550,19 +559,21 @@ export async function getJournalEntries(userId, filters = {}) {
 }
 
 export async function getJournalStats(userId) {
-  const result = await getDb().execute({
-    sql: `
-      SELECT
-        COUNT(*) as total_trades,
-        SUM(CASE WHEN pnl_percent > 0 THEN 1 ELSE 0 END) as wins,
-        SUM(CASE WHEN pnl_percent < 0 THEN 1 ELSE 0 END) as losses,
-        SUM(pnl_sol) as total_pnl,
-        AVG(pnl_percent) as avg_pnl_percent
-      FROM trade_journal
-      WHERE user_id = ?
-    `,
-    args: [userId],
-  })
+  // Build query with optional SIGHT exclusion
+  const excludeSight = SIGHT_CA !== 'PLACEHOLDER_UPDATE_AT_LAUNCH'
+  const sql = `
+    SELECT
+      COUNT(*) as total_trades,
+      SUM(CASE WHEN pnl_percent > 0 THEN 1 ELSE 0 END) as wins,
+      SUM(CASE WHEN pnl_percent < 0 THEN 1 ELSE 0 END) as losses,
+      SUM(pnl_sol) as total_pnl,
+      AVG(pnl_percent) as avg_pnl_percent
+    FROM trade_journal
+    WHERE user_id = ?${excludeSight ? ' AND (token_address IS NULL OR token_address != ?)' : ''}
+  `
+  const args = excludeSight ? [userId, SIGHT_CA] : [userId]
+
+  const result = await getDb().execute({ sql, args })
   return result.rows[0]
 }
 
@@ -640,6 +651,9 @@ export async function journalEntryExists(userId, tokenAddress, exitTime) {
 }
 
 export async function getJournalPatterns(userId) {
+  const excludeSight = SIGHT_CA !== 'PLACEHOLDER_UPDATE_AT_LAUNCH'
+  const sightFilter = excludeSight ? ' AND (token_address IS NULL OR token_address != ?)' : ''
+
   // Get mood distribution
   const moodResult = await getDb().execute({
     sql: `
@@ -647,10 +661,10 @@ export async function getJournalPatterns(userId) {
              COUNT(*) as count,
              AVG(pnl_percent) as avg_pnl
       FROM trade_journal
-      WHERE user_id = ? AND mood IS NOT NULL
+      WHERE user_id = ? AND mood IS NOT NULL${sightFilter}
       GROUP BY mood
     `,
-    args: [userId],
+    args: excludeSight ? [userId, SIGHT_CA] : [userId],
   })
 
   // Get research level distribution
@@ -660,10 +674,10 @@ export async function getJournalPatterns(userId) {
              COUNT(*) as count,
              AVG(pnl_percent) as avg_pnl
       FROM trade_journal
-      WHERE user_id = ? AND research_level IS NOT NULL
+      WHERE user_id = ? AND research_level IS NOT NULL${sightFilter}
       GROUP BY research_level
     `,
-    args: [userId],
+    args: excludeSight ? [userId, SIGHT_CA] : [userId],
   })
 
   return {
@@ -673,6 +687,9 @@ export async function getJournalPatterns(userId) {
 }
 
 export async function getWeeklySummary(userId) {
+  const excludeSight = SIGHT_CA !== 'PLACEHOLDER_UPDATE_AT_LAUNCH'
+  const sightFilter = excludeSight ? ' AND (token_address IS NULL OR token_address != ?)' : ''
+
   const result = await getDb().execute({
     sql: `
       SELECT
@@ -681,17 +698,20 @@ export async function getWeeklySummary(userId) {
         SUM(CASE WHEN pnl_percent > 0 THEN 1 ELSE 0 END) as wins,
         SUM(pnl_sol) as pnl
       FROM trade_journal
-      WHERE user_id = ?
+      WHERE user_id = ?${sightFilter}
       GROUP BY week
       ORDER BY week DESC
       LIMIT 12
     `,
-    args: [userId],
+    args: excludeSight ? [userId, SIGHT_CA] : [userId],
   })
   return result.rows
 }
 
 export async function getMonthlySummary(userId) {
+  const excludeSight = SIGHT_CA !== 'PLACEHOLDER_UPDATE_AT_LAUNCH'
+  const sightFilter = excludeSight ? ' AND (token_address IS NULL OR token_address != ?)' : ''
+
   const result = await getDb().execute({
     sql: `
       SELECT
@@ -700,12 +720,12 @@ export async function getMonthlySummary(userId) {
         SUM(CASE WHEN pnl_percent > 0 THEN 1 ELSE 0 END) as wins,
         SUM(pnl_sol) as pnl
       FROM trade_journal
-      WHERE user_id = ?
+      WHERE user_id = ?${sightFilter}
       GROUP BY month
       ORDER BY month DESC
       LIMIT 12
     `,
-    args: [userId],
+    args: excludeSight ? [userId, SIGHT_CA] : [userId],
   })
   return result.rows
 }

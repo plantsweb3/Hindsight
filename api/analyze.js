@@ -1,6 +1,9 @@
 import { Connection, PublicKey } from '@solana/web3.js'
 import { cors } from './lib/auth.js'
 
+// TODO: Update SIGHT_CA with actual contract address at launch
+const SIGHT_CA = 'PLACEHOLDER_UPDATE_AT_LAUNCH'
+
 // Helius RPC
 const HELIUS_KEY = process.env.HELIUS_API_KEY
 const RPC_URL = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`
@@ -29,6 +32,12 @@ const STABLES = [
   'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC
   'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', // USDT
 ]
+
+// Check if a trade involves the $SIGHT token (excluded from analytics)
+function involvesSightToken(changes) {
+  if (!changes || SIGHT_CA === 'PLACEHOLDER_UPDATE_AT_LAUNCH') return false
+  return changes.some(c => c.mint === SIGHT_CA)
+}
 
 // Fetch token metadata from Helius DAS API
 async function getTokenMetadata(mintAddress) {
@@ -174,6 +183,9 @@ function parseSwap(tx, wallet) {
   }
 
   if (changes.length < 2) return null
+
+  // Filter out $SIGHT token trades from analytics
+  if (involvesSightToken(changes)) return null
 
   const solChange = changes.find(c => c.mint === 'SOL' || STABLES.includes(c.mint))
   const tokenChange = changes.find(c => c.mint !== 'SOL' && !STABLES.includes(c.mint))
@@ -412,7 +424,8 @@ async function analyzeOpenPositions(walletAddress, trades) {
   const significantBalances = balances.filter(b =>
     b.balance > 0 &&
     !STABLES.includes(b.mint) &&
-    b.mint !== 'So11111111111111111111111111111111111111112'
+    b.mint !== 'So11111111111111111111111111111111111111112' &&
+    b.mint !== SIGHT_CA // Exclude $SIGHT token from holdings display
   )
 
   if (significantBalances.length === 0) {

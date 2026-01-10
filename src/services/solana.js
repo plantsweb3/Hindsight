@@ -1,6 +1,15 @@
 // Use relative path - works for both local dev (via Vite proxy) and Vercel
 const API_URL = '/api'
 
+// TODO: Update SIGHT_CA with actual contract address at launch
+const SIGHT_CA = 'PLACEHOLDER_UPDATE_AT_LAUNCH'
+
+// Check if a trade involves the $SIGHT token (excluded from analytics)
+function involvesSightToken(trade) {
+  if (!trade?.changes || SIGHT_CA === 'PLACEHOLDER_UPDATE_AT_LAUNCH') return false
+  return trade.changes.some(c => c.mint === SIGHT_CA)
+}
+
 export function isValidSolanaAddress(address) {
   return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)
 }
@@ -60,8 +69,14 @@ export function convertTradesToJournalEntries(trades, walletAddress = null) {
   const tokenTrades = new Map()
 
   for (const trade of trades) {
+    // Skip $SIGHT token trades
+    if (involvesSightToken(trade)) continue
+
     const tokenMint = trade.changes?.find(c => c.mint !== 'SOL' && !['USDC', 'USDT'].includes(c.symbol))?.mint
     if (!tokenMint) continue
+
+    // Also skip if the token itself is SIGHT
+    if (tokenMint === SIGHT_CA) continue
 
     if (!tokenTrades.has(tokenMint)) {
       tokenTrades.set(tokenMint, { buys: [], sells: [] })
@@ -224,6 +239,9 @@ export async function getCrossWalletStats(token, savedWallets) {
     // Calculate stats per wallet
     for (const entry of entries) {
       if (!entry.walletAddress) continue
+
+      // Skip $SIGHT token entries from cross-wallet stats
+      if (entry.tokenAddress === SIGHT_CA) continue
 
       const stats = walletStats.get(entry.walletAddress)
       if (!stats) continue
