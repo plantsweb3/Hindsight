@@ -37,8 +37,8 @@ export default function LeaderboardPage() {
         await syncXpToServer(token)
       }
 
-      // Fetch top 50 for the full leaderboard page
-      const data = await fetchLeaderboard(token, 50)
+      // Fetch all users for the full leaderboard page
+      const data = await fetchLeaderboard(token, 1000)
       if (data) {
         setLeaderboardData(data)
       } else {

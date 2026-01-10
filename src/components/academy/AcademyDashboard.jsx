@@ -794,7 +794,7 @@ function Leaderboard({ token, currentUserId }) {
         await syncXpToServer(token)
       }
 
-      const data = await fetchLeaderboard(token, 25)
+      const data = await fetchLeaderboard(token, 10)
       if (data) {
         setLeaderboardData(data)
       } else {
@@ -843,8 +843,8 @@ function Leaderboard({ token, currentUserId }) {
         XP Leaderboard
       </h3>
 
-      {/* User's rank card if not in top 25 */}
-      {userRank && userRank.rank > 25 && (
+      {/* User's rank card if not in top 10 */}
+      {userRank && userRank.rank > 10 && (
         <div className="leaderboard-user-rank">
           <div className="leaderboard-rank-badge">#{userRank.rank}</div>
           <div className="leaderboard-rank-info">
@@ -899,6 +899,12 @@ function Leaderboard({ token, currentUserId }) {
         </svg>
         Refresh
       </button>
+
+      {/* View Full Leaderboard button */}
+      <Link to="/leaderboard" className="leaderboard-view-full">
+        <span className="leaderboard-view-full-icon">📊</span>
+        View Full Leaderboard
+      </Link>
     </div>
   )
 }

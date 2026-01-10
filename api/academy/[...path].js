@@ -514,7 +514,7 @@ export default async function handler(req, res) {
     // GET /api/academy/leaderboard - Get XP leaderboard (public)
     if (method === 'GET' && segments.length === 1 && segments[0] === 'leaderboard') {
       const limit = parseInt(req.query.limit) || 50
-      const leaderboard = await getLeaderboard(Math.min(limit, 100))
+      const leaderboard = await getLeaderboard(Math.min(limit, 1000))
 
       // If user is authenticated, include their rank
       const user = await authenticateUser(req)
