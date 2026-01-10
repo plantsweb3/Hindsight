@@ -24,7 +24,7 @@ function WaveBackground() {
 }
 
 // Copilot Header with Nav Links and Profile Dropdown
-function CopilotHeader({ user, currentPage, onNavigate, onLogout, onSettings, levelInfo }) {
+function CopilotHeader({ user, currentPage, onNavigate, onLogout, onSettings }) {
   const [showDropdown, setShowDropdown] = useState(false)
   const dropdownRef = useRef(null)
 
@@ -64,18 +64,6 @@ function CopilotHeader({ user, currentPage, onNavigate, onLogout, onSettings, le
         </nav>
       </div>
       <div className="header-right" ref={dropdownRef}>
-        {/* XP Level Display */}
-        {levelInfo && (
-          <a href="/academy" className="copilot-xp-badge" title={`${levelInfo.xpToNextLevel || 0} XP to next level`}>
-            <div className="copilot-xp-level">{levelInfo.level || 1}</div>
-            <div className="copilot-xp-info">
-              <span className="copilot-xp-title">{levelInfo.title || 'Newcomer'}</span>
-              <div className="copilot-xp-bar">
-                <div className="copilot-xp-fill" style={{ width: `${levelInfo.progressPercent || 0}%` }} />
-              </div>
-            </div>
-          </a>
-        )}
         <button
           className="profile-btn"
           onClick={() => setShowDropdown(!showDropdown)}
@@ -111,7 +99,7 @@ function CopilotHeader({ user, currentPage, onNavigate, onLogout, onSettings, le
 }
 
 // Stats Bar Component
-function StatsBar({ stats }) {
+function StatsBar({ stats, levelInfo, onXpClick }) {
   const formatPnl = (value) => {
     if (value === null || value === undefined) return '0.00'
     return value >= 0 ? `+${value.toFixed(2)}` : value.toFixed(2)
@@ -148,6 +136,80 @@ function StatsBar({ stats }) {
         <span className="stat-value negative">
           {stats.worstTrade ? `${stats.worstTrade.token} ${stats.worstTrade.pnlPercent?.toFixed(0)}%` : '-'}
         </span>
+      </div>
+      <div className="stat-divider" />
+      <button className="stat-item stat-item-clickable" onClick={onXpClick}>
+        <span className="stat-label">Total XP</span>
+        <span className="stat-value xp-value">
+          <span className="xp-amount">{(levelInfo?.totalXp || 0).toLocaleString()}</span>
+          <span className="xp-level">Lvl {levelInfo?.level || 1}</span>
+        </span>
+      </button>
+    </div>
+  )
+}
+
+// XP Info Popup
+function XpInfoPopup({ levelInfo, onClose }) {
+  return (
+    <div className="xp-popup-overlay" onClick={onClose}>
+      <div className="xp-popup" onClick={e => e.stopPropagation()}>
+        <button className="xp-popup-close" onClick={onClose}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
+        <div className="xp-popup-header">
+          <div className="xp-popup-level">{levelInfo?.level || 1}</div>
+          <div className="xp-popup-title-section">
+            <h3>{levelInfo?.title || 'Newcomer'}</h3>
+            <p>{(levelInfo?.totalXp || 0).toLocaleString()} XP total</p>
+          </div>
+        </div>
+
+        <div className="xp-popup-progress">
+          <div className="xp-popup-bar">
+            <div className="xp-popup-fill" style={{ width: `${levelInfo?.progressPercent || 0}%` }} />
+          </div>
+          <span className="xp-popup-next">
+            {levelInfo?.isMaxLevel ? 'Max Level!' : `${levelInfo?.xpToNextLevel || 0} XP to Level ${(levelInfo?.level || 1) + 1}`}
+          </span>
+        </div>
+
+        <div className="xp-popup-ways">
+          <h4>How to earn XP</h4>
+          <ul>
+            <li>
+              <span className="xp-way-icon">📝</span>
+              <span>Log trades in Journal</span>
+              <span className="xp-way-amount">+15 XP</span>
+            </li>
+            <li>
+              <span className="xp-way-icon">🎓</span>
+              <span>Complete Academy lessons</span>
+              <span className="xp-way-amount">+25 XP</span>
+            </li>
+            <li>
+              <span className="xp-way-icon">✅</span>
+              <span>Pass lesson quizzes</span>
+              <span className="xp-way-amount">+10 XP</span>
+            </li>
+            <li>
+              <span className="xp-way-icon">🔥</span>
+              <span>Maintain daily streaks</span>
+              <span className="xp-way-amount">+5 XP</span>
+            </li>
+          </ul>
+        </div>
+
+        <a href="/academy" className="xp-popup-cta">
+          Go to Academy
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </a>
       </div>
     </div>
   )
@@ -766,6 +828,7 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
   const [walletStats, setWalletStats] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [levelInfo, setLevelInfo] = useState(null)
+  const [showXpPopup, setShowXpPopup] = useState(false)
 
   useEffect(() => {
     loadDashboardData()
@@ -976,8 +1039,12 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
         onNavigate={handleNavigate}
         onLogout={handleLogout}
         onSettings={onOpenSettings}
-        levelInfo={levelInfo}
       />
+
+      {/* XP Info Popup */}
+      {showXpPopup && (
+        <XpInfoPopup levelInfo={levelInfo} onClose={() => setShowXpPopup(false)} />
+      )}
 
       <main className="dashboard-main">
         {isLoading ? (
@@ -985,7 +1052,7 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
         ) : (
           <>
             {/* Row 1: Stats Bar */}
-            <StatsBar stats={stats} />
+            <StatsBar stats={stats} levelInfo={levelInfo} onXpClick={() => setShowXpPopup(true)} />
 
             {/* Row 1.5: Usage Limits (Free/Pro) */}
             <UsageLimitsBar user={user} onOpenPro={onOpenPro} />
