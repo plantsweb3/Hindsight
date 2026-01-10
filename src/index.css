@@ -14121,10 +14121,12 @@ input, button {
     flex-wrap: wrap;
   }
 
-  .hero-stats-grid {
+  .hero-stats-grid,
+  .hero-stats-row-2 {
     min-width: auto;
     flex: 1;
-    max-width: 280px;
+    max-width: 100%;
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .daily-goal-ring {
@@ -14172,7 +14174,8 @@ input, button {
 }
 
 @media (max-width: 480px) {
-  .hero-stats-grid {
+  .hero-stats-grid,
+  .hero-stats-row-2 {
     grid-template-columns: 1fr;
   }
 
