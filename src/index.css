@@ -10094,6 +10094,18 @@ input, button {
   padding: 1rem;
 }
 
+/* Hide achievement names on mobile - users can click for details */
+@media (max-width: 480px) {
+  .achievement-badge {
+    min-width: 60px;
+    padding: 0.75rem;
+  }
+
+  .achievement-badge .achievement-name {
+    display: none;
+  }
+}
+
 /* Achievement Detail Modal */
 .achievement-detail-overlay {
   z-index: 1000;
