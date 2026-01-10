@@ -71,7 +71,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 's
           <h2 className="modal-title">{mode === 'login' ? 'Welcome back' : 'Create account'}</h2>
           <p className="modal-subtitle">
             {mode === 'login'
-              ? 'Log in to access your copilot'
+              ? 'Log in to access Copilot and Academy'
               : 'Save your results and track progress'}
           </p>
         </div>
@@ -84,7 +84,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 's
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Choose a username"
+              placeholder={mode === 'login' ? 'Enter your username' : 'Choose a username'}
               disabled={isLoading}
               className="auth-input"
               autoComplete="username"
