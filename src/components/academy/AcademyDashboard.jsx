@@ -167,7 +167,7 @@ function normalizeArchetypeId(archetype) {
 }
 
 // Hero Stats Grid Component - Level-first display
-function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dailyGoalProgress, earnedAchievements, onDailyGoalClick, onAchievementsClick, masteryStats }) {
+function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dailyGoalProgress, earnedAchievements, onDailyGoalClick, onAchievementsClick, masteryStats, userRank, onLeaderboardClick }) {
   const hasStreak = (xpProgress?.streak || 0) > 0
 
   // Use mastery stats for the percentage display
@@ -215,7 +215,7 @@ function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dail
         </div>
       </div>
 
-      {/* Secondary: Quick Stats Row 1 */}
+      {/* Row 1: Day Streak, Total XP, Leaderboard */}
       <div className="hero-stats-grid">
         <div className="hero-stat">
           <span className={`hero-stat-icon ${hasStreak ? 'streak-active' : ''}`}>🔥</span>
@@ -231,6 +231,25 @@ function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dail
             <span className="hero-stat-label">Total XP</span>
           </div>
         </div>
+        {/* Leaderboard Rank Card */}
+        <div
+          className="hero-stat hero-stat-clickable leaderboard-stat"
+          onClick={onLeaderboardClick}
+          title={userRank ? `Top ${userRank.percentile}%` : 'View leaderboard'}
+        >
+          <span className="hero-stat-icon">🥇</span>
+          <div className="hero-stat-content">
+            <span className="hero-stat-value">
+              {userRank ? `#${userRank.rank}` : '--'}
+            </span>
+            <span className="hero-stat-label">Rank</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 2: Mastery, Daily Goal, Achievements */}
+      <div className="hero-stats-grid hero-stats-row-2">
+        {/* Mastery Card */}
         <div className="hero-stat" title={correctAnswers > 0 ? `${correctAnswers}/${totalPossible} questions correct` : 'Complete exams to track mastery'}>
           <span className="hero-stat-icon">📊</span>
           <div className="hero-stat-content">
@@ -238,32 +257,27 @@ function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dail
             <span className="hero-stat-label">Mastery</span>
           </div>
         </div>
-      </div>
 
-      {/* Tertiary: Daily Goal + Achievements Row */}
-      <div className="hero-stats-grid hero-stats-row-2">
         {/* Daily Goal Card */}
         <div
           className={`hero-stat hero-stat-clickable daily-goal-stat ${dailyGoalComplete ? 'complete' : ''}`}
           onClick={onDailyGoalClick}
         >
-          <div className="hero-stat-header">
-            <span className="hero-stat-icon">🎯</span>
+          <span className="hero-stat-icon">🎯</span>
+          <div className="hero-stat-content">
             <span className="hero-stat-value">
               {dailyGoalComplete ? (
-                <>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
               ) : (
-                `${dailyXpEarned} / ${goalXp}`
+                `${dailyXpEarned}/${goalXp}`
               )}
             </span>
+            <span className="hero-stat-label">
+              {dailyGoalComplete ? 'Goal Complete!' : 'Goal'}
+            </span>
           </div>
-          <span className="hero-stat-label">
-            {dailyGoalComplete ? 'Goal Complete!' : 'Daily Goal'}
-          </span>
           <div className="daily-goal-progress-bar">
             <div
               className="daily-goal-progress-fill"
@@ -277,11 +291,11 @@ function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dail
           className="hero-stat hero-stat-clickable achievement-stat"
           onClick={onAchievementsClick}
         >
-          <div className="hero-stat-header">
-            <span className="hero-stat-icon">🏆</span>
-            <span className="hero-stat-value">{earnedCount} / {totalAchievements}</span>
+          <span className="hero-stat-icon">🏆</span>
+          <div className="hero-stat-content">
+            <span className="hero-stat-value">{earnedCount}/{totalAchievements}</span>
+            <span className="hero-stat-label">Achievements</span>
           </div>
-          <span className="hero-stat-label">Achievements</span>
         </div>
       </div>
     </div>
@@ -350,7 +364,7 @@ function DailyGoalModal({ isOpen, onClose, currentGoalId, onSave }) {
 }
 
 // Hero Section Component
-function HeroSection({ user, xpProgress, levelInfo, totalLessons, completedLessons, dailyGoalProgress, earnedAchievements, nextLesson, openAuthModal, onDailyGoalClick, onAchievementsClick, masteryStats }) {
+function HeroSection({ user, xpProgress, levelInfo, totalLessons, completedLessons, dailyGoalProgress, earnedAchievements, nextLesson, openAuthModal, onDailyGoalClick, onAchievementsClick, masteryStats, userRank, onLeaderboardClick }) {
   const navigate = useNavigate()
 
   const getMotivationalText = () => {
@@ -417,6 +431,8 @@ function HeroSection({ user, xpProgress, levelInfo, totalLessons, completedLesso
           onDailyGoalClick={onDailyGoalClick}
           onAchievementsClick={onAchievementsClick}
           masteryStats={masteryStats}
+          userRank={userRank}
+          onLeaderboardClick={onLeaderboardClick}
         />
       </div>
     </section>
@@ -1220,6 +1236,7 @@ export default function AcademyDashboard() {
   const [achievements, setAchievements] = useState([])
   const [dailyGoalProgress, setDailyGoalProgress] = useState(null)
   const [masteryStats, setMasteryStats] = useState({ percentage: 0, quizzesAttempted: 0, quizzesMastered: 0 })
+  const [userRank, setUserRank] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [expandedArchetype, setExpandedArchetype] = useState(null)
@@ -1281,6 +1298,12 @@ export default function AcademyDashboard() {
       // Sync local XP to server for leaderboard (fire and forget)
       if (token) {
         syncXpToServer(token).catch(() => {})
+        // Fetch user rank for hero stats card
+        fetchLeaderboard(token, 1).then(data => {
+          if (data?.userRank) {
+            setUserRank(data.userRank)
+          }
+        }).catch(() => {})
       }
 
       const modulesRes = await fetch('/api/academy/modules')
@@ -1616,6 +1639,14 @@ export default function AcademyDashboard() {
     }
   }
 
+  // Handle scroll to leaderboard section
+  const handleLeaderboardClick = () => {
+    const leaderboardSection = document.querySelector('.leaderboard-section')
+    if (leaderboardSection) {
+      leaderboardSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   // Filter archetypes for "Explore Other Archetypes" section
   const otherArchetypes = ARCHETYPE_MODULES.filter(a => a.id !== userArchetypeId)
 
@@ -1664,6 +1695,8 @@ export default function AcademyDashboard() {
         onDailyGoalClick={handleDailyGoalClick}
         onAchievementsClick={handleAchievementsClick}
         masteryStats={masteryStats}
+        userRank={userRank}
+        onLeaderboardClick={handleLeaderboardClick}
       />
 
       {/* Tab Navigation */}

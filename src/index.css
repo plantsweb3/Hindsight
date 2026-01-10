@@ -13057,22 +13057,16 @@ input, button {
 }
 
 .hero-stats-row-2 {
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
 }
 
-/* Daily Goal Stat Card */
+/* Daily Goal Stat Card - Compact version for 3-column layout */
 .daily-goal-stat {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.5rem;
-}
-
-.daily-goal-stat .hero-stat-header {
-  justify-content: space-between;
+  position: relative;
 }
 
 .daily-goal-stat .hero-stat-value {
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .daily-goal-stat .hero-stat-value svg {
@@ -13089,18 +13083,25 @@ input, button {
 }
 
 .daily-goal-progress-bar {
-  height: 4px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+  border-radius: 0 0 0.5rem 0.5rem;
   overflow: hidden;
-  margin-top: 0.25rem;
 }
 
 .daily-goal-progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #8b5cf6, #a78bfa);
-  border-radius: 2px;
   transition: width 0.5s ease;
+}
+
+/* Leaderboard Stat Card */
+.leaderboard-stat .hero-stat-value {
+  color: #fbbf24;
 }
 
 .daily-goal-stat.complete .daily-goal-progress-fill {
