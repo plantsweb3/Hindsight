@@ -569,12 +569,13 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'Authentication required' })
       }
 
-      const { progress, stats, placement, achievements, streak, journalXp, dailyGoalId } = req.body
+      const { progress, stats, placement, masterExam, achievements, streak, journalXp, dailyGoalId } = req.body
 
       const result = await saveUserProgress(user.id, {
         progress,
         stats,
         placement,
+        masterExam,
         achievements,
         streak,
         journalXp,

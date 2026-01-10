@@ -311,6 +311,7 @@ export async function initDb() {
       progress_data TEXT DEFAULT '{}',
       stats_data TEXT DEFAULT '{}',
       placement_data TEXT DEFAULT '{}',
+      master_exam_data TEXT DEFAULT '{}',
       achievements_data TEXT DEFAULT '[]',
       streak_data TEXT DEFAULT '{}',
       journal_xp_data TEXT DEFAULT '{}',
@@ -319,6 +320,13 @@ export async function initDb() {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `)
+
+  // Migration: Add master_exam_data column if it doesn't exist (for existing databases)
+  try {
+    await getDb().execute(`ALTER TABLE user_progress_sync ADD COLUMN master_exam_data TEXT DEFAULT '{}'`)
+  } catch (e) {
+    // Column already exists, ignore
+  }
 
   // Quiz/XP indexes
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_user_xp_progress_user_id ON user_xp_progress(user_id)`)
@@ -2487,6 +2495,7 @@ export async function saveUserProgress(userId, progressData) {
     progress = {},
     stats = {},
     placement = {},
+    masterExam = {},
     achievements = [],
     streak = {},
     journalXp = {},
@@ -2506,6 +2515,7 @@ export async function saveUserProgress(userId, progressData) {
             progress_data = ?,
             stats_data = ?,
             placement_data = ?,
+            master_exam_data = ?,
             achievements_data = ?,
             streak_data = ?,
             journal_xp_data = ?,
@@ -2516,6 +2526,7 @@ export async function saveUserProgress(userId, progressData) {
         JSON.stringify(progress),
         JSON.stringify(stats),
         JSON.stringify(placement),
+        JSON.stringify(masterExam),
         JSON.stringify(achievements),
         JSON.stringify(streak),
         JSON.stringify(journalXp),
@@ -2527,13 +2538,14 @@ export async function saveUserProgress(userId, progressData) {
     // Insert new record
     await getDb().execute({
       sql: `INSERT INTO user_progress_sync
-            (user_id, progress_data, stats_data, placement_data, achievements_data, streak_data, journal_xp_data, daily_goal_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            (user_id, progress_data, stats_data, placement_data, master_exam_data, achievements_data, streak_data, journal_xp_data, daily_goal_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         userId,
         JSON.stringify(progress),
         JSON.stringify(stats),
         JSON.stringify(placement),
+        JSON.stringify(masterExam),
         JSON.stringify(achievements),
         JSON.stringify(streak),
         JSON.stringify(journalXp),
@@ -2561,6 +2573,7 @@ export async function getUserProgress(userId) {
     progress: JSON.parse(row.progress_data || '{}'),
     stats: JSON.parse(row.stats_data || '{}'),
     placement: JSON.parse(row.placement_data || '{}'),
+    masterExam: JSON.parse(row.master_exam_data || '{}'),
     achievements: JSON.parse(row.achievements_data || '[]'),
     streak: JSON.parse(row.streak_data || '{}'),
     journalXp: JSON.parse(row.journal_xp_data || '{}'),

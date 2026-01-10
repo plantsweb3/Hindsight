@@ -211,7 +211,13 @@ function gatherLocalProgress() {
   const placement = {
     completed: localStorage.getItem('placementTestCompleted') === 'true',
     bestScores: JSON.parse(localStorage.getItem('placementTestBestScores') || '{}'),
-    latestScores: JSON.parse(localStorage.getItem('placementTestLatestScores') || '{}')
+    latestScores: JSON.parse(localStorage.getItem('placementTestLatestScores') || '{}'),
+    bestQuestionResults: JSON.parse(localStorage.getItem('placementTestBestQuestionResults') || '{}')
+  }
+
+  // Master exam data
+  const masterExam = {
+    bestQuestionResults: JSON.parse(localStorage.getItem('masterExamBestQuestionResults') || '{}')
   }
 
   const achievements = JSON.parse(localStorage.getItem('hindsight_achievements') || '[]')
@@ -219,7 +225,7 @@ function gatherLocalProgress() {
   const journalXp = JSON.parse(localStorage.getItem('hindsight_journal_xp') || '{}')
   const dailyGoalId = localStorage.getItem('daily_goal_id') || 'regular'
 
-  return { progress, stats, placement, achievements, streak, journalXp, dailyGoalId }
+  return { progress, stats, placement, masterExam, achievements, streak, journalXp, dailyGoalId }
 }
 
 // Save all progress to localStorage
@@ -239,6 +245,14 @@ function saveLocalProgress(data) {
     }
     if (data.placement.latestScores && Object.keys(data.placement.latestScores).length > 0) {
       localStorage.setItem('placementTestLatestScores', JSON.stringify(data.placement.latestScores))
+    }
+    if (data.placement.bestQuestionResults && Object.keys(data.placement.bestQuestionResults).length > 0) {
+      localStorage.setItem('placementTestBestQuestionResults', JSON.stringify(data.placement.bestQuestionResults))
+    }
+  }
+  if (data.masterExam) {
+    if (data.masterExam.bestQuestionResults && Object.keys(data.masterExam.bestQuestionResults).length > 0) {
+      localStorage.setItem('masterExamBestQuestionResults', JSON.stringify(data.masterExam.bestQuestionResults))
     }
   }
   if (data.achievements && data.achievements.length > 0) {
@@ -348,8 +362,52 @@ export async function fetchAndMergeProgress(token) {
       )
     }
 
-    // Merge placement (server wins if completed)
-    const mergedPlacement = serverData.placement.completed ? serverData.placement : localData.placement
+    // Merge placement data intelligently
+    const localPlacement = localData.placement || {}
+    const serverPlacement = serverData.placement || {}
+
+    // Merge bestQuestionResults - correct answers from either source win
+    const mergedBestQuestionResults = { ...localPlacement.bestQuestionResults }
+    if (serverPlacement.bestQuestionResults) {
+      Object.entries(serverPlacement.bestQuestionResults).forEach(([key, serverResult]) => {
+        const localResult = mergedBestQuestionResults[key]
+        if (!localResult || (serverResult.correct && !localResult.correct)) {
+          mergedBestQuestionResults[key] = serverResult
+        }
+      })
+    }
+
+    // Merge bestScores - take higher score for each module
+    const mergedBestScores = { ...localPlacement.bestScores }
+    if (serverPlacement.bestScores) {
+      Object.entries(serverPlacement.bestScores).forEach(([moduleId, serverScore]) => {
+        const localScore = mergedBestScores[moduleId] || 0
+        mergedBestScores[moduleId] = Math.max(localScore, serverScore)
+      })
+    }
+
+    const mergedPlacement = {
+      completed: localPlacement.completed || serverPlacement.completed,
+      bestScores: mergedBestScores,
+      latestScores: serverPlacement.latestScores || localPlacement.latestScores || {},
+      bestQuestionResults: mergedBestQuestionResults
+    }
+
+    // Merge master exam data - correct answers from either source win
+    const localMasterExam = localData.masterExam || {}
+    const serverMasterExam = serverData.masterExam || {}
+    const mergedMasterExamResults = { ...localMasterExam.bestQuestionResults }
+    if (serverMasterExam.bestQuestionResults) {
+      Object.entries(serverMasterExam.bestQuestionResults).forEach(([key, serverResult]) => {
+        const localResult = mergedMasterExamResults[key]
+        if (!localResult || (serverResult.correct && !localResult.correct)) {
+          mergedMasterExamResults[key] = serverResult
+        }
+      })
+    }
+    const mergedMasterExam = {
+      bestQuestionResults: mergedMasterExamResults
+    }
 
     // Merge achievements (union)
     const mergedAchievements = [...new Set([
@@ -378,6 +436,7 @@ export async function fetchAndMergeProgress(token) {
       progress: mergedProgress,
       stats: mergedStats,
       placement: mergedPlacement,
+      masterExam: mergedMasterExam,
       achievements: mergedAchievements,
       streak: mergedStreak,
       journalXp: mergedJournalXp,
