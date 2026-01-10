@@ -4840,13 +4840,13 @@ input, button {
   position: relative;
 }
 
-/* Mobile Navigation Bar - hidden on desktop */
-.mobile-nav-bar {
+/* Copilot Mobile Navigation Bar - hidden on desktop */
+.copilot-mobile-nav {
   display: none;
 }
 
 @media (max-width: 768px) {
-  .mobile-nav-bar {
+  .copilot-mobile-nav {
     display: flex;
     justify-content: center;
     gap: 2rem;
@@ -4859,7 +4859,7 @@ input, button {
     background: transparent;
   }
 
-  .mobile-nav-link {
+  .copilot-nav-item {
     display: flex;
     align-items: center;
     gap: 0.4rem;
@@ -4867,19 +4867,19 @@ input, button {
     text-decoration: none;
     font-size: 0.8rem;
     font-weight: 500;
-    padding: 0.25rem 0;
+    padding: 0;
     background: none;
     border: none;
     cursor: pointer;
     transition: color 0.2s ease;
   }
 
-  .mobile-nav-link:hover,
-  .mobile-nav-link:active {
+  .copilot-nav-item:hover,
+  .copilot-nav-item:active {
     color: #f5f5f5;
   }
 
-  .mobile-nav-link svg {
+  .copilot-nav-item svg {
     width: 16px;
     height: 16px;
     opacity: 0.8;
