@@ -80,6 +80,9 @@ function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, onOpe
         <a href="/academy" className="nav-link-btn">
           Academy
         </a>
+        <button onClick={isAuthenticated ? onOpenDashboard : () => onShowAuth('login')} className="nav-link-btn">
+          Copilot
+        </button>
         <button onClick={onOpenContact} className="nav-link-btn">
           Contact
         </button>
@@ -150,6 +153,15 @@ function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, onOpe
                 </svg>
                 Academy
               </a>
+              <button onClick={() => handleNavAction(isAuthenticated ? onOpenDashboard : () => onShowAuth('login'))} className="mobile-nav-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="3" width="7" height="9" />
+                  <rect x="14" y="3" width="7" height="5" />
+                  <rect x="14" y="12" width="7" height="9" />
+                  <rect x="3" y="16" width="7" height="5" />
+                </svg>
+                Copilot
+              </button>
               <button onClick={() => handleNavAction(onOpenContact)} className="mobile-nav-link">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -158,15 +170,6 @@ function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, onOpe
               </button>
               {isAuthenticated ? (
                 <>
-                  <button onClick={() => handleNavAction(onOpenDashboard)} className="mobile-nav-link">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="3" width="7" height="9" />
-                      <rect x="14" y="3" width="7" height="5" />
-                      <rect x="14" y="12" width="7" height="9" />
-                      <rect x="3" y="16" width="7" height="5" />
-                    </svg>
-                    Copilot
-                  </button>
                   <button onClick={() => handleNavAction(onOpenJournal)} className="mobile-nav-link">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
