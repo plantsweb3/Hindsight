@@ -29,7 +29,8 @@ export const XP_CONFIG = {
   DAILY_LOGIN: 5,
   FIRST_TRADE_LOGGED: 25,
   JOURNAL_ENTRY: 15,
-  JOURNAL_REFLECTION_BONUS: 10,
+  JOURNAL_REFLECTION_BONUS: 5,  // Bonus for adding notes/reflection
+  JOURNAL_DAILY_LIMIT: 5,       // Max entries per day that earn XP
   WEEKLY_REVIEW: 25,
   WALLET_ANALYSIS: 20,
 

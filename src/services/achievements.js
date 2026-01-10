@@ -113,6 +113,18 @@ export function calculateTotalXP() {
   const dailyBonusesClaimed = stats.dailyBonusesClaimed || 0
   totalXP += dailyBonusesClaimed * XP_CONFIG.DAILY_GOAL_COMPLETE_BONUS
 
+  // 7. XP from journal entries (15 XP base + 5 XP bonus for reflection)
+  // Max 5 entries per day earn XP to prevent farming
+  try {
+    const journalXpData = localStorage.getItem('hindsight_journal_xp')
+    if (journalXpData) {
+      const journalData = JSON.parse(journalXpData)
+      totalXP += journalData.totalXpFromJournal || 0
+    }
+  } catch {
+    // Ignore parse errors
+  }
+
   // Note: Streak XP is awarded through achievements (on-fire, week-warrior, monthly-master)
   // These are already included in the achievements section above
   // Placement test deliberately does NOT award streak achievements
@@ -227,6 +239,7 @@ const TRADING_101_MODULES = ['newcomer', 'apprentice', 'trader', 'specialist', '
 const LOCAL_ACHIEVEMENTS_KEY = 'hindsight_achievements'
 const LOCAL_STATS_KEY = 'hindsight_academy_stats'
 const LOCAL_PROGRESS_KEY = 'hindsight_academy_progress'
+const JOURNAL_XP_KEY = 'hindsight_journal_xp'
 
 // ==============================================
 // LESSON MASTERY SYSTEM
@@ -753,9 +766,25 @@ export function saveLocalAchievement(achievementId) {
   if (!achievements.includes(achievementId)) {
     achievements.push(achievementId)
     localStorage.setItem(LOCAL_ACHIEVEMENTS_KEY, JSON.stringify(achievements))
+    // Also save the earned date
+    saveAchievementEarnedDate(achievementId)
     return true
   }
   return false
+}
+
+// Save achievement earned date (called by saveLocalAchievement)
+function saveAchievementEarnedDate(achievementId) {
+  try {
+    const datesData = localStorage.getItem('hindsight_achievement_dates')
+    const dates = datesData ? JSON.parse(datesData) : {}
+    if (!dates[achievementId]) {
+      dates[achievementId] = new Date().toISOString()
+      localStorage.setItem('hindsight_achievement_dates', JSON.stringify(dates))
+    }
+  } catch {
+    // Ignore storage errors
+  }
 }
 
 // Default stats object
@@ -1014,6 +1043,122 @@ export function addAchievementXp(achievementIds) {
   return { xpAwarded: 0 }
 }
 
+// ==============================================
+// JOURNAL ENTRY XP SYSTEM
+// ==============================================
+
+// Get journal XP data for today
+function getJournalXpData() {
+  try {
+    const data = localStorage.getItem(JOURNAL_XP_KEY)
+    if (!data) return { date: null, entriesRewarded: 0, totalXpFromJournal: 0, awardedEntries: [] }
+    const parsed = JSON.parse(data)
+    // Ensure awardedEntries exists for backwards compatibility
+    if (!parsed.awardedEntries) parsed.awardedEntries = []
+    return parsed
+  } catch {
+    return { date: null, entriesRewarded: 0, totalXpFromJournal: 0, awardedEntries: [] }
+  }
+}
+
+// Check if user can earn XP for journal entry today (max 5 per day)
+export function canEarnJournalXp() {
+  const data = getJournalXpData()
+  const today = new Date().toISOString().split('T')[0]
+
+  // Reset counter if it's a new day
+  if (data.date !== today) {
+    return { canEarn: true, entriesRewarded: 0, remaining: XP_CONFIG.JOURNAL_DAILY_LIMIT }
+  }
+
+  const remaining = XP_CONFIG.JOURNAL_DAILY_LIMIT - (data.entriesRewarded || 0)
+  return {
+    canEarn: remaining > 0,
+    entriesRewarded: data.entriesRewarded || 0,
+    remaining: Math.max(0, remaining)
+  }
+}
+
+// Award XP for journal entry submission
+// entryId: unique ID of the journal entry (to prevent double-awarding)
+// hasReflection: true if entry includes thesis, lessonLearned, or exitReasoning
+export function awardJournalEntryXp(entryId, hasReflection = false) {
+  const today = new Date().toISOString().split('T')[0]
+  const data = getJournalXpData()
+
+  // Check if this entry has already earned XP
+  if (data.awardedEntries.includes(entryId)) {
+    return {
+      xpAwarded: 0,
+      reason: 'already_awarded',
+      entriesRewarded: data.date === today ? data.entriesRewarded : 0,
+      remaining: data.date === today
+        ? Math.max(0, XP_CONFIG.JOURNAL_DAILY_LIMIT - data.entriesRewarded)
+        : XP_CONFIG.JOURNAL_DAILY_LIMIT
+    }
+  }
+
+  // Reset daily counter if new day (but keep awardedEntries)
+  if (data.date !== today) {
+    data.date = today
+    data.entriesRewarded = 0
+  }
+
+  // Check daily limit
+  if (data.entriesRewarded >= XP_CONFIG.JOURNAL_DAILY_LIMIT) {
+    return {
+      xpAwarded: 0,
+      reason: 'daily_limit_reached',
+      entriesRewarded: data.entriesRewarded,
+      remaining: 0
+    }
+  }
+
+  // Calculate XP
+  let xp = XP_CONFIG.JOURNAL_ENTRY // Base 15 XP
+  if (hasReflection) {
+    xp += XP_CONFIG.JOURNAL_REFLECTION_BONUS // +5 XP for reflection
+  }
+
+  // Update journal XP tracking
+  data.entriesRewarded += 1
+  data.totalXpFromJournal = (data.totalXpFromJournal || 0) + xp
+  data.awardedEntries.push(entryId)
+  localStorage.setItem(JOURNAL_XP_KEY, JSON.stringify(data))
+
+  // Add to overall XP and trigger UI updates
+  const result = addLocalXp(xp, 'journal')
+
+  // Dispatch progressUpdated event for UI refresh
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('progressUpdated'))
+  }
+
+  return {
+    xpAwarded: xp,
+    baseXp: XP_CONFIG.JOURNAL_ENTRY,
+    bonusXp: hasReflection ? XP_CONFIG.JOURNAL_REFLECTION_BONUS : 0,
+    hasReflection,
+    entriesRewarded: data.entriesRewarded,
+    remaining: XP_CONFIG.JOURNAL_DAILY_LIMIT - data.entriesRewarded,
+    ...result
+  }
+}
+
+// Get total XP earned from journal entries (for stats display)
+export function getJournalXpStats() {
+  const data = getJournalXpData()
+  const today = new Date().toISOString().split('T')[0]
+
+  return {
+    totalXpFromJournal: data.totalXpFromJournal || 0,
+    todayEntriesRewarded: data.date === today ? (data.entriesRewarded || 0) : 0,
+    todayRemaining: data.date === today
+      ? Math.max(0, XP_CONFIG.JOURNAL_DAILY_LIMIT - (data.entriesRewarded || 0))
+      : XP_CONFIG.JOURNAL_DAILY_LIMIT
+  }
+}
+
 // Mark module as completed in local stats
 export function markModuleCompletedLocal(moduleSlug) {
   const stats = getLocalStats()
@@ -1115,6 +1260,124 @@ export function getAchievementById(id) {
 // Get all achievement IDs
 export function getAllAchievementIds() {
   return Object.keys(ACHIEVEMENTS)
+}
+
+// Get progress for a specific achievement
+// Returns { current, target, progressText, isComplete }
+export function getAchievementProgress(achievementId) {
+  const stats = getLocalStats()
+  const totalXp = calculateTotalXP()
+  const earnedAchievements = getLocalAchievements()
+  const isComplete = earnedAchievements.includes(achievementId)
+
+  switch (achievementId) {
+    case 'first-steps':
+      return {
+        current: Math.min(stats.lessonsCompleted || 0, 1),
+        target: 1,
+        progressText: `${Math.min(stats.lessonsCompleted || 0, 1)}/1 lesson`,
+        isComplete
+      }
+
+    case 'on-fire':
+      return {
+        current: Math.min(stats.currentStreak || 0, 3),
+        target: 3,
+        progressText: `${stats.currentStreak || 0}/3 day streak`,
+        isComplete
+      }
+
+    case 'week-warrior':
+      return {
+        current: Math.min(stats.currentStreak || 0, 7),
+        target: 7,
+        progressText: `${stats.currentStreak || 0}/7 day streak`,
+        isComplete
+      }
+
+    case 'monthly-master':
+      return {
+        current: Math.min(stats.currentStreak || 0, 30),
+        target: 30,
+        progressText: `${stats.currentStreak || 0}/30 day streak`,
+        isComplete
+      }
+
+    case 'perfect-score':
+      // Check if user has any perfect quiz scores
+      const progressData = localStorage.getItem(LOCAL_PROGRESS_KEY)
+      const progress = progressData ? JSON.parse(progressData) : {}
+      const lessonScores = progress.lessonScores || {}
+      const hasPerfect = Object.values(lessonScores).some(s => s.bestScore >= 1.0)
+      return {
+        current: hasPerfect || isComplete ? 1 : 0,
+        target: 1,
+        progressText: hasPerfect || isComplete ? 'Achieved!' : 'Score 100% on any quiz',
+        isComplete
+      }
+
+    case 'module-master':
+      return {
+        current: Math.min(stats.modulesCompleted || 0, 1),
+        target: 1,
+        progressText: `${Math.min(stats.modulesCompleted || 0, 1)}/1 module`,
+        isComplete
+      }
+
+    case 'rising-star':
+      return {
+        current: Math.min(totalXp, 500),
+        target: 500,
+        progressText: `${totalXp}/500 XP`,
+        isComplete
+      }
+
+    case 'knowledge-seeker':
+      return {
+        current: Math.min(stats.lessonsCompleted || 0, 25),
+        target: 25,
+        progressText: `${stats.lessonsCompleted || 0}/25 lessons`,
+        isComplete
+      }
+
+    case 'dedicated-learner':
+      return {
+        current: Math.min(stats.lessonsCompleted || 0, 50),
+        target: 50,
+        progressText: `${stats.lessonsCompleted || 0}/50 lessons`,
+        isComplete
+      }
+
+    case 'expert-trader':
+      const completedModules = stats.completedModules || []
+      const trading101Complete = TRADING_101_MODULES.filter(m => completedModules.includes(m)).length
+      return {
+        current: trading101Complete,
+        target: 5,
+        progressText: `${trading101Complete}/5 Trading 101 modules`,
+        isComplete
+      }
+
+    default:
+      return {
+        current: 0,
+        target: 1,
+        progressText: 'Unknown achievement',
+        isComplete
+      }
+  }
+}
+
+// Get earned date for an achievement (if tracking is available)
+export function getAchievementEarnedDate(achievementId) {
+  try {
+    const datesData = localStorage.getItem('hindsight_achievement_dates')
+    if (!datesData) return null
+    const dates = JSON.parse(datesData)
+    return dates[achievementId] || null
+  } catch {
+    return null
+  }
 }
 
 // ==============================================

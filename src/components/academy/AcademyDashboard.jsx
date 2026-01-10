@@ -5,7 +5,7 @@ import { useAchievements } from '../../contexts/AchievementContext'
 import { getArchetypeModule, hasArchetypeModule, getArchetypeDotClass, ARCHETYPE_DOT_COLORS } from '../../data/academy/archetypes'
 import { isMasterExamUnlocked, hasMasterExamQuestions } from '../../data/academy/masterExam'
 import { hasLocalModule, getTrading101Module } from '../../data/academy/modules'
-import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores, calculateTotalXP, getPlacementBestScores, getPlacementLatestScores, getModuleLessonMasteries, getModuleLessonDotStatuses, getArchetypeLessonDotStatuses } from '../../services/achievements'
+import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores, calculateTotalXP, getPlacementBestScores, getPlacementLatestScores, getModuleLessonMasteries, getModuleLessonDotStatuses, getArchetypeLessonDotStatuses, getAchievementProgress, getAchievementEarnedDate } from '../../services/achievements'
 import { getLevelInfo, DAILY_GOALS, DEFAULT_DAILY_GOAL } from '../../config/xpConfig'
 import { getArchetypeRecommendations, getWalletAnalysisInsights, ARCHETYPE_DEFAULTS } from '../../data/academy/archetypeRecommendations'
 import PlacementTest from './PlacementTest'
@@ -618,12 +618,114 @@ function ModuleCard({ module, completedLessons = 0, isLocked = false, isCurrent 
   )
 }
 
+// Achievement Detail Modal Component
+function AchievementDetailModal({ achievement, isEarned, onClose }) {
+  if (!achievement) return null
+
+  const progress = getAchievementProgress(achievement.id)
+  const earnedDate = isEarned ? getAchievementEarnedDate(achievement.id) : null
+  const progressPercent = progress.target > 0 ? Math.round((progress.current / progress.target) * 100) : 0
+
+  // Format the earned date
+  const formattedDate = earnedDate
+    ? new Date(earnedDate).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      })
+    : null
+
+  return (
+    <div className="modal-overlay achievement-detail-overlay" onClick={onClose}>
+      <div className="modal-content glass-card achievement-detail-modal" onClick={e => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+
+        {/* Achievement Icon */}
+        <div className={`achievement-detail-icon ${isEarned ? 'earned' : 'locked'}`}>
+          {achievement.icon}
+        </div>
+
+        {/* Achievement Name */}
+        <h2 className="achievement-detail-name">{achievement.name}</h2>
+
+        {/* Status Badge */}
+        <div className={`achievement-detail-status ${isEarned ? 'earned' : 'locked'}`}>
+          {isEarned ? (
+            <>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Unlocked
+            </>
+          ) : (
+            <>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              Locked
+            </>
+          )}
+        </div>
+
+        {/* Description */}
+        <p className="achievement-detail-desc">{achievement.description}</p>
+
+        {/* How to Earn */}
+        <div className="achievement-detail-criteria">
+          <h4>How to Earn</h4>
+          <p>{achievement.criteria}</p>
+        </div>
+
+        {/* Progress or Earned Date */}
+        {isEarned ? (
+          <div className="achievement-detail-earned">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            Earned on {formattedDate || 'Unknown'}
+          </div>
+        ) : (
+          <div className="achievement-detail-progress">
+            <div className="achievement-progress-header">
+              <span>Progress</span>
+              <span className="achievement-progress-text">{progress.progressText}</span>
+            </div>
+            <div className="achievement-progress-bar">
+              <div
+                className="achievement-progress-fill"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* XP Reward */}
+        <div className="achievement-detail-xp">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+          <span>+{achievement.xpReward} XP Reward</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Achievement Badge Component
-function AchievementBadge({ achievement, isEarned, isNew }) {
+function AchievementBadge({ achievement, isEarned, isNew, onClick }) {
   return (
     <div
       className={`achievement-badge ${isEarned ? 'earned' : 'locked'} ${isNew ? 'new' : ''}`}
-      title={`${achievement.name}: ${achievement.description}`}
+      onClick={() => onClick?.(achievement)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && onClick?.(achievement)}
     >
       {isNew && <span className="achievement-new-tag">NEW</span>}
       <span className="achievement-icon">{achievement.icon}</span>
@@ -634,6 +736,7 @@ function AchievementBadge({ achievement, isEarned, isNew }) {
 
 // Achievement Showcase Component
 function AchievementShowcase({ earnedAchievements = [] }) {
+  const [selectedAchievement, setSelectedAchievement] = useState(null)
   const allAchievements = Object.values(ACHIEVEMENTS)
 
   return (
@@ -649,9 +752,19 @@ function AchievementShowcase({ earnedAchievements = [] }) {
             achievement={achievement}
             isEarned={earnedAchievements.includes(achievement.id)}
             isNew={false}
+            onClick={setSelectedAchievement}
           />
         ))}
       </div>
+
+      {/* Achievement Detail Modal */}
+      {selectedAchievement && (
+        <AchievementDetailModal
+          achievement={selectedAchievement}
+          isEarned={earnedAchievements.includes(selectedAchievement.id)}
+          onClose={() => setSelectedAchievement(null)}
+        />
+      )}
     </div>
   )
 }

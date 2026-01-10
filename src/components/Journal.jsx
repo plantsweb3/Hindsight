@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { analyzeWallet, convertTradesToJournalEntries, createJournalEntriesBatch } from '../services/solana'
+import { awardJournalEntryXp, canEarnJournalXp } from '../services/achievements'
 import WalletLabelBadge from './WalletLabelBadge'
 
 const API_URL = '/api/journal'
@@ -707,6 +708,9 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
   const [refreshError, setRefreshError] = useState('')
   const [refreshProgress, setRefreshProgress] = useState('')
 
+  // XP toast state
+  const [xpToast, setXpToast] = useState(null)
+
   // Get saved wallets from user
   const savedWallets = user?.savedWallets || []
 
@@ -811,6 +815,23 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
 
     if (!res.ok) {
       throw new Error('Failed to save')
+    }
+
+    // Check if user added reflection notes (thesis, lessonLearned, or exitReasoning)
+    const hasReflection = !!(updates.thesis || updates.lessonLearned || updates.exitReasoning)
+
+    // Award XP for saving journal entry notes
+    const xpResult = awardJournalEntryXp(entryId, hasReflection)
+
+    // Show XP toast if XP was awarded
+    if (xpResult.xpAwarded > 0) {
+      setXpToast({
+        xp: xpResult.xpAwarded,
+        hasBonus: xpResult.bonusXp > 0,
+        remaining: xpResult.remaining
+      })
+      // Auto-hide toast after 3 seconds
+      setTimeout(() => setXpToast(null), 3000)
     }
 
     // Reload data to get updated stats
@@ -920,6 +941,20 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
           </>
         )}
       </main>
+
+      {/* XP Toast Animation */}
+      {xpToast && (
+        <div className="xp-toast">
+          <div className="xp-toast-content">
+            <span className="xp-toast-icon">⚡</span>
+            <span className="xp-toast-amount">+{xpToast.xp} XP</span>
+            {xpToast.hasBonus && <span className="xp-toast-bonus">(+5 reflection bonus!)</span>}
+          </div>
+          {xpToast.remaining > 0 && (
+            <div className="xp-toast-remaining">{xpToast.remaining} entries left today</div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
