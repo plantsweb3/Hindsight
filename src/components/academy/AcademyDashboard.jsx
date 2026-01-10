@@ -783,6 +783,11 @@ function Leaderboard({ token, currentUserId }) {
     setIsLoading(true)
     setError(null)
     try {
+      // First sync local XP to server so leaderboard reflects current progress
+      if (token) {
+        await syncXpToServer(token)
+      }
+
       const data = await fetchLeaderboard(token, 25)
       if (data) {
         setLeaderboardData(data)
@@ -1273,6 +1278,11 @@ export default function AcademyDashboard() {
     setError('')
 
     try {
+      // Sync local XP to server for leaderboard (fire and forget)
+      if (token) {
+        syncXpToServer(token).catch(() => {})
+      }
+
       const modulesRes = await fetch('/api/academy/modules')
       if (!modulesRes.ok) throw new Error('Failed to fetch modules')
       const modulesData = await modulesRes.json()
