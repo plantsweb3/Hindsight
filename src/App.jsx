@@ -390,7 +390,34 @@ function AppContent() {
     )
   }
 
-  if (view === 'dashboard' && isAuthenticated) {
+  if (view === 'dashboard') {
+    // If not authenticated, show auth modal to login
+    if (!isAuthenticated) {
+      return (
+        <>
+          <LandingPage
+            onAnalyze={handleAnalyze}
+            onStartQuiz={handleStartQuiz}
+            onShowAuth={handleShowAuth}
+            onOpenDashboard={handleOpenDashboard}
+            onOpenJournal={handleOpenJournal}
+            onOpenPro={handleOpenPro}
+            onOpenContact={handleOpenContact}
+            isLoading={isLoading}
+            progress={progress}
+            error={error}
+            isAuthenticated={isAuthenticated}
+            user={user}
+          />
+          <AuthModal
+            isOpen={true}
+            onClose={() => setView('landing')}
+            onSuccess={() => setView('dashboard')}
+            initialMode="login"
+          />
+        </>
+      )
+    }
     return (
       <Dashboard
         onBack={handleReset}
