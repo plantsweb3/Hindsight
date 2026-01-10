@@ -215,7 +215,7 @@ function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dail
         </div>
       </div>
 
-      {/* Row 1: Day Streak, Total XP, Leaderboard */}
+      {/* All 6 stat cards in single grid - flows to 3x2 on mobile */}
       <div className="hero-stats-grid">
         <div className="hero-stat">
           <span className={`hero-stat-icon ${hasStreak ? 'streak-active' : ''}`}>🔥</span>
@@ -231,7 +231,6 @@ function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dail
             <span className="hero-stat-label">Total XP</span>
           </div>
         </div>
-        {/* Leaderboard Rank Card */}
         <div
           className="hero-stat hero-stat-clickable leaderboard-stat"
           onClick={onLeaderboardClick}
@@ -245,11 +244,6 @@ function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dail
             <span className="hero-stat-label">Rank</span>
           </div>
         </div>
-      </div>
-
-      {/* Row 2: Mastery, Daily Goal, Achievements */}
-      <div className="hero-stats-grid hero-stats-row-2">
-        {/* Mastery Card */}
         <div className="hero-stat" title={correctAnswers > 0 ? `${correctAnswers}/${totalPossible} questions correct` : 'Complete exams to track mastery'}>
           <span className="hero-stat-icon">📊</span>
           <div className="hero-stat-content">
@@ -257,8 +251,6 @@ function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dail
             <span className="hero-stat-label">Mastery</span>
           </div>
         </div>
-
-        {/* Daily Goal Card */}
         <div
           className={`hero-stat hero-stat-clickable daily-goal-stat ${dailyGoalComplete ? 'complete' : ''}`}
           onClick={onDailyGoalClick}
@@ -275,7 +267,7 @@ function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dail
               )}
             </span>
             <span className="hero-stat-label">
-              {dailyGoalComplete ? 'Goal Complete!' : 'Goal'}
+              {dailyGoalComplete ? 'Complete!' : 'Goal'}
             </span>
           </div>
           <div className="daily-goal-progress-bar">
@@ -285,8 +277,6 @@ function HeroStats({ xpProgress, levelInfo, totalLessons, completedLessons, dail
             />
           </div>
         </div>
-
-        {/* Achievements Card */}
         <div
           className="hero-stat hero-stat-clickable achievement-stat"
           onClick={onAchievementsClick}

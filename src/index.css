@@ -13056,10 +13056,6 @@ input, button {
   gap: 0.5rem;
 }
 
-.hero-stats-row-2 {
-  grid-template-columns: repeat(3, 1fr);
-}
-
 /* Daily Goal Stat Card - Compact version for 3-column layout */
 .daily-goal-stat {
   position: relative;
@@ -14121,8 +14117,7 @@ input, button {
     flex-wrap: wrap;
   }
 
-  .hero-stats-grid,
-  .hero-stats-row-2 {
+  .hero-stats-grid {
     min-width: auto;
     flex: 1;
     max-width: 100%;
@@ -14174,8 +14169,7 @@ input, button {
 }
 
 @media (max-width: 480px) {
-  .hero-stats-grid,
-  .hero-stats-row-2 {
+  .hero-stats-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
   }
@@ -14393,6 +14387,8 @@ input, button {
 .hero-stats-grid .hero-stat:nth-child(2) { animation-delay: 0.15s; }
 .hero-stats-grid .hero-stat:nth-child(3) { animation-delay: 0.2s; }
 .hero-stats-grid .hero-stat:nth-child(4) { animation-delay: 0.25s; }
+.hero-stats-grid .hero-stat:nth-child(5) { animation-delay: 0.3s; }
+.hero-stats-grid .hero-stat:nth-child(6) { animation-delay: 0.35s; }
 
 /* Button Press Effect */
 .hero-cta-btn:active,
