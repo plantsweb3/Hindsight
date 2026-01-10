@@ -237,7 +237,7 @@ function XpInfoPopup({ levelInfo, onClose }) {
           </svg>
         </a>
 
-        <a href="/academy?scrollTo=leaderboard" className="xp-popup-link">
+        <a href="/leaderboard" className="xp-popup-link">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 20V10M18 20V4M6 20v-4" />
           </svg>

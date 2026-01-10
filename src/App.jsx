@@ -25,6 +25,7 @@ import LessonView from './components/academy/LessonView'
 import ArchetypeModuleView from './components/academy/ArchetypeModuleView'
 import ArchetypeLessonView from './components/academy/ArchetypeLessonView'
 import MasterExamPage from './components/academy/MasterExamPage'
+import LeaderboardPage from './components/academy/LeaderboardPage'
 import AchievementCelebration from './components/academy/AchievementCelebration'
 import LevelUpCelebration from './components/academy/LevelUpCelebration'
 
@@ -564,6 +565,9 @@ export default function App() {
               <Route path=":moduleSlug" element={<ModuleView />} />
               <Route path=":moduleSlug/:lessonSlug" element={<LessonView />} />
             </Route>
+
+            {/* Leaderboard - standalone page */}
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
 
             {/* Everything else - existing state-based */}
             <Route path="/*" element={<AppContent />} />
