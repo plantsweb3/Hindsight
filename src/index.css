@@ -6433,34 +6433,36 @@ input, button {
     padding: 6rem 1rem 2rem;
   }
 
-  .stats-bar {
-    display: grid;
+  .dashboard-main .stats-bar {
+    display: grid !important;
     grid-template-columns: 1fr 1fr;
     gap: 0;
   }
 
-  .stats-bar .stat-divider {
+  .dashboard-main .stats-bar .stat-divider {
     display: none;
   }
 
-  .stats-bar .stat-item {
+  .dashboard-main .stats-bar .stat-item {
+    flex: unset !important;
     padding: 0.75rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-right: none;
   }
 
-  .stats-bar .stat-item:nth-child(odd) {
+  .dashboard-main .stats-bar .stat-item:nth-child(odd) {
     border-right: 1px solid rgba(255, 255, 255, 0.06);
   }
 
-  .stats-bar .stat-item:nth-child(n+5) {
+  .dashboard-main .stats-bar .stat-item:nth-child(n+5) {
     border-bottom: none;
   }
 
-  .stats-bar .stat-value {
+  .dashboard-main .stats-bar .stat-value {
     font-size: 1.1rem;
   }
 
-  .stats-bar .stat-label {
+  .dashboard-main .stats-bar .stat-label {
     font-size: 0.65rem;
   }
 
