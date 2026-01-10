@@ -1080,9 +1080,6 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
             {/* Row 1: Stats Bar */}
             <StatsBar stats={stats} levelInfo={levelInfo} onXpClick={() => setShowXpPopup(true)} />
 
-            {/* Row 1.5: Usage Limits (Free/Pro) */}
-            <UsageLimitsBar user={user} onOpenPro={onOpenPro} />
-
             {/* Row 2: Archetype Bar (compact horizontal) */}
             <TraderProfileCard user={user} onRetakeQuiz={onRetakeQuiz} />
 
@@ -1103,6 +1100,9 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
 
             {/* Row 3.5: Wallet Performance (Pro users with 2+ wallets) */}
             <WalletPerformance walletStats={walletStats} />
+
+            {/* Usage Limits (Free/Pro) */}
+            <UsageLimitsBar user={user} onOpenPro={onOpenPro} />
 
             {/* Row 4: Two Column Layout - Activity + Trade History */}
             <div className="dashboard-columns">
