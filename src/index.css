@@ -6488,105 +6488,155 @@ input, button {
 }
 
 /* ==========================================
-   COMPACT ARCHETYPE BAR
+   ARCHETYPE HERO SECTION
    ========================================== */
 
-.archetype-bar {
-  padding: 1rem 1.5rem;
+.archetype-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background: rgba(24, 24, 27, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
 }
 
-.archetype-bar-content {
+.archetype-hero-empty {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.archetype-bar-empty {
+  width: 100%;
   color: #71717a;
   font-size: 0.9rem;
 }
 
-.archetype-bar-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
+.archetype-hero-icon {
+  font-size: 3rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.4));
+  flex-shrink: 0;
 }
 
-.archetype-bar-types {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+.archetype-hero-content {
+  flex: 1;
+  min-width: 0;
 }
 
-.archetype-bar-primary,
-.archetype-bar-secondary {
+.archetype-hero-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f5f5f5;
+  margin: 0 0 0.5rem 0;
+}
+
+.archetype-hero-advice {
+  font-size: 0.95rem;
+  color: #a1a1aa;
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+}
+
+.archetype-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.archetype-hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #7c3aed;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.archetype-hero-cta:hover {
+  background: #8b5cf6;
+}
+
+.archetype-hero-meta {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #71717a;
 }
 
-.archetype-bar-emoji {
-  font-size: 1.25rem;
-}
-
-.archetype-bar-name {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #f5f5f5;
-}
-
-.archetype-bar-name.secondary {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #a1a1aa;
-}
-
-.archetype-bar-label {
-  font-size: 0.75rem;
+.archetype-hero-dot {
   color: #52525b;
 }
 
-.archetype-bar-divider {
-  color: #3f3f46;
-  font-size: 1.25rem;
-  font-weight: 300;
-}
-
-.archetype-bar-btn {
-  background: transparent;
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  color: #a78bfa;
-  font-size: 0.8rem;
-  font-weight: 500;
-  padding: 0.4rem 0.75rem;
-  border-radius: 0.375rem;
+.archetype-hero-retake {
+  background: none;
+  border: none;
+  color: #71717a;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  padding: 0;
+  transition: color 0.2s ease;
 }
 
-.archetype-bar-btn:hover {
-  background: rgba(139, 92, 246, 0.1);
-  border-color: rgba(139, 92, 246, 0.5);
-}
-
-.archetype-bar-coaching {
-  font-size: 1.1rem;
+.archetype-hero-retake:hover {
   color: #a78bfa;
-  margin: 0;
-  line-height: 1.4;
 }
 
-/* Archetype Bar Mobile */
+/* Archetype Hero Mobile */
 @media (max-width: 768px) {
-  .archetype-bar-top {
+  .archetype-hero {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
+    padding: 1.25rem;
+  }
+
+  .archetype-hero-icon {
+    font-size: 3.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .archetype-hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .archetype-hero-title {
+    font-size: 1.125rem;
+  }
+
+  .archetype-hero-advice {
+    font-size: 0.875rem;
+    padding: 0 0.5rem;
+  }
+
+  .archetype-hero-actions {
+    flex-direction: column;
+    width: 100%;
     gap: 0.75rem;
   }
 
-  .archetype-bar-btn {
-    align-self: flex-start;
+  .archetype-hero-cta {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .archetype-hero-meta {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .archetype-hero-dot {
+    display: none;
   }
 }
 

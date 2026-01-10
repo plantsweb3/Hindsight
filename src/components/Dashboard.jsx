@@ -284,48 +284,41 @@ function UsageLimitsBar({ user, onOpenPro }) {
   )
 }
 
-// Compact Horizontal Trader Profile Card
-function TraderProfileCard({ user, onRetakeQuiz }) {
-  console.log('[Dashboard] TraderProfileCard user:', user)
-  console.log('[Dashboard] primaryArchetype:', user?.primaryArchetype)
-  console.log('[Dashboard] ARCHETYPES keys:', Object.keys(ARCHETYPES))
-
+// Archetype Hero Section
+function ArchetypeHero({ user, onRetakeQuiz }) {
   if (!user?.primaryArchetype || !ARCHETYPES[user.primaryArchetype]) {
     return (
-      <div className="archetype-bar glass-card">
-        <div className="archetype-bar-content">
-          <span className="archetype-bar-empty">Take the quiz to discover your trading personality</span>
-          <button className="archetype-bar-btn" onClick={onRetakeQuiz}>Take Quiz</button>
+      <div className="archetype-hero">
+        <div className="archetype-hero-empty">
+          <span>Take the quiz to discover your trading personality</span>
+          <button className="archetype-hero-cta" onClick={onRetakeQuiz}>Take Quiz</button>
         </div>
       </div>
     )
   }
 
-  const primary = ARCHETYPES[user.primaryArchetype]
-  const secondary = user.secondaryArchetype ? ARCHETYPES[user.secondaryArchetype] : null
+  const archetype = ARCHETYPES[user.primaryArchetype]
 
   return (
-    <div className="archetype-bar glass-card">
-      <div className="archetype-bar-top">
-        <div className="archetype-bar-types">
-          <div className="archetype-bar-primary">
-            <span className="archetype-bar-emoji">{primary.emoji}</span>
-            <span className="archetype-bar-name">{primary.name}</span>
+    <div className="archetype-hero">
+      <div className="archetype-hero-icon">{archetype.emoji}</div>
+      <div className="archetype-hero-content">
+        <h3 className="archetype-hero-title">You're a {archetype.name}</h3>
+        <p className="archetype-hero-advice">{archetype.coaching}</p>
+        <div className="archetype-hero-actions">
+          <a href="/academy?tab=archetype" className="archetype-hero-cta">
+            Master Your Style
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </a>
+          <div className="archetype-hero-meta">
+            <span className="archetype-hero-lessons">8 personalized lessons</span>
+            <span className="archetype-hero-dot">•</span>
+            <button className="archetype-hero-retake" onClick={onRetakeQuiz}>Retake Quiz</button>
           </div>
-          {secondary && (
-            <>
-              <span className="archetype-bar-divider">|</span>
-              <div className="archetype-bar-secondary">
-                <span className="archetype-bar-emoji">{secondary.emoji}</span>
-                <span className="archetype-bar-name secondary">{secondary.name}</span>
-                <span className="archetype-bar-label">(secondary)</span>
-              </div>
-            </>
-          )}
         </div>
-        <button className="archetype-bar-btn" onClick={onRetakeQuiz}>Retake Quiz</button>
       </div>
-      <p className="archetype-bar-coaching">{primary.coaching}</p>
     </div>
   )
 }
@@ -1080,8 +1073,8 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
             {/* Row 1: Stats Bar */}
             <StatsBar stats={stats} levelInfo={levelInfo} onXpClick={() => setShowXpPopup(true)} />
 
-            {/* Row 2: Archetype Bar (compact horizontal) */}
-            <TraderProfileCard user={user} onRetakeQuiz={onRetakeQuiz} />
+            {/* Row 2: Archetype Hero */}
+            <ArchetypeHero user={user} onRetakeQuiz={onRetakeQuiz} />
 
             {/* Row 2.5: Tracked Wallets */}
             <WalletsSection
