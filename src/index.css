@@ -6434,14 +6434,17 @@ input, button {
   }
 
   .stats-bar {
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 0;
   }
 
+  .stats-bar .stat-divider {
+    display: none;
+  }
+
   .stats-bar .stat-item {
-    flex: 1 1 50%;
     padding: 0.75rem;
-    border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   }
 
@@ -6449,12 +6452,16 @@ input, button {
     border-right: 1px solid rgba(255, 255, 255, 0.06);
   }
 
-  .stats-bar .stat-item:nth-last-child(-n+2) {
+  .stats-bar .stat-item:nth-child(n+5) {
     border-bottom: none;
   }
 
   .stats-bar .stat-value {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
+  }
+
+  .stats-bar .stat-label {
+    font-size: 0.65rem;
   }
 
   .quick-actions {
