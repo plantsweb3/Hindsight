@@ -82,7 +82,7 @@ function SettingsHeader({ user, onNavigate, onLogout }) {
         </a>
         <nav className="header-nav">
           <button className="nav-link" onClick={() => onNavigate('dashboard')}>
-            Dashboard
+            Copilot
           </button>
           <button className="nav-link" onClick={() => onNavigate('journal')}>
             Journal

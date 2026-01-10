@@ -4817,6 +4817,149 @@ input, button {
   color: #a1a1aa;
 }
 
+/* Copilot XP Badge in Header */
+.copilot-xp-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 0.5rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  margin-right: 0.75rem;
+}
+
+.copilot-xp-badge:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+.copilot-xp-level {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.copilot-xp-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.copilot-xp-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
+}
+
+.copilot-xp-bar {
+  width: 60px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.copilot-xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Copilot CTA Section */
+.copilot-cta-section {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.copilot-cta-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: rgba(24, 24, 27, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.copilot-cta-card:hover {
+  background: rgba(24, 24, 27, 0.8);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.copilot-cta-card .cta-icon {
+  font-size: 1.5rem;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  flex-shrink: 0;
+}
+
+.copilot-cta-card.academy-cta .cta-icon {
+  background: rgba(139, 92, 246, 0.15);
+}
+
+.copilot-cta-card.discord-cta .cta-icon {
+  background: rgba(88, 101, 242, 0.15);
+  color: #5865f2;
+}
+
+.copilot-cta-card .cta-content {
+  flex: 1;
+}
+
+.copilot-cta-card .cta-content h4 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.copilot-cta-card .cta-content p {
+  font-size: 0.8125rem;
+  color: #71717a;
+  margin: 0;
+}
+
+.copilot-cta-card > svg {
+  color: #52525b;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
+.copilot-cta-card:hover > svg {
+  color: #a1a1aa;
+}
+
+@media (max-width: 768px) {
+  .copilot-xp-badge {
+    display: none;
+  }
+
+  .copilot-cta-section {
+    grid-template-columns: 1fr;
+  }
+}
+
 .profile-dropdown {
   position: absolute;
   top: calc(100% + 0.5rem);

@@ -71,7 +71,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 's
           <h2 className="modal-title">{mode === 'login' ? 'Welcome back' : 'Create account'}</h2>
           <p className="modal-subtitle">
             {mode === 'login'
-              ? 'Log in to access your dashboard'
+              ? 'Log in to access your copilot'
               : 'Save your results and track progress'}
           </p>
         </div>

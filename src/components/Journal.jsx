@@ -45,7 +45,7 @@ function Header({ user, onDashboard, onLogout }) {
         </a>
         <nav className="header-nav">
           <button className="nav-link" onClick={onDashboard}>
-            Dashboard
+            Copilot
           </button>
           <button className="nav-link active">
             Journal
@@ -841,7 +841,7 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          Back to Dashboard
+          Back to Copilot
         </button>
 
         <section className="journal-header-section">
