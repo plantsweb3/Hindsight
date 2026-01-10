@@ -2245,4 +2245,84 @@ export async function getFullUserProgress(userId) {
   }
 }
 
+// ==============================================
+// LEADERBOARD SYSTEM
+// ==============================================
+
+// Get XP leaderboard (top users by XP)
+export async function getLeaderboard(limit = 50) {
+  const result = await getDb().execute({
+    sql: `SELECT
+            u.id,
+            u.username,
+            COALESCE(xp.total_xp, 0) as total_xp,
+            COALESCE(xp.current_level, 1) as level,
+            COALESCE(xp.current_streak, 0) as streak
+          FROM users u
+          LEFT JOIN user_xp_progress xp ON u.id = xp.user_id
+          WHERE COALESCE(xp.total_xp, 0) > 0
+          ORDER BY COALESCE(xp.total_xp, 0) DESC
+          LIMIT ?`,
+    args: [limit],
+  })
+
+  return result.rows.map((row, index) => ({
+    rank: index + 1,
+    id: row.id,
+    username: row.username,
+    totalXp: row.total_xp,
+    level: row.level,
+    streak: row.streak,
+  }))
+}
+
+// Get user's rank on the leaderboard
+export async function getUserRank(userId) {
+  // Get user's XP
+  const userProgress = await getUserXpProgress(userId)
+  const userXp = userProgress.total_xp || 0
+
+  // Count how many users have more XP
+  const result = await getDb().execute({
+    sql: `SELECT COUNT(*) as higher_count
+          FROM user_xp_progress
+          WHERE total_xp > ?`,
+    args: [userXp],
+  })
+
+  const rank = (result.rows[0]?.higher_count || 0) + 1
+
+  // Get total users with any XP
+  const totalResult = await getDb().execute(
+    `SELECT COUNT(*) as total FROM user_xp_progress WHERE total_xp > 0`
+  )
+  const totalUsers = totalResult.rows[0]?.total || 0
+
+  return {
+    rank,
+    totalUsers,
+    totalXp: userXp,
+    percentile: totalUsers > 0 ? Math.round((1 - (rank - 1) / totalUsers) * 100) : 100,
+  }
+}
+
+// Sync user's XP from client-side calculation
+// This allows client to update server when XP changes
+export async function syncUserXp(userId, totalXp, level) {
+  const current = await getUserXpProgress(userId)
+
+  // Only update if client XP is higher (prevents manipulation downward)
+  if (totalXp > current.total_xp) {
+    await getDb().execute({
+      sql: `UPDATE user_xp_progress
+            SET total_xp = ?, current_level = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = ?`,
+      args: [totalXp, level, userId],
+    })
+    return { updated: true, previousXp: current.total_xp, newXp: totalXp }
+  }
+
+  return { updated: false, currentXp: current.total_xp }
+}
+
 export default getDb

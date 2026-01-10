@@ -5,7 +5,7 @@ import { useAchievements } from '../../contexts/AchievementContext'
 import { getArchetypeModule, hasArchetypeModule, getArchetypeDotClass, ARCHETYPE_DOT_COLORS } from '../../data/academy/archetypes'
 import { isMasterExamUnlocked, hasMasterExamQuestions } from '../../data/academy/masterExam'
 import { hasLocalModule, getTrading101Module } from '../../data/academy/modules'
-import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores, calculateTotalXP, getPlacementBestScores, getPlacementLatestScores, getModuleLessonMasteries, getModuleLessonDotStatuses, getArchetypeLessonDotStatuses, getAchievementProgress, getAchievementEarnedDate } from '../../services/achievements'
+import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores, calculateTotalXP, getPlacementBestScores, getPlacementLatestScores, getModuleLessonMasteries, getModuleLessonDotStatuses, getArchetypeLessonDotStatuses, getAchievementProgress, getAchievementEarnedDate, fetchLeaderboard, syncXpToServer } from '../../services/achievements'
 import { getLevelInfo, DAILY_GOALS, DEFAULT_DAILY_GOAL } from '../../config/xpConfig'
 import { getArchetypeRecommendations, getWalletAnalysisInsights, ARCHETYPE_DEFAULTS } from '../../data/academy/archetypeRecommendations'
 import PlacementTest from './PlacementTest'
@@ -765,6 +765,129 @@ function AchievementShowcase({ earnedAchievements = [] }) {
           onClose={() => setSelectedAchievement(null)}
         />
       )}
+    </div>
+  )
+}
+
+// Leaderboard Component
+function Leaderboard({ token, currentUserId }) {
+  const [leaderboardData, setLeaderboardData] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    loadLeaderboard()
+  }, [token])
+
+  const loadLeaderboard = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const data = await fetchLeaderboard(token, 25)
+      if (data) {
+        setLeaderboardData(data)
+      } else {
+        setError('Failed to load leaderboard')
+      }
+    } catch (err) {
+      setError('Failed to load leaderboard')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="leaderboard-section glass-card">
+        <h3 className="leaderboard-header">
+          <span className="leaderboard-icon">🏆</span>
+          XP Leaderboard
+        </h3>
+        <div className="leaderboard-loading">Loading...</div>
+      </div>
+    )
+  }
+
+  if (error || !leaderboardData) {
+    return (
+      <div className="leaderboard-section glass-card">
+        <h3 className="leaderboard-header">
+          <span className="leaderboard-icon">🏆</span>
+          XP Leaderboard
+        </h3>
+        <div className="leaderboard-empty">
+          <p>Be the first on the leaderboard!</p>
+          <p className="leaderboard-empty-hint">Complete lessons and quizzes to earn XP</p>
+        </div>
+      </div>
+    )
+  }
+
+  const { leaderboard, userRank } = leaderboardData
+
+  return (
+    <div className="leaderboard-section glass-card">
+      <h3 className="leaderboard-header">
+        <span className="leaderboard-icon">🏆</span>
+        XP Leaderboard
+      </h3>
+
+      {/* User's rank card if not in top 25 */}
+      {userRank && userRank.rank > 25 && (
+        <div className="leaderboard-user-rank">
+          <div className="leaderboard-rank-badge">#{userRank.rank}</div>
+          <div className="leaderboard-rank-info">
+            <span className="leaderboard-rank-label">Your Rank</span>
+            <span className="leaderboard-rank-xp">{userRank.totalXp.toLocaleString()} XP</span>
+          </div>
+          <div className="leaderboard-percentile">Top {userRank.percentile}%</div>
+        </div>
+      )}
+
+      {/* Leaderboard list */}
+      <div className="leaderboard-list">
+        {leaderboard.length === 0 ? (
+          <div className="leaderboard-empty">
+            <p>No rankings yet</p>
+            <p className="leaderboard-empty-hint">Be the first to earn XP!</p>
+          </div>
+        ) : (
+          leaderboard.map((entry) => (
+            <div
+              key={entry.id}
+              className={`leaderboard-entry ${entry.id === currentUserId ? 'is-current-user' : ''}`}
+            >
+              <div className={`leaderboard-position ${entry.rank <= 3 ? `top-${entry.rank}` : ''}`}>
+                {entry.rank === 1 && '🥇'}
+                {entry.rank === 2 && '🥈'}
+                {entry.rank === 3 && '🥉'}
+                {entry.rank > 3 && `#${entry.rank}`}
+              </div>
+              <div className="leaderboard-user">
+                <span className="leaderboard-username">{entry.username}</span>
+                <span className="leaderboard-level">Lv.{entry.level}</span>
+              </div>
+              <div className="leaderboard-xp">
+                {entry.totalXp.toLocaleString()} XP
+              </div>
+              {entry.streak > 0 && (
+                <div className="leaderboard-streak" title={`${entry.streak} day streak`}>
+                  🔥 {entry.streak}
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Refresh button */}
+      <button className="leaderboard-refresh" onClick={loadLeaderboard}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="23 4 23 10 17 10" />
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+        </svg>
+        Refresh
+      </button>
     </div>
   )
 }
@@ -1634,6 +1757,11 @@ export default function AcademyDashboard() {
             {/* Achievements - show for authenticated users or anyone with local achievements */}
             {(isAuthenticated || achievements.length > 0) && (
               <AchievementShowcase earnedAchievements={achievements} />
+            )}
+
+            {/* Leaderboard - show for authenticated users */}
+            {isAuthenticated && (
+              <Leaderboard token={token} currentUserId={user?.id} />
             )}
           </>
         )}

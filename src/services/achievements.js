@@ -149,6 +149,55 @@ function dispatchXPUpdate() {
   }
 }
 
+// ==============================================
+// SERVER XP SYNC (for leaderboard)
+// ==============================================
+
+// Sync local XP to server for leaderboard tracking
+// Called after XP-earning events (lessons, quizzes, journal entries)
+export async function syncXpToServer(token) {
+  if (!token) return null
+
+  try {
+    const xpInfo = getCalculatedXPInfo()
+
+    const response = await fetch('/api/academy/sync-xp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        totalXp: xpInfo.totalXp,
+        level: xpInfo.level,
+      }),
+    })
+
+    if (!response.ok) return null
+    return response.json()
+  } catch (err) {
+    console.warn('Failed to sync XP to server:', err)
+    return null
+  }
+}
+
+// Fetch leaderboard data
+export async function fetchLeaderboard(token = null, limit = 50) {
+  try {
+    const headers = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
+    const response = await fetch(`/api/academy/leaderboard?limit=${limit}`, { headers })
+    if (!response.ok) return null
+    return response.json()
+  } catch (err) {
+    console.warn('Failed to fetch leaderboard:', err)
+    return null
+  }
+}
+
 export const ACHIEVEMENTS = {
   'first-steps': {
     id: 'first-steps',

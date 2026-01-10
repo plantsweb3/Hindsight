@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { analyzeWallet, convertTradesToJournalEntries, createJournalEntriesBatch } from '../services/solana'
-import { awardJournalEntryXp, canEarnJournalXp } from '../services/achievements'
+import { awardJournalEntryXp, canEarnJournalXp, syncXpToServer } from '../services/achievements'
 import WalletLabelBadge from './WalletLabelBadge'
 
 const API_URL = '/api/journal'
@@ -832,6 +832,9 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
       })
       // Auto-hide toast after 3 seconds
       setTimeout(() => setXpToast(null), 3000)
+
+      // Sync XP to server for leaderboard
+      syncXpToServer(token)
     }
 
     // Reload data to get updated stats

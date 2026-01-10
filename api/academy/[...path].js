@@ -22,6 +22,10 @@ import {
   getModuleCompletions,
   recordModuleCompletion,
   getFullUserProgress,
+  // Leaderboard functions
+  getLeaderboard,
+  getUserRank,
+  syncUserXp,
 } from '../lib/db.js'
 import { cors } from '../lib/auth.js'
 import jwt from 'jsonwebtoken'
@@ -498,6 +502,61 @@ export default async function handler(req, res) {
         totalXp: xpResult?.newTotalXp || (await getUserXpProgress(user.id)).total_xp,
         leveledUp: xpResult?.leveledUp || false,
       })
+    }
+
+    // ============================================
+    // Leaderboard Endpoints
+    // ============================================
+
+    // GET /api/academy/leaderboard - Get XP leaderboard (public)
+    if (method === 'GET' && segments.length === 1 && segments[0] === 'leaderboard') {
+      const limit = parseInt(req.query.limit) || 50
+      const leaderboard = await getLeaderboard(Math.min(limit, 100))
+
+      // If user is authenticated, include their rank
+      const user = await authenticateUser(req)
+      let userRank = null
+      if (user) {
+        userRank = await getUserRank(user.id)
+      }
+
+      return res.status(200).json({
+        leaderboard,
+        userRank,
+        updatedAt: new Date().toISOString(),
+      })
+    }
+
+    // GET /api/academy/my-rank - Get current user's rank (requires auth)
+    if (method === 'GET' && segments.length === 1 && segments[0] === 'my-rank') {
+      const user = await authenticateUser(req)
+      if (!user) {
+        return res.status(401).json({ error: 'Authentication required' })
+      }
+
+      const rank = await getUserRank(user.id)
+      return res.status(200).json(rank)
+    }
+
+    // POST /api/academy/sync-xp - Sync client XP to server (requires auth)
+    if (method === 'POST' && segments.length === 1 && segments[0] === 'sync-xp') {
+      const user = await authenticateUser(req)
+      if (!user) {
+        return res.status(401).json({ error: 'Authentication required' })
+      }
+
+      const { totalXp, level } = req.body
+      if (typeof totalXp !== 'number' || typeof level !== 'number') {
+        return res.status(400).json({ error: 'totalXp and level are required' })
+      }
+
+      // Sanity check - prevent obviously fake XP values
+      if (totalXp < 0 || totalXp > 100000 || level < 1 || level > 100) {
+        return res.status(400).json({ error: 'Invalid XP values' })
+      }
+
+      const result = await syncUserXp(user.id, totalXp, level)
+      return res.status(200).json(result)
     }
 
     // 404 for unmatched routes

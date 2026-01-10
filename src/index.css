@@ -10259,6 +10259,215 @@ input, button {
   stroke: #eab308;
 }
 
+/* Leaderboard Section */
+.leaderboard-section {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  background: rgba(24, 24, 27, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.leaderboard-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.leaderboard-icon {
+  font-size: 1.25rem;
+}
+
+.leaderboard-loading {
+  color: #71717a;
+  text-align: center;
+  padding: 2rem;
+}
+
+.leaderboard-empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #a1a1aa;
+}
+
+.leaderboard-empty p {
+  margin: 0;
+}
+
+.leaderboard-empty-hint {
+  font-size: 0.8rem;
+  color: #71717a;
+  margin-top: 0.5rem !important;
+}
+
+.leaderboard-user-rank {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.1));
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.leaderboard-rank-badge {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #a78bfa;
+}
+
+.leaderboard-rank-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.leaderboard-rank-label {
+  font-size: 0.7rem;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.leaderboard-rank-xp {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.leaderboard-percentile {
+  font-size: 0.75rem;
+  color: #22c55e;
+  font-weight: 500;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.leaderboard-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.leaderboard-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.leaderboard-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.leaderboard-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.leaderboard-entry:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.leaderboard-entry.is-current-user {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.08));
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.leaderboard-position {
+  min-width: 2.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #71717a;
+}
+
+.leaderboard-position.top-1 {
+  font-size: 1.25rem;
+}
+
+.leaderboard-position.top-2,
+.leaderboard-position.top-3 {
+  font-size: 1.125rem;
+}
+
+.leaderboard-user {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.leaderboard-username {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-level {
+  font-size: 0.7rem;
+  color: #71717a;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.leaderboard-xp {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #eab308;
+  white-space: nowrap;
+}
+
+.leaderboard-streak {
+  font-size: 0.75rem;
+  color: #f97316;
+  white-space: nowrap;
+}
+
+.leaderboard-refresh {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #71717a;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.leaderboard-refresh:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #a1a1aa;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
 /* Enhanced Module Cards */
 .module-card {
   position: relative;
