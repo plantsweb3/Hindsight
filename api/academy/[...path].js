@@ -26,6 +26,9 @@ import {
   getLeaderboard,
   getUserRank,
   syncUserXp,
+  // Cross-device progress sync
+  saveUserProgress,
+  getUserProgress,
 } from '../lib/db.js'
 import { cors } from '../lib/auth.js'
 import jwt from 'jsonwebtoken'
@@ -557,6 +560,47 @@ export default async function handler(req, res) {
 
       const result = await syncUserXp(user.id, totalXp, level)
       return res.status(200).json(result)
+    }
+
+    // POST /api/academy/sync-progress - Save all progress to server (requires auth)
+    if (method === 'POST' && segments.length === 1 && segments[0] === 'sync-progress') {
+      const user = await authenticateUser(req)
+      if (!user) {
+        return res.status(401).json({ error: 'Authentication required' })
+      }
+
+      const { progress, stats, placement, achievements, streak, journalXp, dailyGoalId } = req.body
+
+      const result = await saveUserProgress(user.id, {
+        progress,
+        stats,
+        placement,
+        achievements,
+        streak,
+        journalXp,
+        dailyGoalId
+      })
+
+      return res.status(200).json(result)
+    }
+
+    // GET /api/academy/sync-progress - Fetch all progress from server (requires auth)
+    if (method === 'GET' && segments.length === 1 && segments[0] === 'sync-progress') {
+      const user = await authenticateUser(req)
+      if (!user) {
+        return res.status(401).json({ error: 'Authentication required' })
+      }
+
+      const serverProgress = await getUserProgress(user.id)
+
+      if (!serverProgress) {
+        return res.status(200).json({ hasData: false })
+      }
+
+      return res.status(200).json({
+        hasData: true,
+        ...serverProgress
+      })
     }
 
     // 404 for unmatched routes

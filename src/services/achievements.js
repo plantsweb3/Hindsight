@@ -198,6 +198,208 @@ export async function fetchLeaderboard(token = null, limit = 50) {
   }
 }
 
+// ==============================================
+// CROSS-DEVICE PROGRESS SYNC
+// ==============================================
+
+// Gather all localStorage progress data
+function gatherLocalProgress() {
+  const progress = JSON.parse(localStorage.getItem('hindsight_academy_progress') || '{}')
+  const stats = JSON.parse(localStorage.getItem('hindsight_academy_stats') || '{}')
+
+  // Placement test data
+  const placement = {
+    completed: localStorage.getItem('placementTestCompleted') === 'true',
+    bestScores: JSON.parse(localStorage.getItem('placementTestBestScores') || '{}'),
+    latestScores: JSON.parse(localStorage.getItem('placementTestLatestScores') || '{}')
+  }
+
+  const achievements = JSON.parse(localStorage.getItem('hindsight_achievements') || '[]')
+  const streak = JSON.parse(localStorage.getItem('academy_streak_data') || '{}')
+  const journalXp = JSON.parse(localStorage.getItem('hindsight_journal_xp') || '{}')
+  const dailyGoalId = localStorage.getItem('daily_goal_id') || 'regular'
+
+  return { progress, stats, placement, achievements, streak, journalXp, dailyGoalId }
+}
+
+// Save all progress to localStorage
+function saveLocalProgress(data) {
+  if (data.progress) {
+    localStorage.setItem('hindsight_academy_progress', JSON.stringify(data.progress))
+  }
+  if (data.stats) {
+    localStorage.setItem('hindsight_academy_stats', JSON.stringify(data.stats))
+  }
+  if (data.placement) {
+    if (data.placement.completed) {
+      localStorage.setItem('placementTestCompleted', 'true')
+    }
+    if (data.placement.bestScores && Object.keys(data.placement.bestScores).length > 0) {
+      localStorage.setItem('placementTestBestScores', JSON.stringify(data.placement.bestScores))
+    }
+    if (data.placement.latestScores && Object.keys(data.placement.latestScores).length > 0) {
+      localStorage.setItem('placementTestLatestScores', JSON.stringify(data.placement.latestScores))
+    }
+  }
+  if (data.achievements && data.achievements.length > 0) {
+    localStorage.setItem('hindsight_achievements', JSON.stringify(data.achievements))
+  }
+  if (data.streak && Object.keys(data.streak).length > 0) {
+    localStorage.setItem('academy_streak_data', JSON.stringify(data.streak))
+  }
+  if (data.journalXp && Object.keys(data.journalXp).length > 0) {
+    localStorage.setItem('hindsight_journal_xp', JSON.stringify(data.journalXp))
+  }
+  if (data.dailyGoalId) {
+    localStorage.setItem('daily_goal_id', data.dailyGoalId)
+  }
+}
+
+// Sync local progress to server
+export async function syncProgressToServer(token) {
+  if (!token) return null
+
+  try {
+    const localData = gatherLocalProgress()
+
+    const response = await fetch('/api/academy/sync-progress', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(localData),
+    })
+
+    if (!response.ok) return null
+    return response.json()
+  } catch (err) {
+    console.warn('Failed to sync progress to server:', err)
+    return null
+  }
+}
+
+// Fetch progress from server and merge with localStorage
+// Server data wins for most fields, but we merge arrays/objects intelligently
+export async function fetchAndMergeProgress(token) {
+  if (!token) return null
+
+  try {
+    const response = await fetch('/api/academy/sync-progress', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) return null
+
+    const serverData = await response.json()
+
+    if (!serverData.hasData) {
+      // No server data - sync current local data to server
+      await syncProgressToServer(token)
+      return { merged: false, source: 'local' }
+    }
+
+    // Get local data for merging
+    const localData = gatherLocalProgress()
+
+    // Merge strategy: Union of completed lessons, max of scores
+    const mergedProgress = {
+      completedLessons: [...new Set([
+        ...(localData.progress.completedLessons || []),
+        ...(serverData.progress.completedLessons || [])
+      ])],
+      lessonScores: { ...localData.progress.lessonScores, ...serverData.progress.lessonScores },
+      testedOutModules: [...new Set([
+        ...(localData.progress.testedOutModules || []),
+        ...(serverData.progress.testedOutModules || [])
+      ])]
+    }
+
+    // For lesson scores, take the best score
+    const allScoreKeys = new Set([
+      ...Object.keys(localData.progress.lessonScores || {}),
+      ...Object.keys(serverData.progress.lessonScores || {})
+    ])
+    mergedProgress.lessonScores = {}
+    allScoreKeys.forEach(key => {
+      const localScore = localData.progress.lessonScores?.[key]
+      const serverScore = serverData.progress.lessonScores?.[key]
+      if (localScore && serverScore) {
+        mergedProgress.lessonScores[key] = {
+          bestScore: Math.max(localScore.bestScore || 0, serverScore.bestScore || 0),
+          attempts: Math.max(localScore.attempts || 0, serverScore.attempts || 0)
+        }
+      } else {
+        mergedProgress.lessonScores[key] = localScore || serverScore
+      }
+    })
+
+    // Merge stats (take higher values)
+    const mergedStats = {
+      completedModules: [...new Set([
+        ...(localData.stats.completedModules || []),
+        ...(serverData.stats.completedModules || [])
+      ])],
+      dailyBonusesClaimed: Math.max(
+        localData.stats.dailyBonusesClaimed || 0,
+        serverData.stats.dailyBonusesClaimed || 0
+      )
+    }
+
+    // Merge placement (server wins if completed)
+    const mergedPlacement = serverData.placement.completed ? serverData.placement : localData.placement
+
+    // Merge achievements (union)
+    const mergedAchievements = [...new Set([
+      ...(localData.achievements || []),
+      ...(serverData.achievements || [])
+    ])]
+
+    // Streak: use server if it has data, otherwise local
+    const mergedStreak = (serverData.streak && Object.keys(serverData.streak).length > 0)
+      ? serverData.streak
+      : localData.streak
+
+    // Journal XP: take higher value
+    const mergedJournalXp = {
+      totalXpFromJournal: Math.max(
+        localData.journalXp.totalXpFromJournal || 0,
+        serverData.journalXp.totalXpFromJournal || 0
+      )
+    }
+
+    // Daily goal: use server value
+    const mergedDailyGoalId = serverData.dailyGoalId || localData.dailyGoalId
+
+    // Save merged data to localStorage
+    saveLocalProgress({
+      progress: mergedProgress,
+      stats: mergedStats,
+      placement: mergedPlacement,
+      achievements: mergedAchievements,
+      streak: mergedStreak,
+      journalXp: mergedJournalXp,
+      dailyGoalId: mergedDailyGoalId
+    })
+
+    // Sync merged data back to server
+    await syncProgressToServer(token)
+
+    // Dispatch event to notify components of update
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('progressUpdated'))
+      window.dispatchEvent(new Event('xpUpdated'))
+    }
+
+    return { merged: true, source: 'server' }
+  } catch (err) {
+    console.warn('Failed to fetch and merge progress:', err)
+    return null
+  }
+}
+
 export const ACHIEVEMENTS = {
   'first-steps': {
     id: 'first-steps',

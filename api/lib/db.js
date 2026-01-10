@@ -303,6 +303,23 @@ export async function initDb() {
     )
   `)
 
+  // Cross-device progress sync table
+  await getDb().execute(`
+    CREATE TABLE IF NOT EXISTS user_progress_sync (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL UNIQUE,
+      progress_data TEXT DEFAULT '{}',
+      stats_data TEXT DEFAULT '{}',
+      placement_data TEXT DEFAULT '{}',
+      achievements_data TEXT DEFAULT '[]',
+      streak_data TEXT DEFAULT '{}',
+      journal_xp_data TEXT DEFAULT '{}',
+      daily_goal_id TEXT DEFAULT 'regular',
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `)
+
   // Quiz/XP indexes
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_user_xp_progress_user_id ON user_xp_progress(user_id)`)
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_quiz_attempts_user_id ON quiz_attempts(user_id)`)
@@ -310,6 +327,7 @@ export async function initDb() {
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_quiz_best_scores_user_id ON quiz_best_scores(user_id)`)
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_user_achievements_user_id ON user_achievements(user_id)`)
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_module_completions_user_id ON module_completions(user_id)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_user_progress_sync_user_id ON user_progress_sync(user_id)`)
 
   // Run one-time XP backfill for existing users (only runs once)
   await runOneTimeXpBackfill()
@@ -2456,6 +2474,98 @@ export async function runOneTimeXpBackfill() {
   } catch (err) {
     console.error('[DB] Error during XP backfill:', err)
     return { error: err.message }
+  }
+}
+
+// ==============================================
+// CROSS-DEVICE PROGRESS SYNC
+// ==============================================
+
+// Save user progress to server (called when progress changes)
+export async function saveUserProgress(userId, progressData) {
+  const {
+    progress = {},
+    stats = {},
+    placement = {},
+    achievements = [],
+    streak = {},
+    journalXp = {},
+    dailyGoalId = 'regular'
+  } = progressData
+
+  // Check if user already has a sync record
+  const existing = await getDb().execute({
+    sql: `SELECT id FROM user_progress_sync WHERE user_id = ?`,
+    args: [userId],
+  })
+
+  if (existing.rows.length > 0) {
+    // Update existing record
+    await getDb().execute({
+      sql: `UPDATE user_progress_sync SET
+            progress_data = ?,
+            stats_data = ?,
+            placement_data = ?,
+            achievements_data = ?,
+            streak_data = ?,
+            journal_xp_data = ?,
+            daily_goal_id = ?,
+            updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = ?`,
+      args: [
+        JSON.stringify(progress),
+        JSON.stringify(stats),
+        JSON.stringify(placement),
+        JSON.stringify(achievements),
+        JSON.stringify(streak),
+        JSON.stringify(journalXp),
+        dailyGoalId,
+        userId
+      ],
+    })
+  } else {
+    // Insert new record
+    await getDb().execute({
+      sql: `INSERT INTO user_progress_sync
+            (user_id, progress_data, stats_data, placement_data, achievements_data, streak_data, journal_xp_data, daily_goal_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        userId,
+        JSON.stringify(progress),
+        JSON.stringify(stats),
+        JSON.stringify(placement),
+        JSON.stringify(achievements),
+        JSON.stringify(streak),
+        JSON.stringify(journalXp),
+        dailyGoalId
+      ],
+    })
+  }
+
+  return { success: true, updatedAt: new Date().toISOString() }
+}
+
+// Fetch user progress from server (called on page load)
+export async function getUserProgress(userId) {
+  const result = await getDb().execute({
+    sql: `SELECT * FROM user_progress_sync WHERE user_id = ?`,
+    args: [userId],
+  })
+
+  if (result.rows.length === 0) {
+    return null
+  }
+
+  const row = result.rows[0]
+  return {
+    progress: JSON.parse(row.progress_data || '{}'),
+    stats: JSON.parse(row.stats_data || '{}'),
+    placement: JSON.parse(row.placement_data || '{}'),
+    achievements: JSON.parse(row.achievements_data || '[]'),
+    streak: JSON.parse(row.streak_data || '{}'),
+    journalXp: JSON.parse(row.journal_xp_data || '{}'),
+    dailyGoalId: row.daily_goal_id || 'regular',
+    updatedAt: row.updated_at
   }
 }
 

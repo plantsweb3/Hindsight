@@ -5,7 +5,7 @@ import { useAchievements } from '../../contexts/AchievementContext'
 import Quiz from './Quiz'
 import { NEWCOMER_QUIZZES, getQuizByLessonSlug } from '../../data/quizzes/newcomer'
 import { getTrading101Lesson, hasLocalModule, getTrading101LessonQuiz } from '../../data/academy/modules'
-import { saveLessonQuizScore, getLessonProgress } from '../../services/achievements'
+import { saveLessonQuizScore, getLessonProgress, syncProgressToServer } from '../../services/achievements'
 
 // Helper for local progress tracking
 const LOCAL_PROGRESS_KEY = 'hindsight_academy_progress'
@@ -215,6 +215,10 @@ export default function LessonView() {
           setXpEarned(10) // Show XP earned for local completion
           // Check for achievements after completing lesson
           checkLessonCompletion(moduleSlug, lessonSlug)
+          // Sync progress to server for cross-device sync
+          if (token) {
+            syncProgressToServer(token).catch(() => {})
+          }
         }
       } else if (token) {
         // For API modules, use the API
@@ -257,6 +261,11 @@ export default function LessonView() {
     }
     // Check for quiz-related achievements (like perfect score)
     checkQuizCompletion(results)
+
+    // Sync progress to server for cross-device sync
+    if (token) {
+      syncProgressToServer(token).catch(() => {})
+    }
   }
 
   const handleQuizClose = () => {

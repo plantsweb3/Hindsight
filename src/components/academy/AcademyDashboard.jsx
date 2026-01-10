@@ -5,7 +5,7 @@ import { useAchievements } from '../../contexts/AchievementContext'
 import { getArchetypeModule, hasArchetypeModule, getArchetypeDotClass, ARCHETYPE_DOT_COLORS } from '../../data/academy/archetypes'
 import { isMasterExamUnlocked, hasMasterExamQuestions } from '../../data/academy/masterExam'
 import { hasLocalModule, getTrading101Module } from '../../data/academy/modules'
-import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores, calculateTotalXP, getPlacementBestScores, getPlacementLatestScores, getModuleLessonMasteries, getModuleLessonDotStatuses, getArchetypeLessonDotStatuses, getAchievementProgress, getAchievementEarnedDate, fetchLeaderboard, syncXpToServer } from '../../services/achievements'
+import { ACHIEVEMENTS, getLocalAchievements, getLocalStats, getDailyGoalProgress, setDailyGoal, calculateOverallMastery, getLessonMastery, getAllLessonScores, calculateTotalXP, getPlacementBestScores, getPlacementLatestScores, getModuleLessonMasteries, getModuleLessonDotStatuses, getArchetypeLessonDotStatuses, getAchievementProgress, getAchievementEarnedDate, fetchLeaderboard, syncXpToServer, syncProgressToServer, fetchAndMergeProgress } from '../../services/achievements'
 import { getLevelInfo, DAILY_GOALS, DEFAULT_DAILY_GOAL } from '../../config/xpConfig'
 import { getArchetypeRecommendations, getWalletAnalysisInsights, ARCHETYPE_DEFAULTS } from '../../data/academy/archetypeRecommendations'
 import PlacementTest from './PlacementTest'
@@ -1264,6 +1264,10 @@ export default function AcademyDashboard() {
       // Refresh mastery stats when progress changes
       const mastery = calculateOverallMastery()
       setMasteryStats(mastery)
+      // Sync progress to server for cross-device sync
+      if (token) {
+        syncProgressToServer(token).catch(() => {})
+      }
     }
 
     const handleXpUpdate = () => {
@@ -1276,6 +1280,10 @@ export default function AcademyDashboard() {
       // Also refresh daily goal progress
       const dailyProgress = getDailyGoalProgress()
       setDailyGoalProgress(dailyProgress)
+      // Sync progress to server for cross-device sync
+      if (token) {
+        syncProgressToServer(token).catch(() => {})
+      }
     }
 
     window.addEventListener('progressUpdated', handleProgressUpdate)
@@ -1285,7 +1293,7 @@ export default function AcademyDashboard() {
       window.removeEventListener('progressUpdated', handleProgressUpdate)
       window.removeEventListener('xpUpdated', handleXpUpdate)
     }
-  }, [])
+  }, [token])
 
   // Get user's archetype for fetching
   const userArchetypeSlug = normalizeArchetypeId(user?.primaryArchetype || user?.primary_archetype)
@@ -1295,8 +1303,14 @@ export default function AcademyDashboard() {
     setError('')
 
     try {
-      // Sync local XP to server for leaderboard (fire and forget)
+      // Cross-device progress sync: Fetch server progress and merge with localStorage
       if (token) {
+        try {
+          await fetchAndMergeProgress(token)
+        } catch (err) {
+          console.warn('Failed to merge progress:', err)
+        }
+        // Then sync XP to server for leaderboard
         syncXpToServer(token).catch(() => {})
         // Fetch user rank for hero stats card
         fetchLeaderboard(token, 1).then(data => {
