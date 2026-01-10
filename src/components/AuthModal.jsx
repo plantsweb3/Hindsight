@@ -42,8 +42,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 's
       } else {
         await signup(username.trim(), password)
       }
-      onSuccess?.()
-      onClose()
+      // Call onSuccess if provided, otherwise just close
+      if (onSuccess) {
+        onSuccess()
+      } else {
+        onClose()
+      }
     } catch (err) {
       setError(err.message)
     } finally {

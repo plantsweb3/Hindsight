@@ -296,6 +296,9 @@ function AppContent() {
       setPendingJournalRedirect(false)
       setView('dashboard')
     }
+
+    // Close the auth modal
+    setShowAuthModal(false)
   }
 
   const handleStartTrackingAuth = (mode = 'signup') => {
@@ -412,7 +415,7 @@ function AppContent() {
           <AuthModal
             isOpen={true}
             onClose={() => setView('landing')}
-            onSuccess={() => setView('dashboard')}
+            onSuccess={() => {}}
             initialMode="login"
           />
         </>
