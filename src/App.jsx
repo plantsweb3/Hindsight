@@ -41,6 +41,7 @@ function ScrollToTop() {
 
 function AppContent() {
   const { user, token, isAuthenticated, isLoading: authLoading, saveArchetype, saveAnalysis } = useAuth()
+  const location = useLocation()
 
   const [view, setView] = useState('landing') // 'landing' | 'quiz' | 'quizResult' | 'results' | 'dashboard' | 'journal' | 'settings' | 'pro' | 'contact' | 'reportBug' | 'admin'
   const [isLoading, setIsLoading] = useState(false)
@@ -62,13 +63,13 @@ function AppContent() {
 
   // Check for special routes
   useEffect(() => {
-    if (window.location.pathname === '/salveregina') {
+    if (location.pathname === '/salveregina') {
       setIsHiddenAdmin(true)
       setView('admin')
-    } else if (window.location.pathname === '/copilot') {
+    } else if (location.pathname === '/copilot') {
       setView('dashboard')
     }
-  }, [])
+  }, [location.pathname])
 
   // Build archetype data for personalized AI analysis
   const getUserArchetypeData = () => {
