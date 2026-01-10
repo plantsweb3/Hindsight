@@ -5038,15 +5038,14 @@ input, button {
   gap: 1rem;
   padding: 1.25rem;
   background: rgba(24, 24, 27, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 0.75rem;
   text-decoration: none;
   transition: all 0.2s ease;
+  flex: 1;
+  min-height: 80px;
 }
 
 .copilot-cta-card:hover {
-  background: rgba(24, 24, 27, 0.8);
-  border-color: rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
 }
 
@@ -5061,13 +5060,35 @@ input, button {
   flex-shrink: 0;
 }
 
+/* Academy CTA - Yellow border and glow */
+.copilot-cta-card.academy-cta {
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  box-shadow: 0 0 20px rgba(234, 179, 8, 0.15);
+}
+
+.copilot-cta-card.academy-cta:hover {
+  border-color: rgba(234, 179, 8, 0.6);
+  box-shadow: 0 0 30px rgba(234, 179, 8, 0.25);
+}
+
 .copilot-cta-card.academy-cta .cta-icon {
-  background: rgba(139, 92, 246, 0.15);
+  background: rgba(234, 179, 8, 0.15);
+}
+
+/* Discord CTA - Purple border and glow */
+.copilot-cta-card.discord-cta {
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
+}
+
+.copilot-cta-card.discord-cta:hover {
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.25);
 }
 
 .copilot-cta-card.discord-cta .cta-icon {
-  background: rgba(88, 101, 242, 0.15);
-  color: #5865f2;
+  background: rgba(139, 92, 246, 0.15);
+  color: #a855f7;
 }
 
 .copilot-cta-card .cta-content {
