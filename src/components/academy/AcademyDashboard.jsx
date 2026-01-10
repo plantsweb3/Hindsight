@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useOutletContext, useNavigate } from 'react-router-dom'
+import { Link, useOutletContext, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAchievements } from '../../contexts/AchievementContext'
 import { getArchetypeModule, hasArchetypeModule, getArchetypeDotClass, ARCHETYPE_DOT_COLORS } from '../../data/academy/archetypes'
@@ -1216,6 +1216,7 @@ export default function AcademyDashboard() {
   const { isAuthenticated, user, openAuthModal } = useOutletContext()
   const { token } = useAuth()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const [modules, setModules] = useState([])
   const [archetypeModule, setArchetypeModule] = useState(null)
@@ -1243,6 +1244,23 @@ export default function AcademyDashboard() {
   useEffect(() => {
     localStorage.setItem('academy_active_tab', activeTab)
   }, [activeTab])
+
+  // Handle scrollTo=leaderboard from URL (e.g., from Copilot XP popup)
+  useEffect(() => {
+    const scrollTo = searchParams.get('scrollTo')
+    if (scrollTo === 'leaderboard') {
+      // Small delay to ensure the page has rendered
+      setTimeout(() => {
+        const leaderboardSection = document.querySelector('.leaderboard-section')
+        if (leaderboardSection) {
+          leaderboardSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+        // Remove the param from URL to avoid re-scrolling on navigation
+        searchParams.delete('scrollTo')
+        setSearchParams(searchParams, { replace: true })
+      }, 500)
+    }
+  }, [searchParams, setSearchParams])
 
   useEffect(() => {
     fetchData()
