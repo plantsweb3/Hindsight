@@ -43,7 +43,15 @@ function AppContent() {
   const { user, token, isAuthenticated, isLoading: authLoading, saveArchetype, saveAnalysis } = useAuth()
   const location = useLocation()
 
-  const [view, setView] = useState('landing') // 'landing' | 'quiz' | 'quizResult' | 'results' | 'dashboard' | 'journal' | 'settings' | 'pro' | 'contact' | 'reportBug' | 'admin'
+  // Initialize view based on current URL
+  const getInitialView = () => {
+    const path = window.location.pathname
+    if (path === '/copilot') return 'dashboard'
+    if (path === '/salveregina') return 'admin'
+    return 'landing'
+  }
+
+  const [view, setView] = useState(getInitialView) // 'landing' | 'quiz' | 'quizResult' | 'results' | 'dashboard' | 'journal' | 'settings' | 'pro' | 'contact' | 'reportBug' | 'admin'
   const [isLoading, setIsLoading] = useState(false)
   const [progress, setProgress] = useState('')
   const [error, setError] = useState('')
@@ -59,15 +67,17 @@ function AppContent() {
     window.scrollTo(0, 0)
   }, [view])
 
-  const [isHiddenAdmin, setIsHiddenAdmin] = useState(false)
+  const [isHiddenAdmin, setIsHiddenAdmin] = useState(() => window.location.pathname === '/salveregina')
 
-  // Check for special routes
+  // Handle route changes for special paths
   useEffect(() => {
     if (location.pathname === '/salveregina') {
       setIsHiddenAdmin(true)
       setView('admin')
     } else if (location.pathname === '/copilot') {
       setView('dashboard')
+    } else if (location.pathname === '/') {
+      setView('landing')
     }
   }, [location.pathname])
 
