@@ -60,11 +60,13 @@ function AppContent() {
 
   const [isHiddenAdmin, setIsHiddenAdmin] = useState(false)
 
-  // Check for hidden admin route
+  // Check for special routes
   useEffect(() => {
     if (window.location.pathname === '/salveregina') {
       setIsHiddenAdmin(true)
       setView('admin')
+    } else if (window.location.pathname === '/copilot') {
+      setView('dashboard')
     }
   }, [])
 
