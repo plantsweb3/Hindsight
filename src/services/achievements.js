@@ -350,6 +350,19 @@ export async function fetchAndMergeProgress(token, userId) {
     if (!serverData.hasData) {
       // No server data - this is a fresh account, start clean
       // Don't sync local data (could be from a previous user)
+      // Also reset server XP to 0 in case stale XP was synced previously
+      try {
+        await fetch('/api/academy/sync-xp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ totalXp: 0, level: 1 }),
+        })
+      } catch (e) {
+        // Ignore XP reset errors
+      }
       return { merged: false, source: 'fresh' }
     }
 
