@@ -199,8 +199,9 @@ function HeroSection({ onScrollDown, onAnalyze, onStartQuiz, isLoading, progress
           <img src="/hindsightlogo.png" alt="Hindsight" className="hero-logo-img" />
         </div>
 
-        <h1 className="hero-headline">
-          The trading improvement system for Solana <span className="text-gradient-purple">degens</span>
+        <h1 className="hero-headline hero-headline-compact">
+          The trading improvement system<br className="hero-line-break" />
+          for Solana <span className="text-gradient-purple">traders</span>
         </h1>
 
         <p className="hero-subheadline">

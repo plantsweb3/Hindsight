@@ -21430,6 +21430,23 @@ input, button {
   padding-top: 8rem;
 }
 
+/* Hero Compact Headline - 2 lines on desktop */
+.hero-headline-compact {
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-line-break {
+  display: block;
+}
+
+@media (max-width: 480px) {
+  .hero-line-break {
+    display: none;
+  }
+}
+
 /* Hero Pillar Cards */
 .hero-pillars-v2 {
   display: flex;
