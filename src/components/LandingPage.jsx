@@ -60,7 +60,7 @@ function CursorTrail() {
 }
 
 // Header
-function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, onOpenContact, isAuthenticated, user }) {
+function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, onOpenSettings, onOpenContact, isAuthenticated, user }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleNavAction = (action) => {
@@ -838,6 +838,7 @@ export default function LandingPage({
         onShowAuth={onShowAuth}
         onOpenDashboard={onOpenDashboard}
         onOpenJournal={onOpenJournal}
+        onOpenSettings={onOpenSettings}
         onOpenContact={onOpenContact}
         isAuthenticated={isAuthenticated}
         user={user}
