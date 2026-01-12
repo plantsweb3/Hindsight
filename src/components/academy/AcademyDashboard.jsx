@@ -1881,6 +1881,26 @@ export default function AcademyDashboard() {
     localStorage.setItem('academy_active_tab', activeTab)
   }, [activeTab])
 
+  // Check if we should auto-open placement test from onboarding
+  useEffect(() => {
+    try {
+      const onboardingData = localStorage.getItem('academy_onboarding')
+      if (onboardingData) {
+        const parsed = JSON.parse(onboardingData)
+        if (parsed.showPlacementTest) {
+          setShowPlacementTest(true)
+          // Clear the flag so it doesn't re-open
+          localStorage.setItem('academy_onboarding', JSON.stringify({
+            ...parsed,
+            showPlacementTest: false
+          }))
+        }
+      }
+    } catch (e) {
+      // Ignore parsing errors
+    }
+  }, [])
+
   useEffect(() => {
     fetchData()
   }, [token])
