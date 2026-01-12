@@ -1088,19 +1088,51 @@ function ExpandableArchetypeCard({ archetype, isExpanded, onToggle, userArchetyp
   )
 }
 
-// Compact Hero for Archetype Section
+// Compact Hero for Archetype Section - matches archetype card styling
 function ArchetypeHeroCompact({ archetype, onRetakeQuiz }) {
   const archetypeData = ARCHETYPE_MODULES.find(a => a.id === archetype)
   if (!archetypeData) return null
 
+  const dotClass = getArchetypeDotClass(archetype)
+  const dotColor = ARCHETYPE_DOT_COLORS[archetype] || { filled: '#a855f7', hollow: '#a855f7' }
+
+  // Card style with colored border and glow (matching archetype cards)
+  const cardStyle = {
+    borderColor: `${dotColor.filled}50`,
+    boxShadow: `0 0 25px ${dotColor.filled}40, 0 0 40px ${dotColor.filled}1a`
+  }
+
   return (
-    <div className="archetype-hero-compact">
+    <div
+      className={`archetype-hero-compact ${dotClass}`}
+      style={cardStyle}
+    >
       <span className="archetype-icon">{archetypeData.icon}</span>
       <div className="archetype-info">
+        <div className="archetype-hero-badges">
+          <span
+            className="archetype-hero-badge"
+            style={{
+              background: `${dotColor.filled}26`,
+              borderColor: `${dotColor.filled}66`,
+              color: dotColor.filled
+            }}
+          >
+            Your Archetype
+          </span>
+        </div>
         <h2 className="archetype-title">{archetypeData.title}</h2>
-        <p className="archetype-tagline">{archetypeData.subtitle}</p>
+        <p className="archetype-tagline" style={{ color: dotColor.filled }}>{archetypeData.subtitle}</p>
         <p className="archetype-desc">{archetypeData.description}</p>
-        <button onClick={onRetakeQuiz} className="retake-quiz-btn">
+        <button
+          onClick={onRetakeQuiz}
+          className="retake-quiz-btn"
+          style={{
+            background: `${dotColor.filled}15`,
+            borderColor: `${dotColor.filled}40`,
+            color: dotColor.filled
+          }}
+        >
           Retake Quiz
         </button>
       </div>
@@ -1282,17 +1314,43 @@ function MasterExamCard() {
   )
 }
 
-// Coming Soon Module Card Component - matches archetype card style
+// Coming Soon Module Card Component - matches archetype card style exactly
 function ComingSoonModuleCard({ module, isNotified, onToggleNotify }) {
   const lessonCount = module.lessonCount || 8
   const moduleColor = module.color || '#8b5cf6'
 
+  // Card style with colored border and glow (matching archetype cards)
+  const cardStyle = {
+    borderColor: `${moduleColor}40`,
+    boxShadow: `0 0 12px ${moduleColor}1a`
+  }
+
+  const cardHoverClass = `coming-soon-module-card`
+
   return (
-    <div className="coming-soon-module-card">
+    <div
+      className={cardHoverClass}
+      style={cardStyle}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = `${moduleColor}80`
+        e.currentTarget.style.boxShadow = `0 0 20px ${moduleColor}33, 0 8px 32px rgba(0, 0, 0, 0.3)`
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = `${moduleColor}40`
+        e.currentTarget.style.boxShadow = `0 0 12px ${moduleColor}1a`
+      }}
+    >
       {/* Badges */}
       <div className="coming-soon-module-badges">
-        <span className="coming-soon-badge-type" style={{ borderColor: `${moduleColor}40`, color: moduleColor }}>
-          Coming Soon
+        <span
+          className="coming-soon-badge-type"
+          style={{
+            background: `${moduleColor}26`,
+            borderColor: `${moduleColor}66`,
+            color: moduleColor
+          }}
+        >
+          Advanced
         </span>
         <span className="coming-soon-badge-date">{module.badge}</span>
       </div>
@@ -1331,7 +1389,7 @@ function ComingSoonModuleCard({ module, isNotified, onToggleNotify }) {
             style={{ width: '0%', background: moduleColor }}
           />
         </div>
-        <span className="coming-soon-progress-label" style={{ color: `${moduleColor}` }}>0%</span>
+        <span className="coming-soon-progress-label" style={{ color: moduleColor }}>0%</span>
       </div>
 
       {/* Notify Button */}
@@ -1341,7 +1399,7 @@ function ComingSoonModuleCard({ module, isNotified, onToggleNotify }) {
         style={{
           borderColor: isNotified ? 'rgba(34, 197, 94, 0.3)' : `${moduleColor}40`,
           color: isNotified ? '#4ade80' : moduleColor,
-          background: isNotified ? 'rgba(34, 197, 94, 0.1)' : `${moduleColor}10`
+          background: isNotified ? 'rgba(34, 197, 94, 0.1)' : `${moduleColor}15`
         }}
       >
         {isNotified ? (
