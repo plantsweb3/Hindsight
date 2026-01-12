@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
@@ -40,16 +40,38 @@ function ScrollToTop() {
   return null
 }
 
+// Protected views that require authentication
+const PROTECTED_VIEWS = ['dashboard', 'journal', 'settings']
+
+// Map views to URL paths for persistence
+const VIEW_TO_PATH = {
+  landing: '/',
+  quiz: '/quiz',
+  quizResult: '/quiz/result',
+  results: '/results',
+  dashboard: '/copilot',
+  journal: '/journal',
+  settings: '/settings',
+  pro: '/pro',
+  contact: '/contact',
+  reportBug: '/report-bug',
+  admin: '/salveregina',
+}
+
+const PATH_TO_VIEW = Object.entries(VIEW_TO_PATH).reduce((acc, [view, path]) => {
+  acc[path] = view
+  return acc
+}, {})
+
 function AppContent() {
   const { user, token, isAuthenticated, isLoading: authLoading, saveArchetype, saveAnalysis } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
 
   // Initialize view based on current URL
   const getInitialView = () => {
     const path = window.location.pathname
-    if (path === '/copilot') return 'dashboard'
-    if (path === '/salveregina') return 'admin'
-    return 'landing'
+    return PATH_TO_VIEW[path] || 'landing'
   }
 
   const [view, setView] = useState(getInitialView) // 'landing' | 'quiz' | 'quizResult' | 'results' | 'dashboard' | 'journal' | 'settings' | 'pro' | 'contact' | 'reportBug' | 'admin'
@@ -63,24 +85,60 @@ function AppContent() {
   const [pendingQuizSave, setPendingQuizSave] = useState(null)
   const [pendingJournalRedirect, setPendingJournalRedirect] = useState(false)
 
+  const [isHiddenAdmin, setIsHiddenAdmin] = useState(() => window.location.pathname === '/salveregina')
+
   // Scroll to top on view change
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [view])
 
-  const [isHiddenAdmin, setIsHiddenAdmin] = useState(() => window.location.pathname === '/salveregina')
-
-  // Handle route changes for special paths
+  // Sync URL with view state (push to history when view changes)
   useEffect(() => {
-    if (location.pathname === '/salveregina') {
+    const targetPath = VIEW_TO_PATH[view]
+    if (targetPath && location.pathname !== targetPath && !location.pathname.startsWith('/academy')) {
+      navigate(targetPath, { replace: false })
+    }
+  }, [view, navigate, location.pathname])
+
+  // Handle URL changes (browser back/forward, direct navigation)
+  useEffect(() => {
+    const path = location.pathname
+    if (path === '/salveregina') {
       setIsHiddenAdmin(true)
       setView('admin')
-    } else if (location.pathname === '/copilot') {
-      setView('dashboard')
-    } else if (location.pathname === '/') {
+    } else if (PATH_TO_VIEW[path] && PATH_TO_VIEW[path] !== view) {
+      setView(PATH_TO_VIEW[path])
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]) // view intentionally omitted to prevent infinite loops
+
+  // Track previous auth state to detect session expiration
+  const wasAuthenticated = useRef(false)
+
+  // Reset to landing if auth expires while on protected view
+  // Only triggers when auth changes from true to false (not on initial load)
+  useEffect(() => {
+    if (!authLoading) {
+      if (wasAuthenticated.current && !isAuthenticated && PROTECTED_VIEWS.includes(view)) {
+        // Session expired - redirect to landing
+        setView('landing')
+        navigate('/', { replace: true })
+      }
+      wasAuthenticated.current = isAuthenticated
+    }
+  }, [isAuthenticated, authLoading, view, navigate])
+
+  // Clear stale state when navigating to views that require data
+  useEffect(() => {
+    // If on quizResult but no quiz data, redirect to landing
+    if (view === 'quizResult' && !quizResults) {
       setView('landing')
     }
-  }, [location.pathname])
+    // If on results but no results data, redirect to landing
+    if (view === 'results' && !results) {
+      setView('landing')
+    }
+  }, [view, quizResults, results])
 
   // Build archetype data for personalized AI analysis
   const getUserArchetypeData = () => {
@@ -338,10 +396,6 @@ function AppContent() {
 
   const handleOpenReportBug = () => {
     setView('reportBug')
-  }
-
-  const handleOpenAdmin = () => {
-    setView('admin')
   }
 
   const handleSettingsNavigate = (page) => {

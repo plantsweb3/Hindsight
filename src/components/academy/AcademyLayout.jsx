@@ -89,6 +89,12 @@ export default function AcademyLayout() {
         const res = await fetch('/api/academy/onboarding', {
           headers: { 'Authorization': `Bearer ${token}` }
         })
+        if (res.status === 401) {
+          // Token expired - show auth modal to re-login
+          openAuthModal('login')
+          setIsOnboarded(true) // Allow access while prompting re-login
+          return
+        }
         if (res.ok) {
           const data = await res.json()
           if (data.onboarded) {
