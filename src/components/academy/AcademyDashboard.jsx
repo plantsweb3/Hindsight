@@ -1556,6 +1556,17 @@ function CourseRequestModal({ isOpen, onClose, onSubmit, isSubmitting }) {
           </div>
         </div>
 
+        <button type="button" className="course-request-vote-link" onClick={handleViewRequests}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+          </svg>
+          Vote on Existing Requests
+        </button>
+
+        <div className="course-request-divider">
+          <span>or submit a new request</span>
+        </div>
+
         <form className="course-request-form" onSubmit={handleSubmit}>
           <div className="course-request-field">
             <label>Topic <span>*</span></label>
@@ -1624,17 +1635,6 @@ function CourseRequestModal({ isOpen, onClose, onSubmit, isSubmitting }) {
               )}
             </button>
           </div>
-
-          <div className="course-request-divider">
-            <span>or</span>
-          </div>
-
-          <button type="button" className="course-request-vote-link" onClick={handleViewRequests}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-            </svg>
-            Vote on Existing Requests
-          </button>
         </form>
       </div>
     </div>
