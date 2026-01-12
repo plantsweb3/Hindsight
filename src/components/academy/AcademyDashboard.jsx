@@ -31,7 +31,52 @@ function getCompletedCountForModule(moduleSlug) {
 // Tab configuration
 const ACADEMY_TABS = [
   { id: 'trading-101', label: 'Trading 101', subtitle: 'Structured path from beginner to pro' },
-  { id: 'by-archetype', label: 'Learn by Archetype', subtitle: 'Personalized for your style' }
+  { id: 'by-archetype', label: 'Learn by Archetype', subtitle: 'Personalized for your style' },
+  { id: 'coming-soon', label: 'Coming Soon', subtitle: 'Advanced modules in development' }
+]
+
+// Coming Soon modules data
+const COMING_SOON_MODULES = [
+  {
+    id: 'community-takeovers',
+    icon: '🏴‍☠️',
+    title: 'Community Takeovers',
+    tagline: 'FROM LAUNCH TO GRADUATION',
+    description: 'Lead a memecoin community from day one. Learn coordination, narrative building, and how to take a token from pump.fun to sustained success.',
+    badge: 'COMING Q2 2026'
+  },
+  {
+    id: 'liquidity-pools',
+    icon: '💧',
+    title: 'Liquidity Pools',
+    tagline: 'YIELD WITH INTENTION',
+    description: 'Master Meteora LP strategies. Understand impermanent loss, pick the right pools, and earn yield without getting rekt.',
+    badge: 'COMING Q2 2026'
+  },
+  {
+    id: 'perpetual-futures',
+    icon: '📈',
+    title: 'Perpetual Futures',
+    tagline: 'LEVERAGE RESPONSIBLY',
+    description: 'Advanced leverage trading on Jupiter Perps and beyond. Position sizing, funding rates, liquidation management, and when NOT to use leverage.',
+    badge: 'COMING Q2 2026'
+  },
+  {
+    id: 'content-production',
+    icon: '🎬',
+    title: 'Content Production',
+    tagline: 'BUILD THE NARRATIVE',
+    description: 'For memecoin teams and KOLs. Create compelling content, build hype ethically, manage community expectations, and tell stories that spread.',
+    badge: 'COMING Q3 2026'
+  },
+  {
+    id: 'crypto-networking',
+    icon: '🤝',
+    title: 'Crypto Networking',
+    tagline: 'YOUR NET WORTH IS YOUR NETWORK',
+    description: 'Build genuine connections in CT. Find alpha groups, approach KOLs, collaborate on launches, and create relationships that compound.',
+    badge: 'COMING Q3 2026'
+  }
 ]
 
 // Archetype display name formatting
@@ -1217,6 +1262,371 @@ function MasterExamCard() {
   )
 }
 
+// Coming Soon Module Card Component
+function ComingSoonModuleCard({ module, isNotified, onToggleNotify }) {
+  return (
+    <div className="coming-soon-module-card glass-card">
+      <span className="coming-soon-badge">{module.badge}</span>
+      <span className="coming-soon-icon">{module.icon}</span>
+      <h3 className="coming-soon-title">{module.title}</h3>
+      <p className="coming-soon-tagline">{module.tagline}</p>
+      <p className="coming-soon-desc">{module.description}</p>
+      <button
+        className={`coming-soon-notify-btn ${isNotified ? 'notified' : ''}`}
+        onClick={() => onToggleNotify(module.id)}
+      >
+        {isNotified ? (
+          <>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+            Notified
+          </>
+        ) : (
+          'Notify Me'
+        )}
+      </button>
+    </div>
+  )
+}
+
+// Course Request Card Component
+function CourseRequestCard({ onOpenModal }) {
+  return (
+    <div className="coming-soon-module-card glass-card request-card" onClick={onOpenModal}>
+      <span className="coming-soon-icon">💡</span>
+      <h3 className="coming-soon-title">Request a Course</h3>
+      <p className="coming-soon-tagline">WHAT DO YOU WANT TO LEARN?</p>
+      <p className="coming-soon-desc">Don't see what you need? Tell us. The most requested topics get built first.</p>
+      <button className="coming-soon-request-btn">
+        Submit Request
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  )
+}
+
+// Course Request Modal Component
+function CourseRequestModal({ isOpen, onClose, onSubmit, isSubmitting }) {
+  const [topic, setTopic] = useState('')
+  const [reason, setReason] = useState('')
+  const [experienceLevel, setExperienceLevel] = useState('')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!topic.trim() || !experienceLevel) return
+    await onSubmit({ topic: topic.trim(), reason: reason.trim(), experienceLevel })
+    setTopic('')
+    setReason('')
+    setExperienceLevel('')
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content glass-card course-request-modal" onClick={e => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+
+        <div className="course-request-header">
+          <span className="course-request-icon">💡</span>
+          <h2>Request a Course</h2>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="course-request-field">
+            <label>Topic *</label>
+            <input
+              type="text"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              placeholder='e.g., "MEV protection", "Airdrop farming", "DAO governance"'
+              disabled={isSubmitting}
+              required
+            />
+          </div>
+
+          <div className="course-request-field">
+            <label>Why would this help you? (optional)</label>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Tell us more about what you're looking to learn..."
+              disabled={isSubmitting}
+              rows={3}
+            />
+          </div>
+
+          <div className="course-request-field">
+            <label>Your experience level with this topic *</label>
+            <div className="experience-options">
+              {[
+                { value: 'beginner', label: 'Complete beginner' },
+                { value: 'basics', label: 'Know the basics' },
+                { value: 'intermediate', label: 'Intermediate - want to go deeper' },
+                { value: 'advanced', label: 'Advanced - looking for edge cases' }
+              ].map(option => (
+                <label key={option.value} className="experience-option">
+                  <input
+                    type="radio"
+                    name="experienceLevel"
+                    value={option.value}
+                    checked={experienceLevel === option.value}
+                    onChange={(e) => setExperienceLevel(e.target.value)}
+                    disabled={isSubmitting}
+                  />
+                  <span>{option.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="course-request-actions">
+            <button type="button" className="btn-secondary" onClick={onClose} disabled={isSubmitting}>
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={isSubmitting || !topic.trim() || !experienceLevel}
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="spinner" />
+                  Submitting...
+                </>
+              ) : (
+                'Submit Request'
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+// Most Requested Card Component
+function MostRequestedCard({ request, hasVoted, onVote, isVoting }) {
+  return (
+    <div className="most-requested-card glass-card">
+      <h4 className="most-requested-topic">{request.topic}</h4>
+      <p className="most-requested-count">{request.votes} requests</p>
+      <button
+        className={`most-requested-vote-btn ${hasVoted ? 'voted' : ''}`}
+        onClick={() => onVote(request.id)}
+        disabled={hasVoted || isVoting}
+      >
+        {hasVoted ? '✓ Voted' : '+1 Vote'}
+      </button>
+    </div>
+  )
+}
+
+// Coming Soon Tab Content Component
+function ComingSoonTabContent({ token }) {
+  const [notifications, setNotifications] = useState(() => {
+    try {
+      const saved = localStorage.getItem('comingSoonNotifications')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+  const [showRequestModal, setShowRequestModal] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [topRequests, setTopRequests] = useState([])
+  const [userVotes, setUserVotes] = useState(() => {
+    try {
+      const saved = localStorage.getItem('courseRequestVotes')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+  const [isVoting, setIsVoting] = useState(false)
+  const [toast, setToast] = useState(null)
+
+  // Fetch top requests on mount
+  useEffect(() => {
+    fetchTopRequests()
+  }, [])
+
+  const fetchTopRequests = async () => {
+    try {
+      const res = await fetch('/api/academy/course-requests/top')
+      if (res.ok) {
+        const data = await res.json()
+        setTopRequests(data.requests || [])
+      }
+    } catch (err) {
+      console.error('Failed to fetch top requests:', err)
+    }
+  }
+
+  const toggleNotification = (moduleId) => {
+    const newNotifications = notifications.includes(moduleId)
+      ? notifications.filter(id => id !== moduleId)
+      : [...notifications, moduleId]
+    setNotifications(newNotifications)
+    localStorage.setItem('comingSoonNotifications', JSON.stringify(newNotifications))
+
+    // Show toast
+    const action = newNotifications.includes(moduleId) ? 'subscribed to' : 'unsubscribed from'
+    const module = COMING_SOON_MODULES.find(m => m.id === moduleId)
+    showToast(`You've ${action} ${module?.title || 'this course'} notifications`)
+  }
+
+  const showToast = (message) => {
+    setToast(message)
+    setTimeout(() => setToast(null), 3000)
+  }
+
+  const handleSubmitRequest = async ({ topic, reason, experienceLevel }) => {
+    setIsSubmitting(true)
+    try {
+      const res = await fetch('/api/academy/course-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ topic, reason, experienceLevel })
+      })
+
+      if (res.ok) {
+        setShowRequestModal(false)
+        showToast("Thanks! We'll notify you if this becomes a course.")
+        fetchTopRequests() // Refresh the list
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'Failed to submit request')
+      }
+    } catch (err) {
+      showToast('Failed to submit request')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleVote = async (requestId) => {
+    if (userVotes.includes(requestId) || isVoting) return
+    setIsVoting(true)
+
+    try {
+      const res = await fetch(`/api/academy/course-requests/${requestId}/vote`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      })
+
+      if (res.ok) {
+        const newVotes = [...userVotes, requestId]
+        setUserVotes(newVotes)
+        localStorage.setItem('courseRequestVotes', JSON.stringify(newVotes))
+        // Update local count
+        setTopRequests(prev => prev.map(r =>
+          r.id === requestId ? { ...r, votes: r.votes + 1 } : r
+        ))
+        showToast('Vote recorded!')
+      }
+    } catch (err) {
+      showToast('Failed to vote')
+    } finally {
+      setIsVoting(false)
+    }
+  }
+
+  return (
+    <div className="coming-soon-tab">
+      {/* Hero Section */}
+      <div className="coming-soon-hero">
+        <span className="coming-soon-hero-icon">🔭</span>
+        <h2 className="coming-soon-hero-title">Beyond the Trenches</h2>
+        <p className="coming-soon-hero-subtitle">Advanced modules for traders ready to level up</p>
+        <p className="coming-soon-hero-desc">
+          We're building specialized courses for traders who want to go deeper. These modules cover skills beyond basic trading - from launching your own projects to building your network in crypto.
+        </p>
+      </div>
+
+      {/* Module Grid */}
+      <section className="coming-soon-modules-section">
+        <div className="coming-soon-modules-grid">
+          {COMING_SOON_MODULES.map(module => (
+            <ComingSoonModuleCard
+              key={module.id}
+              module={module}
+              isNotified={notifications.includes(module.id)}
+              onToggleNotify={toggleNotification}
+            />
+          ))}
+          <CourseRequestCard onOpenModal={() => setShowRequestModal(true)} />
+        </div>
+      </section>
+
+      {/* Most Requested Section */}
+      {topRequests.length > 0 && (
+        <section className="most-requested-section">
+          <div className="most-requested-header">
+            <span className="most-requested-icon">🗳️</span>
+            <h3>Most Requested</h3>
+          </div>
+          <div className="most-requested-grid">
+            {topRequests.slice(0, 4).map(request => (
+              <MostRequestedCard
+                key={request.id}
+                request={request}
+                hasVoted={userVotes.includes(request.id)}
+                onVote={handleVote}
+                isVoting={isVoting}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Footer CTA */}
+      <div className="coming-soon-footer-cta">
+        <p>Want to help shape these courses? Join our Discord.</p>
+        <a
+          href="https://discord.gg/CNNpe3vyvv"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="coming-soon-discord-btn"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+          </svg>
+          Join Discord
+        </a>
+      </div>
+
+      {/* Request Modal */}
+      <CourseRequestModal
+        isOpen={showRequestModal}
+        onClose={() => setShowRequestModal(false)}
+        onSubmit={handleSubmitRequest}
+        isSubmitting={isSubmitting}
+      />
+
+      {/* Toast */}
+      {toast && (
+        <div className="coming-soon-toast">
+          {toast}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Main Dashboard Component
 export default function AcademyDashboard() {
   const { isAuthenticated, user, openAuthModal } = useOutletContext()
@@ -1943,6 +2353,11 @@ export default function AcademyDashboard() {
               </>
             )}
           </>
+        )}
+
+        {/* Coming Soon Tab */}
+        {activeTab === 'coming-soon' && (
+          <ComingSoonTabContent token={token} />
         )}
       </div>
 

@@ -29,6 +29,11 @@ import {
   // Cross-device progress sync
   saveUserProgress,
   getUserProgress,
+  // Course request functions
+  initCourseRequestsTable,
+  createCourseRequest,
+  getTopCourseRequests,
+  voteCourseRequest,
 } from '../lib/db.js'
 import { cors } from '../lib/auth.js'
 import jwt from 'jsonwebtoken'
@@ -81,6 +86,8 @@ async function ensureDb() {
         console.log('[Academy] No modules found, seeding content...')
         await seedAcademyContent()
       }
+      // Initialize course requests table
+      await initCourseRequestsTable()
       dbInitialized = true
       console.log('[Academy] Database ready')
     } catch (err) {
@@ -602,6 +609,106 @@ export default async function handler(req, res) {
         hasData: true,
         ...serverProgress
       })
+    }
+
+    // ============================================
+    // Course Request Endpoints
+    // ============================================
+
+    // POST /api/academy/course-requests - Submit a new course request
+    if (method === 'POST' && segments.length === 1 && segments[0] === 'course-requests') {
+      const user = await authenticateUser(req)
+      const userId = user ? user.id : null
+
+      const { topic, reason, experienceLevel } = req.body
+
+      if (!topic || topic.trim().length < 3) {
+        return res.status(400).json({ error: 'Topic must be at least 3 characters' })
+      }
+
+      if (topic.length > 200) {
+        return res.status(400).json({ error: 'Topic must be less than 200 characters' })
+      }
+
+      if (reason && reason.length > 1000) {
+        return res.status(400).json({ error: 'Reason must be less than 1000 characters' })
+      }
+
+      const validLevels = ['beginner', 'intermediate', 'advanced', 'all']
+      if (experienceLevel && !validLevels.includes(experienceLevel)) {
+        return res.status(400).json({ error: 'Invalid experience level' })
+      }
+
+      try {
+        const result = await createCourseRequest(
+          userId,
+          topic.trim(),
+          reason ? reason.trim() : null,
+          experienceLevel || 'all'
+        )
+
+        return res.status(201).json({
+          success: true,
+          request: result,
+          message: result.merged
+            ? 'Your vote has been added to a similar existing request!'
+            : 'Course request submitted successfully!'
+        })
+      } catch (err) {
+        console.error('Course request error:', err)
+        return res.status(500).json({ error: 'Failed to submit course request' })
+      }
+    }
+
+    // GET /api/academy/course-requests/top - Get top voted course requests
+    if (method === 'GET' && segments.length === 2 && segments[0] === 'course-requests' && segments[1] === 'top') {
+      const limit = Math.min(parseInt(req.query.limit) || 10, 50)
+
+      try {
+        const requests = await getTopCourseRequests(limit)
+        return res.status(200).json({ requests })
+      } catch (err) {
+        console.error('Get course requests error:', err)
+        return res.status(500).json({ error: 'Failed to fetch course requests' })
+      }
+    }
+
+    // POST /api/academy/course-requests/:id/vote - Vote for a course request
+    if (method === 'POST' && segments.length === 3 && segments[0] === 'course-requests' && segments[2] === 'vote') {
+      const requestId = parseInt(segments[1], 10)
+      if (isNaN(requestId)) {
+        return res.status(400).json({ error: 'Invalid request ID' })
+      }
+
+      const user = await authenticateUser(req)
+      const userId = user ? user.id : null
+
+      // Get IP hash for anonymous vote tracking
+      const forwardedFor = req.headers['x-forwarded-for']
+      const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : req.socket?.remoteAddress || 'unknown'
+      // Simple hash of IP for privacy
+      const ipHash = Buffer.from(ip).toString('base64').substring(0, 16)
+
+      try {
+        const result = await voteCourseRequest(requestId, userId, ipHash)
+
+        if (!result.success) {
+          return res.status(400).json({
+            error: result.error,
+            message: result.error === 'already_voted'
+              ? 'You have already voted for this request'
+              : 'Request not found'
+          })
+        }
+
+        return res.status(200).json({
+          success: true,
+          newVoteCount: result.newVoteCount
+        })
+      } catch (err) {
+        console.error('Vote error:', err)
+        return res.status(500).json({ error: 'Failed to record vote' })
+      }
     }
 
     // 404 for unmatched routes

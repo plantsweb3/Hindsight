@@ -2622,4 +2622,113 @@ export async function deleteUser(userId) {
   return { success: true }
 }
 
+// ============================================
+// Course Request Functions
+// ============================================
+
+export async function initCourseRequestsTable() {
+  await getDb().execute(`
+    CREATE TABLE IF NOT EXISTS course_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      topic TEXT NOT NULL,
+      reason TEXT,
+      experience_level TEXT,
+      votes INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+    )
+  `)
+
+  await getDb().execute(`
+    CREATE TABLE IF NOT EXISTS course_request_votes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      request_id INTEGER NOT NULL,
+      user_id INTEGER,
+      ip_hash TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (request_id) REFERENCES course_requests(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+    )
+  `)
+
+  // Create index for faster lookups
+  try {
+    await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_course_requests_votes ON course_requests(votes DESC)`)
+    await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_course_request_votes_request ON course_request_votes(request_id)`)
+  } catch (e) { /* Index might already exist */ }
+}
+
+export async function createCourseRequest(userId, topic, reason, experienceLevel) {
+  // Check if similar topic already exists
+  const existing = await getDb().execute({
+    sql: `SELECT id, votes FROM course_requests WHERE LOWER(topic) = LOWER(?) LIMIT 1`,
+    args: [topic.trim()]
+  })
+
+  if (existing.rows.length > 0) {
+    // Topic exists - just upvote it instead
+    const requestId = existing.rows[0].id
+    await getDb().execute({
+      sql: `UPDATE course_requests SET votes = votes + 1 WHERE id = ?`,
+      args: [requestId]
+    })
+    return { id: requestId, merged: true, votes: existing.rows[0].votes + 1 }
+  }
+
+  // Create new request
+  const result = await getDb().execute({
+    sql: `INSERT INTO course_requests (user_id, topic, reason, experience_level) VALUES (?, ?, ?, ?)`,
+    args: [userId || null, topic.trim(), reason || null, experienceLevel || null]
+  })
+
+  return { id: Number(result.lastInsertRowid), merged: false, votes: 1 }
+}
+
+export async function getTopCourseRequests(limit = 10) {
+  const result = await getDb().execute({
+    sql: `SELECT id, topic, votes, created_at FROM course_requests ORDER BY votes DESC, created_at DESC LIMIT ?`,
+    args: [limit]
+  })
+
+  return result.rows.map(row => ({
+    id: Number(row.id),
+    topic: row.topic,
+    votes: Number(row.votes),
+    createdAt: row.created_at
+  }))
+}
+
+export async function voteCourseRequest(requestId, userId, ipHash) {
+  // Check if already voted (by user or IP)
+  const existingVote = await getDb().execute({
+    sql: `SELECT id FROM course_request_votes WHERE request_id = ? AND (user_id = ? OR ip_hash = ?) LIMIT 1`,
+    args: [requestId, userId || null, ipHash || null]
+  })
+
+  if (existingVote.rows.length > 0) {
+    return { success: false, error: 'already_voted' }
+  }
+
+  // Record vote
+  await getDb().execute({
+    sql: `INSERT INTO course_request_votes (request_id, user_id, ip_hash) VALUES (?, ?, ?)`,
+    args: [requestId, userId || null, ipHash || null]
+  })
+
+  // Increment vote count
+  await getDb().execute({
+    sql: `UPDATE course_requests SET votes = votes + 1 WHERE id = ?`,
+    args: [requestId]
+  })
+
+  // Get updated vote count
+  const updated = await getDb().execute({
+    sql: `SELECT votes FROM course_requests WHERE id = ?`,
+    args: [requestId]
+  })
+
+  return { success: true, votes: Number(updated.rows[0]?.votes || 0) }
+}
+
 export default getDb
