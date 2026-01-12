@@ -1518,6 +1518,7 @@ function ComingSoonPopup({ module, onClose }) {
 
 // Course Request Modal Component
 function CourseRequestModal({ isOpen, onClose, onSubmit, isSubmitting }) {
+  const navigate = useNavigate()
   const [topic, setTopic] = useState('')
   const [reason, setReason] = useState('')
   const [experienceLevel, setExperienceLevel] = useState('')
@@ -1531,25 +1532,33 @@ function CourseRequestModal({ isOpen, onClose, onSubmit, isSubmitting }) {
     setExperienceLevel('')
   }
 
+  const handleViewRequests = () => {
+    onClose()
+    navigate('/academy/course-requests')
+  }
+
   if (!isOpen) return null
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content glass-card course-request-modal" onClick={e => e.stopPropagation()}>
+      <div className="course-request-modal" onClick={e => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M18 6L6 18M6 6l12 12" />
           </svg>
         </button>
 
-        <div className="course-request-header">
-          <span className="course-request-icon">💡</span>
-          <h2>Request a Course</h2>
+        <div className="course-request-modal-header">
+          <span className="course-request-modal-icon">💡</span>
+          <div>
+            <h2>Request a Course</h2>
+            <p className="course-request-modal-subtitle">Tell us what you want to learn</p>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form className="course-request-form" onSubmit={handleSubmit}>
           <div className="course-request-field">
-            <label>Topic *</label>
+            <label>Topic <span>*</span></label>
             <input
               type="text"
               value={topic}
@@ -1561,18 +1570,18 @@ function CourseRequestModal({ isOpen, onClose, onSubmit, isSubmitting }) {
           </div>
 
           <div className="course-request-field">
-            <label>Why would this help you? (optional)</label>
+            <label>Why would this help you?</label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Tell us more about what you're looking to learn..."
               disabled={isSubmitting}
-              rows={3}
+              rows={4}
             />
           </div>
 
           <div className="course-request-field">
-            <label>Your experience level with this topic *</label>
+            <label>Your experience level <span>*</span></label>
             <div className="experience-options">
               {[
                 { value: 'beginner', label: 'Complete beginner' },
@@ -1580,7 +1589,7 @@ function CourseRequestModal({ isOpen, onClose, onSubmit, isSubmitting }) {
                 { value: 'intermediate', label: 'Intermediate - want to go deeper' },
                 { value: 'advanced', label: 'Advanced - looking for edge cases' }
               ].map(option => (
-                <label key={option.value} className="experience-option">
+                <label key={option.value} className={`experience-option ${experienceLevel === option.value ? 'selected' : ''}`}>
                   <input
                     type="radio"
                     name="experienceLevel"
@@ -1589,19 +1598,20 @@ function CourseRequestModal({ isOpen, onClose, onSubmit, isSubmitting }) {
                     onChange={(e) => setExperienceLevel(e.target.value)}
                     disabled={isSubmitting}
                   />
-                  <span>{option.label}</span>
+                  <span className="experience-radio" />
+                  <span className="experience-label">{option.label}</span>
                 </label>
               ))}
             </div>
           </div>
 
           <div className="course-request-actions">
-            <button type="button" className="btn-secondary" onClick={onClose} disabled={isSubmitting}>
+            <button type="button" className="course-request-btn-cancel" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </button>
             <button
               type="submit"
-              className="btn-primary"
+              className="course-request-btn-submit"
               disabled={isSubmitting || !topic.trim() || !experienceLevel}
             >
               {isSubmitting ? (
@@ -1614,6 +1624,17 @@ function CourseRequestModal({ isOpen, onClose, onSubmit, isSubmitting }) {
               )}
             </button>
           </div>
+
+          <div className="course-request-divider">
+            <span>or</span>
+          </div>
+
+          <button type="button" className="course-request-vote-link" onClick={handleViewRequests}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+            </svg>
+            Vote on Existing Requests
+          </button>
         </form>
       </div>
     </div>

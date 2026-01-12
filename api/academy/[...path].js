@@ -33,6 +33,7 @@ import {
   initCourseRequestsTable,
   createCourseRequest,
   getTopCourseRequests,
+  getAllCourseRequests,
   voteCourseRequest,
 } from '../lib/db.js'
 import { cors } from '../lib/auth.js'
@@ -669,6 +670,17 @@ export default async function handler(req, res) {
         return res.status(200).json({ requests })
       } catch (err) {
         console.error('Get course requests error:', err)
+        return res.status(500).json({ error: 'Failed to fetch course requests' })
+      }
+    }
+
+    // GET /api/academy/course-requests/all - Get all course requests
+    if (method === 'GET' && segments.length === 2 && segments[0] === 'course-requests' && segments[1] === 'all') {
+      try {
+        const requests = await getAllCourseRequests()
+        return res.status(200).json({ requests })
+      } catch (err) {
+        console.error('Get all course requests error:', err)
         return res.status(500).json({ error: 'Failed to fetch course requests' })
       }
     }

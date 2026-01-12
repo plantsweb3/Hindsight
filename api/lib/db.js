@@ -2699,6 +2699,22 @@ export async function getTopCourseRequests(limit = 10) {
   }))
 }
 
+export async function getAllCourseRequests() {
+  const result = await getDb().execute({
+    sql: `SELECT id, topic, reason, experience_level, votes, created_at FROM course_requests ORDER BY votes DESC, created_at DESC`,
+    args: []
+  })
+
+  return result.rows.map(row => ({
+    id: Number(row.id),
+    topic: row.topic,
+    reason: row.reason,
+    experience_level: row.experience_level,
+    votes: Number(row.votes),
+    created_at: row.created_at
+  }))
+}
+
 export async function voteCourseRequest(requestId, userId, ipHash) {
   // Check if already voted (by user or IP)
   const existingVote = await getDb().execute({

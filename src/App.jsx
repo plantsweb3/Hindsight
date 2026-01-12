@@ -25,6 +25,7 @@ import LessonView from './components/academy/LessonView'
 import ArchetypeModuleView from './components/academy/ArchetypeModuleView'
 import ArchetypeLessonView from './components/academy/ArchetypeLessonView'
 import MasterExamPage from './components/academy/MasterExamPage'
+import CourseRequestsPage from './components/academy/CourseRequestsPage'
 import LeaderboardPage from './components/academy/LeaderboardPage'
 import AchievementCelebration from './components/academy/AchievementCelebration'
 import LevelUpCelebration from './components/academy/LevelUpCelebration'
@@ -616,6 +617,7 @@ export default function App() {
             <Route path="/academy" element={<AcademyLayout />}>
               <Route index element={<AcademyDashboard />} />
               <Route path="archetype-master-exam" element={<MasterExamPage />} />
+              <Route path="course-requests" element={<CourseRequestsPage />} />
               <Route path="archetype/:archetypeId" element={<ArchetypeModuleView />} />
               <Route path="archetype/:archetypeId/:lessonSlug" element={<ArchetypeLessonView />} />
               <Route path=":moduleSlug" element={<ModuleView />} />
