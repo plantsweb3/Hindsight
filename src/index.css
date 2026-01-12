@@ -21432,7 +21432,8 @@ input, button {
 
 /* Hero Compact Headline - 2 lines on desktop */
 .hero-headline-compact {
-  max-width: 600px;
+  font-size: clamp(1.75rem, 4vw, 2.75rem) !important;
+  max-width: 700px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -21441,7 +21442,7 @@ input, button {
   display: block;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .hero-line-break {
     display: none;
   }
