@@ -21493,13 +21493,13 @@ input, button {
   box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
 }
 
-.hero-pillar-community {
-  border-color: rgba(6, 182, 212, 0.4);
+.hero-pillar-execute {
+  border-color: rgba(249, 115, 22, 0.4);
 }
 
-.hero-pillar-community:hover {
-  border-color: #06b6d4;
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+.hero-pillar-execute:hover {
+  border-color: #f97316;
+  box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
 }
 
 .hero-pillar-card-icon {

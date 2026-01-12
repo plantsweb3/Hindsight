@@ -211,19 +211,19 @@ function HeroSection({ onScrollDown, onAnalyze, onStartQuiz, isLoading, progress
         {/* Three Pillars as Cards */}
         <div className="hero-pillars-v2">
           <div className="hero-pillar-card hero-pillar-copilot">
-            <span className="hero-pillar-card-icon">🔍</span>
+            <span className="hero-pillar-card-icon">👁️</span>
             <h3 className="hero-pillar-card-title">Copilot</h3>
-            <p className="hero-pillar-card-subtitle">AI wallet analysis</p>
+            <p className="hero-pillar-card-subtitle">AI trading coach</p>
           </div>
           <div className="hero-pillar-card hero-pillar-academy">
             <span className="hero-pillar-card-icon">📚</span>
             <h3 className="hero-pillar-card-title">Academy</h3>
-            <p className="hero-pillar-card-subtitle">70+ lessons & quizzes</p>
+            <p className="hero-pillar-card-subtitle">Personalized courses</p>
           </div>
-          <div className="hero-pillar-card hero-pillar-community">
-            <span className="hero-pillar-card-icon">💬</span>
-            <h3 className="hero-pillar-card-title">Community</h3>
-            <p className="hero-pillar-card-subtitle">Token-gated Discord</p>
+          <div className="hero-pillar-card hero-pillar-execute">
+            <span className="hero-pillar-card-icon">⚔️</span>
+            <h3 className="hero-pillar-card-title">Execute</h3>
+            <p className="hero-pillar-card-subtitle">Pro trading group</p>
           </div>
         </div>
 
