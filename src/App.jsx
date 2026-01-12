@@ -405,6 +405,7 @@ function AppContent() {
             onShowAuth={handleShowAuth}
             onOpenDashboard={handleOpenDashboard}
             onOpenJournal={handleOpenJournal}
+            onOpenSettings={handleOpenSettings}
             onOpenPro={handleOpenPro}
             onOpenContact={handleOpenContact}
             isLoading={isLoading}
@@ -531,6 +532,7 @@ function AppContent() {
         onShowAuth={handleShowAuth}
         onOpenDashboard={handleOpenDashboard}
         onOpenJournal={handleOpenJournal}
+        onOpenSettings={handleOpenSettings}
         onOpenPro={handleOpenPro}
         onOpenContact={handleOpenContact}
         isLoading={isLoading}

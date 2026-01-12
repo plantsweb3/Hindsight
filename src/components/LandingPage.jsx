@@ -95,7 +95,7 @@ function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, onOpe
               </svg>
               Journal
             </button>
-            <button onClick={onOpenDashboard} className="nav-user-btn">
+            <button onClick={onOpenSettings} className="nav-user-btn">
               <span className="nav-user-avatar">
                 {user?.username?.charAt(0).toUpperCase() || 'U'}
               </span>
@@ -177,12 +177,12 @@ function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, onOpe
                     </svg>
                     Journal
                   </button>
-                  <div className="mobile-nav-user">
+                  <button onClick={() => handleNavAction(onOpenSettings)} className="mobile-nav-user">
                     <span className="mobile-nav-avatar">
                       {user?.username?.charAt(0).toUpperCase() || 'U'}
                     </span>
                     <span className="mobile-nav-username">{user?.username}</span>
-                  </div>
+                  </button>
                 </>
               ) : (
                 <>
@@ -797,6 +797,7 @@ export default function LandingPage({
   onShowAuth,
   onOpenDashboard,
   onOpenJournal,
+  onOpenSettings,
   onOpenPro,
   onOpenContact,
   isLoading,
