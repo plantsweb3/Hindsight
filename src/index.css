@@ -21432,8 +21432,8 @@ input, button {
 
 /* Hero Compact Headline - 2 lines on desktop */
 .hero-headline-compact {
-  font-size: clamp(1.75rem, 4vw, 2.75rem) !important;
-  max-width: 700px;
+  font-size: clamp(1.5rem, 3vw, 2.25rem) !important;
+  max-width: 800px;
   margin-left: auto;
   margin-right: auto;
 }

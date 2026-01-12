@@ -227,17 +227,9 @@ function HeroSection({ onScrollDown, onAnalyze, onStartQuiz, isLoading, progress
           </div>
         </div>
 
-        {/* Primary CTA */}
-        <Link to="/quiz" className="hero-primary-cta">
-          Take the 60-Second Trader Quiz
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </Link>
-
-        {/* Secondary: Wallet Input */}
+        {/* Wallet Input */}
         <form className="hero-wallet-form" onSubmit={handleSubmit}>
-          <p className="hero-wallet-label">or paste a wallet to analyze instantly</p>
+          <p className="hero-wallet-label">Paste a wallet to analyze instantly</p>
           <div className="hero-input-wrapper">
             <input
               type="text"
