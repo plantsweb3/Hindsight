@@ -434,14 +434,6 @@ function CopilotSection() {
     'Recommends lessons to fix weaknesses',
   ]
 
-  const detections = [
-    { name: 'FOMO Entries', desc: 'Buying tops after watching others win', emoji: '😰' },
-    { name: 'Panic Sells', desc: 'Dumping at the bottom, right before recovery', emoji: '😱' },
-    { name: 'Revenge Trading', desc: 'Chasing losses with bigger, dumber bets', emoji: '🎰' },
-    { name: 'Diamond Hand Delusion', desc: 'Holding losers, selling winners', emoji: '💎' },
-    { name: 'Position Sizing Chaos', desc: 'No consistency, no edge', emoji: '🎲' },
-  ]
-
   const scrollToHero = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -485,20 +477,6 @@ function CopilotSection() {
                 </li>
               ))}
             </ul>
-          </div>
-        </div>
-
-        {/* What Copilot Detects */}
-        <div className="copilot-detects">
-          <h3 className="copilot-detects-title">What Copilot Detects:</h3>
-          <div className="copilot-detects-grid">
-            {detections.map((d, i) => (
-              <div key={i} className="copilot-detect-item">
-                <span className="copilot-detect-emoji">{d.emoji}</span>
-                <span className="copilot-detect-name">{d.name}</span>
-                <span className="copilot-detect-desc">{d.desc}</span>
-              </div>
-            ))}
           </div>
         </div>
 
