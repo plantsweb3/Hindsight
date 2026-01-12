@@ -435,7 +435,7 @@ function CopilotSection() {
   ]
 
   const detections = [
-    { name: 'FOMO Entries', desc: 'Buying tops after watching others win', emoji: '🚀' },
+    { name: 'FOMO Entries', desc: 'Buying tops after watching others win', emoji: '😰' },
     { name: 'Panic Sells', desc: 'Dumping at the bottom, right before recovery', emoji: '😱' },
     { name: 'Revenge Trading', desc: 'Chasing losses with bigger, dumber bets', emoji: '🎰' },
     { name: 'Diamond Hand Delusion', desc: 'Holding losers, selling winners', emoji: '💎' },
