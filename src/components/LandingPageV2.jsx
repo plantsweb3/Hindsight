@@ -435,11 +435,11 @@ function CopilotSection() {
   ]
 
   const detections = [
-    { name: 'FOMO Entries', desc: 'Buying tops after watching others win' },
-    { name: 'Panic Sells', desc: 'Dumping at the bottom, right before recovery' },
-    { name: 'Revenge Trading', desc: 'Chasing losses with bigger, dumber bets' },
-    { name: 'Diamond Hand Delusion', desc: 'Holding losers, selling winners' },
-    { name: 'Position Sizing Chaos', desc: 'No consistency, no edge' },
+    { name: 'FOMO Entries', desc: 'Buying tops after watching others win', emoji: '🚀' },
+    { name: 'Panic Sells', desc: 'Dumping at the bottom, right before recovery', emoji: '😱' },
+    { name: 'Revenge Trading', desc: 'Chasing losses with bigger, dumber bets', emoji: '🎰' },
+    { name: 'Diamond Hand Delusion', desc: 'Holding losers, selling winners', emoji: '💎' },
+    { name: 'Position Sizing Chaos', desc: 'No consistency, no edge', emoji: '🎲' },
   ]
 
   const scrollToHero = () => {
@@ -494,6 +494,7 @@ function CopilotSection() {
           <div className="copilot-detects-grid">
             {detections.map((d, i) => (
               <div key={i} className="copilot-detect-item">
+                <span className="copilot-detect-emoji">{d.emoji}</span>
                 <span className="copilot-detect-name">{d.name}</span>
                 <span className="copilot-detect-desc">{d.desc}</span>
               </div>
