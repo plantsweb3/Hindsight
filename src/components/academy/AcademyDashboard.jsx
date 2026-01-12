@@ -86,16 +86,6 @@ const COMING_SOON_MODULES = [
     badge: 'Q3 2026',
     lessonCount: 8,
     color: '#8b5cf6' // purple
-  },
-  {
-    id: 'onchain-analytics',
-    icon: '🔍',
-    title: 'On-Chain Analytics',
-    tagline: 'READ THE BLOCKCHAIN',
-    description: 'Decode wallet movements, track smart money, analyze token flows, and use on-chain data to make informed trading decisions.',
-    badge: 'Q3 2026',
-    lessonCount: 8,
-    color: '#3b82f6' // blue
   }
 ]
 
