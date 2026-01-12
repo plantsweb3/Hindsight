@@ -19196,107 +19196,220 @@ input, button {
    Coming Soon Tab Styles
    ============================================ */
 
+/* Coming Soon Tab Container */
+.coming-soon-tab {
+  padding-bottom: 2rem;
+}
+
 /* Hero Section */
 .coming-soon-hero {
   text-align: center;
-  padding: 2.5rem 1rem 2rem;
-  margin-bottom: 2rem;
+  padding: 1.5rem 1rem 2rem;
+  margin-bottom: 1.5rem;
 }
 
-.coming-soon-hero h1 {
-  font-size: 2rem;
+.coming-soon-hero-icon {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.coming-soon-hero-title {
+  font-size: 1.75rem;
   font-weight: 700;
-  color: #f4f4f5;
-  margin-bottom: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-}
-
-.coming-soon-hero h1 .sparkle {
-  font-size: 1.5rem;
-}
-
-.coming-soon-hero p {
-  font-size: 1rem;
-  color: #a1a1aa;
-  max-width: 500px;
-  margin: 0 auto;
-  line-height: 1.5;
-}
-
-/* Coming Soon Module Grid */
-.coming-soon-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 3rem;
-}
-
-/* Coming Soon Module Card */
-.coming-soon-module-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1rem;
-  padding: 1.25rem;
-  position: relative;
-  transition: all 0.2s ease;
-}
-
-.coming-soon-module-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.12);
-  transform: translateY(-2px);
-}
-
-.coming-soon-module-card .module-icon {
-  font-size: 2rem;
-  margin-bottom: 0.75rem;
-}
-
-.coming-soon-module-card h3 {
-  font-size: 1rem;
-  font-weight: 600;
   color: #f4f4f5;
   margin-bottom: 0.5rem;
 }
 
-.coming-soon-module-card p {
-  font-size: 0.813rem;
-  color: #71717a;
-  line-height: 1.4;
-  margin-bottom: 1rem;
-}
-
-.coming-soon-module-card .status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.25rem 0.625rem;
-  background: rgba(234, 179, 8, 0.1);
-  border: 1px solid rgba(234, 179, 8, 0.2);
-  border-radius: 9999px;
-  font-size: 0.688rem;
+.coming-soon-hero-subtitle {
+  font-size: 1rem;
+  color: #a78bfa;
   font-weight: 500;
-  color: #fbbf24;
   margin-bottom: 0.75rem;
 }
 
-.coming-soon-module-card .status-badge .pulse-dot {
-  width: 6px;
-  height: 6px;
-  background: #fbbf24;
+.coming-soon-hero-desc {
+  font-size: 0.875rem;
+  color: #a1a1aa;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* Coming Soon Modules Section */
+.coming-soon-modules-section {
+  margin-bottom: 2rem;
+}
+
+/* Coming Soon Module Grid - 2 columns */
+.coming-soon-modules-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+/* Coming Soon Module Card - matches archetype card style */
+.coming-soon-module-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  cursor: default;
+  transition: all 0.2s ease;
+}
+
+.coming-soon-module-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+/* Request card special styles */
+.coming-soon-module-card.request-card {
+  cursor: pointer;
+  border-style: dashed;
+  border-color: rgba(139, 92, 246, 0.3);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(59, 130, 246, 0.05));
+}
+
+.coming-soon-module-card.request-card:hover {
+  border-color: rgba(139, 92, 246, 0.5);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(59, 130, 246, 0.08));
+}
+
+/* Badges Row */
+.coming-soon-module-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.coming-soon-badge-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 4px;
+  font-size: 0.688rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #a78bfa;
+}
+
+.coming-soon-badge-type.request-badge {
+  border-color: rgba(139, 92, 246, 0.4);
+  color: #a78bfa;
+}
+
+.coming-soon-badge-date {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  background: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.2);
+  border-radius: 4px;
+  font-size: 0.688rem;
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+/* Module Icon */
+.coming-soon-module-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Module Name */
+.coming-soon-module-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #f4f4f5;
+  margin-bottom: 0.25rem;
+}
+
+/* Module Tagline */
+.coming-soon-module-tagline {
+  font-size: 0.688rem;
+  font-weight: 600;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+/* Module Description */
+.coming-soon-module-desc {
+  font-size: 0.813rem;
+  color: #a1a1aa;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  flex: 1;
+}
+
+/* 8 Dots Row */
+.coming-soon-module-dots {
+  display: flex;
+  gap: 0.375rem;
+  margin-bottom: 0.75rem;
+}
+
+.coming-soon-module-dots .module-dot {
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  animation: pulse-dot 2s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
+/* Progress Bar */
+.coming-soon-module-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
 }
 
-.notify-btn {
+.coming-soon-progress-track {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.coming-soon-progress-track.request-track {
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(139, 92, 246, 0.2) 0px,
+    rgba(139, 92, 246, 0.2) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+.coming-soon-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.coming-soon-progress-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 28px;
+  text-align: right;
+}
+
+.coming-soon-progress-label.request-label {
+  color: #a78bfa;
+}
+
+/* Notify Button */
+.coming-soon-notify-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -19313,66 +19426,20 @@ input, button {
   transition: all 0.2s;
 }
 
-.notify-btn:hover {
-  background: rgba(139, 92, 246, 0.2);
-  border-color: rgba(139, 92, 246, 0.5);
+.coming-soon-notify-btn:hover {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.4);
 }
 
-.notify-btn.notified {
+.coming-soon-notify-btn.notified {
   background: rgba(34, 197, 94, 0.1);
   border-color: rgba(34, 197, 94, 0.3);
   color: #4ade80;
 }
 
-.notify-btn.notified:hover {
-  background: rgba(34, 197, 94, 0.15);
-  border-color: rgba(34, 197, 94, 0.4);
-}
-
-/* Course Request Card */
-.course-request-card {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(59, 130, 246, 0.08));
-  border: 1px dashed rgba(139, 92, 246, 0.3);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.course-request-card:hover {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(59, 130, 246, 0.12));
-  border-color: rgba(139, 92, 246, 0.5);
-  transform: translateY(-2px);
-}
-
-.course-request-card .plus-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: rgba(139, 92, 246, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: #a78bfa;
-  margin-bottom: 0.75rem;
-}
-
-.course-request-card h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #f4f4f5;
-  margin-bottom: 0.375rem;
-}
-
-.course-request-card p {
-  font-size: 0.813rem;
-  color: #a1a1aa;
+.coming-soon-notify-btn.request-btn {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.15));
+  border-color: rgba(139, 92, 246, 0.4);
 }
 
 /* Course Request Modal */
@@ -19686,23 +19753,21 @@ input, button {
   grid-column: 1 / -1;
 }
 
-/* Responsive Styles */
-@media (max-width: 900px) {
-  .coming-soon-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
+/* Responsive Styles for Coming Soon Tab */
 @media (max-width: 640px) {
-  .coming-soon-hero h1 {
+  .coming-soon-hero-title {
     font-size: 1.5rem;
   }
 
-  .coming-soon-hero p {
-    font-size: 0.875rem;
+  .coming-soon-hero-subtitle {
+    font-size: 0.938rem;
   }
 
-  .coming-soon-grid {
+  .coming-soon-hero-desc {
+    font-size: 0.813rem;
+  }
+
+  .coming-soon-modules-grid {
     grid-template-columns: 1fr;
     gap: 0.75rem;
   }
@@ -19727,7 +19792,36 @@ input, button {
 
 @media (max-width: 400px) {
   .coming-soon-hero {
-    padding: 1.5rem 0.75rem 1.25rem;
+    padding: 1rem 0.75rem 1.25rem;
+  }
+
+  .coming-soon-hero-icon {
+    font-size: 2rem;
+  }
+
+  .coming-soon-hero-title {
+    font-size: 1.25rem;
+  }
+
+  .coming-soon-module-card {
+    padding: 1rem;
+  }
+
+  .coming-soon-module-icon {
+    font-size: 1.75rem;
+  }
+
+  .coming-soon-module-name {
+    font-size: 1rem;
+  }
+
+  .coming-soon-module-desc {
+    font-size: 0.75rem;
+  }
+
+  .coming-soon-module-dots .module-dot {
+    width: 8px;
+    height: 8px;
   }
 
   .coming-soon-module-card {

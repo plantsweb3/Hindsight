@@ -43,7 +43,9 @@ const COMING_SOON_MODULES = [
     title: 'Community Takeovers',
     tagline: 'FROM LAUNCH TO GRADUATION',
     description: 'Lead a memecoin community from day one. Learn coordination, narrative building, and how to take a token from pump.fun to sustained success.',
-    badge: 'COMING Q2 2026'
+    badge: 'Q2 2026',
+    lessonCount: 8,
+    color: '#f97316' // orange
   },
   {
     id: 'liquidity-pools',
@@ -51,7 +53,9 @@ const COMING_SOON_MODULES = [
     title: 'Liquidity Pools',
     tagline: 'YIELD WITH INTENTION',
     description: 'Master Meteora LP strategies. Understand impermanent loss, pick the right pools, and earn yield without getting rekt.',
-    badge: 'COMING Q2 2026'
+    badge: 'Q2 2026',
+    lessonCount: 8,
+    color: '#06b6d4' // cyan
   },
   {
     id: 'perpetual-futures',
@@ -59,7 +63,9 @@ const COMING_SOON_MODULES = [
     title: 'Perpetual Futures',
     tagline: 'LEVERAGE RESPONSIBLY',
     description: 'Advanced leverage trading on Jupiter Perps and beyond. Position sizing, funding rates, liquidation management, and when NOT to use leverage.',
-    badge: 'COMING Q2 2026'
+    badge: 'Q2 2026',
+    lessonCount: 8,
+    color: '#22c55e' // green
   },
   {
     id: 'content-production',
@@ -67,7 +73,9 @@ const COMING_SOON_MODULES = [
     title: 'Content Production',
     tagline: 'BUILD THE NARRATIVE',
     description: 'For memecoin teams and KOLs. Create compelling content, build hype ethically, manage community expectations, and tell stories that spread.',
-    badge: 'COMING Q3 2026'
+    badge: 'Q3 2026',
+    lessonCount: 8,
+    color: '#ec4899' // pink
   },
   {
     id: 'crypto-networking',
@@ -75,7 +83,19 @@ const COMING_SOON_MODULES = [
     title: 'Crypto Networking',
     tagline: 'YOUR NET WORTH IS YOUR NETWORK',
     description: 'Build genuine connections in CT. Find alpha groups, approach KOLs, collaborate on launches, and create relationships that compound.',
-    badge: 'COMING Q3 2026'
+    badge: 'Q3 2026',
+    lessonCount: 8,
+    color: '#8b5cf6' // purple
+  },
+  {
+    id: 'onchain-analytics',
+    icon: '🔍',
+    title: 'On-Chain Analytics',
+    tagline: 'READ THE BLOCKCHAIN',
+    description: 'Decode wallet movements, track smart money, analyze token flows, and use on-chain data to make informed trading decisions.',
+    badge: 'Q3 2026',
+    lessonCount: 8,
+    color: '#3b82f6' // blue
   }
 ]
 
@@ -1262,45 +1282,138 @@ function MasterExamCard() {
   )
 }
 
-// Coming Soon Module Card Component
+// Coming Soon Module Card Component - matches archetype card style
 function ComingSoonModuleCard({ module, isNotified, onToggleNotify }) {
+  const lessonCount = module.lessonCount || 8
+  const moduleColor = module.color || '#8b5cf6'
+
   return (
-    <div className="coming-soon-module-card glass-card">
-      <span className="coming-soon-badge">{module.badge}</span>
-      <span className="coming-soon-icon">{module.icon}</span>
-      <h3 className="coming-soon-title">{module.title}</h3>
-      <p className="coming-soon-tagline">{module.tagline}</p>
-      <p className="coming-soon-desc">{module.description}</p>
+    <div className="coming-soon-module-card">
+      {/* Badges */}
+      <div className="coming-soon-module-badges">
+        <span className="coming-soon-badge-type" style={{ borderColor: `${moduleColor}40`, color: moduleColor }}>
+          Coming Soon
+        </span>
+        <span className="coming-soon-badge-date">{module.badge}</span>
+      </div>
+
+      {/* Icon */}
+      <span className="coming-soon-module-icon">{module.icon}</span>
+
+      {/* Name & Tagline */}
+      <h3 className="coming-soon-module-name">{module.title}</h3>
+      <p className="coming-soon-module-tagline">{module.tagline}</p>
+
+      {/* Description */}
+      <p className="coming-soon-module-desc">{module.description}</p>
+
+      {/* 8 Dots - all hollow for coming soon */}
+      <div className="coming-soon-module-dots">
+        {Array.from({ length: lessonCount }).map((_, index) => (
+          <div
+            key={index}
+            className="module-dot hollow"
+            style={{
+              borderColor: `${moduleColor}60`,
+              borderWidth: '2px',
+              borderStyle: 'solid',
+              background: 'transparent'
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Progress Bar - empty for coming soon */}
+      <div className="coming-soon-module-progress">
+        <div className="coming-soon-progress-track">
+          <div
+            className="coming-soon-progress-fill"
+            style={{ width: '0%', background: moduleColor }}
+          />
+        </div>
+        <span className="coming-soon-progress-label" style={{ color: `${moduleColor}` }}>0%</span>
+      </div>
+
+      {/* Notify Button */}
       <button
         className={`coming-soon-notify-btn ${isNotified ? 'notified' : ''}`}
-        onClick={() => onToggleNotify(module.id)}
+        onClick={(e) => { e.stopPropagation(); onToggleNotify(module.id); }}
+        style={{
+          borderColor: isNotified ? 'rgba(34, 197, 94, 0.3)' : `${moduleColor}40`,
+          color: isNotified ? '#4ade80' : moduleColor,
+          background: isNotified ? 'rgba(34, 197, 94, 0.1)' : `${moduleColor}10`
+        }}
       >
         {isNotified ? (
           <>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M20 6L9 17l-5-5" />
             </svg>
             Notified
           </>
         ) : (
-          'Notify Me'
+          <>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            Notify Me
+          </>
         )}
       </button>
     </div>
   )
 }
 
-// Course Request Card Component
+// Course Request Card Component - matches module card style
 function CourseRequestCard({ onOpenModal }) {
   return (
-    <div className="coming-soon-module-card glass-card request-card" onClick={onOpenModal}>
-      <span className="coming-soon-icon">💡</span>
-      <h3 className="coming-soon-title">Request a Course</h3>
-      <p className="coming-soon-tagline">WHAT DO YOU WANT TO LEARN?</p>
-      <p className="coming-soon-desc">Don't see what you need? Tell us. The most requested topics get built first.</p>
-      <button className="coming-soon-request-btn">
+    <div className="coming-soon-module-card request-card" onClick={onOpenModal}>
+      {/* Badges */}
+      <div className="coming-soon-module-badges">
+        <span className="coming-soon-badge-type request-badge">
+          Community
+        </span>
+      </div>
+
+      {/* Icon */}
+      <span className="coming-soon-module-icon">💡</span>
+
+      {/* Name & Tagline */}
+      <h3 className="coming-soon-module-name">Request a Course</h3>
+      <p className="coming-soon-module-tagline">SHAPE THE CURRICULUM</p>
+
+      {/* Description */}
+      <p className="coming-soon-module-desc">Don't see what you need? Tell us what to build next. Most requested topics get priority.</p>
+
+      {/* 8 Dots - different style for request card */}
+      <div className="coming-soon-module-dots">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <div
+            key={index}
+            className="module-dot hollow"
+            style={{
+              borderColor: 'rgba(139, 92, 246, 0.4)',
+              borderWidth: '2px',
+              borderStyle: 'dashed',
+              background: 'transparent'
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Progress Bar - dashed for request card */}
+      <div className="coming-soon-module-progress">
+        <div className="coming-soon-progress-track request-track">
+          <div className="coming-soon-progress-fill" style={{ width: '0%' }} />
+        </div>
+        <span className="coming-soon-progress-label request-label">???</span>
+      </div>
+
+      {/* Submit Button */}
+      <button className="coming-soon-notify-btn request-btn">
         Submit Request
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M5 12h14M12 5l7 7-7 7" />
         </svg>
       </button>
