@@ -193,34 +193,37 @@ function HeroSection({ onScrollDown, onAnalyze, onStartQuiz, isLoading, progress
   }
 
   return (
-    <section className="hero-section">
+    <section className="hero-section hero-section-v2">
       <div className="hero-content">
         <div className="hero-logo">
           <img src="/hindsightlogo.png" alt="Hindsight" className="hero-logo-img" />
         </div>
 
         <h1 className="hero-headline">
-          Hindsight: The trading improvement system for Solana <span className="text-gradient-purple">degens</span>
+          The trading improvement system for Solana <span className="text-gradient-purple">degens</span>
         </h1>
 
         <p className="hero-subheadline">
           Analyze your trades. Learn from your mistakes. Level up with likeminded traders.
         </p>
 
-        {/* Three Pillars */}
-        <div className="hero-pillars">
-          <span className="hero-pillar">
-            <span className="hero-pillar-icon">🔍</span>
-            <strong>Copilot</strong> — AI wallet analysis
-          </span>
-          <span className="hero-pillar">
-            <span className="hero-pillar-icon">📚</span>
-            <strong>Academy</strong> — 70+ lessons & quizzes
-          </span>
-          <span className="hero-pillar">
-            <span className="hero-pillar-icon">💬</span>
-            <strong>Community</strong> — Token-gated Discord
-          </span>
+        {/* Three Pillars as Cards */}
+        <div className="hero-pillars-v2">
+          <div className="hero-pillar-card hero-pillar-copilot">
+            <span className="hero-pillar-card-icon">🔍</span>
+            <h3 className="hero-pillar-card-title">Copilot</h3>
+            <p className="hero-pillar-card-subtitle">AI wallet analysis</p>
+          </div>
+          <div className="hero-pillar-card hero-pillar-academy">
+            <span className="hero-pillar-card-icon">📚</span>
+            <h3 className="hero-pillar-card-title">Academy</h3>
+            <p className="hero-pillar-card-subtitle">70+ lessons & quizzes</p>
+          </div>
+          <div className="hero-pillar-card hero-pillar-community">
+            <span className="hero-pillar-card-icon">💬</span>
+            <h3 className="hero-pillar-card-title">Community</h3>
+            <p className="hero-pillar-card-subtitle">Token-gated Discord</p>
+          </div>
         </div>
 
         {/* Primary CTA */}
@@ -333,13 +336,6 @@ function CredibilityBar() {
 
 // SECTION 3: The Loop - How It Works
 function TheLoopSection() {
-  const steps = [
-    { icon: '🔍', label: 'ANALYZE', desc: 'Copilot', color: '#8b5cf6' },
-    { icon: '📚', label: 'LEARN', desc: 'Academy', color: '#22c55e' },
-    { icon: '💬', label: 'PRACTICE', desc: 'Community', color: '#06b6d4' },
-    { icon: '📊', label: 'TRACK', desc: 'Journal', color: '#f59e0b' },
-  ]
-
   return (
     <section className="loop-section" id="loop-section">
       <div className="section-container">
@@ -347,25 +343,66 @@ function TheLoopSection() {
           Most traders repeat the same mistakes forever. <span className="text-gradient-purple">Hindsight breaks the cycle.</span>
         </h2>
 
-        <div className="loop-diagram">
-          {steps.map((step, i) => (
-            <div key={i} className="loop-step">
-              <div className="loop-step-circle" style={{ borderColor: step.color }}>
-                <span className="loop-step-icon">{step.icon}</span>
-              </div>
-              <div className="loop-step-label">{step.label}</div>
-              <div className="loop-step-desc">{step.desc}</div>
-              {i < steps.length - 1 && (
-                <svg className="loop-arrow" width="40" height="24" viewBox="0 0 40 24" fill="none">
-                  <path d="M2 12h32M28 6l6 6-6 6" stroke="rgba(139, 92, 246, 0.5)" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              )}
+        {/* 2x2 Grid Layout */}
+        <div className="loop-diagram-v2">
+          {/* Top Row */}
+          <div className="loop-step-v2 loop-step-tl">
+            <div className="loop-step-circle" style={{ borderColor: '#8b5cf6' }}>
+              <span className="loop-step-icon">🔍</span>
             </div>
-          ))}
-          <svg className="loop-return-arrow" width="100%" height="40" viewBox="0 0 800 40" fill="none" preserveAspectRatio="none">
-            <path d="M750 5 C800 5, 800 35, 750 35 L50 35 C0 35, 0 5, 50 5" stroke="rgba(139, 92, 246, 0.3)" strokeWidth="2" fill="none" strokeDasharray="8 4" />
-            <path d="M60 10 L50 5 L60 0" stroke="rgba(139, 92, 246, 0.3)" strokeWidth="2" fill="none" />
-          </svg>
+            <div className="loop-step-label">ANALYZE</div>
+            <div className="loop-step-desc">Copilot</div>
+          </div>
+
+          <div className="loop-arrow-h">
+            <svg width="60" height="24" viewBox="0 0 60 24" fill="none">
+              <path d="M2 12h50M46 6l6 6-6 6" stroke="rgba(139, 92, 246, 0.5)" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+
+          <div className="loop-step-v2 loop-step-tr">
+            <div className="loop-step-circle" style={{ borderColor: '#22c55e' }}>
+              <span className="loop-step-icon">📚</span>
+            </div>
+            <div className="loop-step-label">LEARN</div>
+            <div className="loop-step-desc">Academy</div>
+          </div>
+
+          {/* Vertical Arrows */}
+          <div className="loop-arrow-v loop-arrow-v-left">
+            <svg width="24" height="60" viewBox="0 0 24 60" fill="none">
+              <path d="M12 58V8M6 14l6-6 6 6" stroke="rgba(139, 92, 246, 0.5)" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+
+          <div className="loop-arrow-v loop-arrow-v-right">
+            <svg width="24" height="60" viewBox="0 0 24 60" fill="none">
+              <path d="M12 2v50M6 46l6 6 6-6" stroke="rgba(139, 92, 246, 0.5)" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+
+          {/* Bottom Row */}
+          <div className="loop-step-v2 loop-step-bl">
+            <div className="loop-step-circle" style={{ borderColor: '#f59e0b' }}>
+              <span className="loop-step-icon">📊</span>
+            </div>
+            <div className="loop-step-label">TRACK</div>
+            <div className="loop-step-desc">Journal</div>
+          </div>
+
+          <div className="loop-arrow-h loop-arrow-h-bottom">
+            <svg width="60" height="24" viewBox="0 0 60 24" fill="none">
+              <path d="M58 12H8M14 6l-6 6 6 6" stroke="rgba(139, 92, 246, 0.5)" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+
+          <div className="loop-step-v2 loop-step-br">
+            <div className="loop-step-circle" style={{ borderColor: '#06b6d4' }}>
+              <span className="loop-step-icon">💬</span>
+            </div>
+            <div className="loop-step-label">PRACTICE</div>
+            <div className="loop-step-desc">Community</div>
+          </div>
         </div>
 
         <p className="loop-description">
@@ -374,12 +411,14 @@ function TheLoopSection() {
           The Journal tracks if it's working. Rinse and repeat until profitable.
         </p>
 
-        <Link to="/quiz" className="loop-cta">
-          Enter the loop
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </Link>
+        <div className="loop-cta-wrapper">
+          <Link to="/quiz" className="loop-cta">
+            Enter the loop
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
       </div>
     </section>
   )
@@ -488,12 +527,14 @@ function CopilotSection() {
           </div>
         </div>
 
-        <button onClick={scrollToHero} className="copilot-cta">
-          Analyze any wallet
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </button>
+        <div className="copilot-cta-wrapper">
+          <button onClick={scrollToHero} className="copilot-cta">
+            Analyze any wallet
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
       </div>
     </section>
   )
@@ -555,12 +596,14 @@ function AcademySection() {
           ))}
         </div>
 
-        <Link to="/academy" className="academy-cta">
-          Start learning free
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </Link>
+        <div className="academy-cta-wrapper">
+          <Link to="/academy" className="academy-cta">
+            Start Learning
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
       </div>
     </section>
   )
@@ -575,6 +618,9 @@ function ArchetypesSection() {
     { name: 'Scalper', focus: 'High frequency', color: '#6b7280', emoji: '⚡' },
     { name: 'Loss Averse', focus: 'Capital protection', color: '#ef4444', emoji: '🛡️' },
     { name: 'Technical Analyst', focus: 'Chart mastery', color: '#22c55e', emoji: '📊' },
+    { name: 'Copy Trader', focus: 'Following winners', color: '#06b6d4', emoji: '👀' },
+    { name: 'Impulse Trader', focus: 'Quick decisions', color: '#eab308', emoji: '💥' },
+    { name: 'Contrarian', focus: 'Against the crowd', color: '#ec4899', emoji: '🔄' },
   ]
 
   return (
@@ -583,7 +629,7 @@ function ArchetypesSection() {
         <h2 className="section-headline">What kind of trader are you?</h2>
         <p className="section-subheadline">Take the 60-second quiz. Get a personalized learning path.</p>
 
-        <div className="archetypes-grid">
+        <div className="archetypes-grid archetypes-grid-3x3">
           {archetypes.map((a, i) => (
             <div key={i} className="archetype-preview-card glass-card" style={{ '--archetype-color': a.color }}>
               <span className="archetype-preview-emoji">{a.emoji}</span>
@@ -593,19 +639,19 @@ function ArchetypesSection() {
           ))}
         </div>
 
-        <p className="archetypes-more">...plus 3 more archetypes</p>
-
         <p className="archetypes-description">
           Your archetype isn't a label — it's a starting point. Each type has specific strengths to leverage and blind spots to fix.
           The quiz takes 60 seconds. The insights last forever.
         </p>
 
-        <Link to="/quiz" className="archetypes-cta">
-          Discover your archetype
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </Link>
+        <div className="archetypes-cta-wrapper">
+          <Link to="/quiz" className="archetypes-cta">
+            Discover your archetype
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
       </div>
     </section>
   )
@@ -668,12 +714,14 @@ function CommunitySection({ onOpenPro }) {
           <span>Pro Feature — $SIGHT holders only</span>
         </div>
 
-        <button onClick={onOpenPro} className="community-cta">
-          Learn about Pro
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </button>
+        <div className="community-cta-wrapper">
+          <button onClick={onOpenPro} className="community-cta community-cta-purple">
+            Learn about Pro
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
       </div>
     </section>
   )
@@ -828,7 +876,7 @@ function TestimonialsSection() {
       <div className="section-container">
         <h2 className="section-headline">What traders are saying</h2>
 
-        <div className="testimonials-grid">
+        <div className="testimonials-grid testimonials-grid-2x2">
           {testimonials.map((t, i) => (
             <div key={i} className="testimonial-card glass-card">
               <p className="testimonial-quote">"{t.quote}"</p>

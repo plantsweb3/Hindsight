@@ -21420,3 +21420,306 @@ input, button {
     font-size: 1.5rem;
   }
 }
+
+/* ==============================================
+   LANDING PAGE V2 STYLES
+   ============================================== */
+
+/* Hero V2 - Extra top padding */
+.hero-section-v2 {
+  padding-top: 8rem;
+}
+
+/* Hero Pillar Cards */
+.hero-pillars-v2 {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem auto;
+  flex-wrap: wrap;
+}
+
+.hero-pillar-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem 1.5rem;
+  background: rgba(15, 15, 15, 0.6);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 1rem;
+  backdrop-filter: blur(10px);
+  min-width: 140px;
+  transition: all 0.2s ease;
+}
+
+.hero-pillar-card:hover {
+  transform: translateY(-4px);
+}
+
+.hero-pillar-copilot {
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.hero-pillar-copilot:hover {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+.hero-pillar-academy {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.hero-pillar-academy:hover {
+  border-color: #22c55e;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
+.hero-pillar-community {
+  border-color: rgba(6, 182, 212, 0.4);
+}
+
+.hero-pillar-community:hover {
+  border-color: #06b6d4;
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+}
+
+.hero-pillar-card-icon {
+  font-size: 1.75rem;
+}
+
+.hero-pillar-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f5f5f5;
+  margin: 0;
+}
+
+.hero-pillar-card-subtitle {
+  font-size: 0.75rem;
+  color: rgba(245, 245, 245, 0.6);
+  margin: 0;
+}
+
+/* Loop Section V2 - 2x2 Grid */
+.loop-diagram-v2 {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  grid-template-rows: auto auto auto;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  margin: 3rem auto;
+  max-width: 500px;
+}
+
+.loop-step-v2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.loop-step-v2 .loop-step-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid;
+  background: rgba(15, 15, 15, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.loop-step-v2:hover .loop-step-circle {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px currentColor;
+}
+
+.loop-step-v2 .loop-step-icon {
+  font-size: 2rem;
+}
+
+.loop-step-v2 .loop-step-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(245, 245, 245, 0.9);
+}
+
+.loop-step-v2 .loop-step-desc {
+  font-size: 0.7rem;
+  color: rgba(245, 245, 245, 0.5);
+}
+
+/* Position loop steps in 2x2 grid */
+.loop-step-tl { grid-area: 1 / 1 / 2 / 2; }
+.loop-step-tr { grid-area: 1 / 3 / 2 / 4; }
+.loop-step-bl { grid-area: 3 / 1 / 4 / 2; }
+.loop-step-br { grid-area: 3 / 3 / 4 / 4; }
+
+/* Loop Arrows */
+.loop-arrow-h {
+  grid-area: 1 / 2 / 2 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loop-arrow-h-bottom {
+  grid-area: 3 / 2 / 4 / 3;
+}
+
+.loop-arrow-v {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loop-arrow-v-left {
+  grid-area: 2 / 1 / 3 / 2;
+}
+
+.loop-arrow-v-right {
+  grid-area: 2 / 3 / 3 / 4;
+}
+
+/* Loop CTA Wrapper */
+.loop-cta-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+/* Copilot CTA Wrapper */
+.copilot-cta-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+/* Academy CTA Wrapper */
+.academy-cta-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+/* Archetypes 3x3 Grid */
+.archetypes-grid-3x3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 700px;
+  margin: 0 auto 2rem;
+}
+
+/* Archetypes CTA Wrapper */
+.archetypes-cta-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+/* Community CTA Wrapper */
+.community-cta-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+/* Community Purple CTA Variant */
+.community-cta-purple {
+  border-color: rgba(139, 92, 246, 0.5);
+  color: #a78bfa;
+}
+
+.community-cta-purple:hover {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: #a78bfa;
+}
+
+/* Testimonials 2x2 Grid */
+.testimonials-grid-2x2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* V2 Responsive Styles */
+@media (max-width: 768px) {
+  .hero-section-v2 {
+    padding-top: 6rem;
+  }
+
+  .hero-pillars-v2 {
+    gap: 0.75rem;
+  }
+
+  .hero-pillar-card {
+    min-width: 100px;
+    padding: 1rem;
+  }
+
+  .hero-pillar-card-icon {
+    font-size: 1.5rem;
+  }
+
+  .hero-pillar-card-title {
+    font-size: 0.875rem;
+  }
+
+  .loop-diagram-v2 {
+    gap: 0.25rem;
+  }
+
+  .loop-step-v2 .loop-step-circle {
+    width: 60px;
+    height: 60px;
+  }
+
+  .loop-step-v2 .loop-step-icon {
+    font-size: 1.5rem;
+  }
+
+  .loop-arrow-h svg {
+    width: 40px;
+  }
+
+  .loop-arrow-v svg {
+    height: 40px;
+  }
+
+  .archetypes-grid-3x3 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+
+  .testimonials-grid-2x2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-pillars-v2 {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero-pillar-card {
+    width: 100%;
+    max-width: 200px;
+  }
+
+  .archetypes-grid-3x3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .loop-diagram-v2 {
+    transform: scale(0.85);
+    transform-origin: center;
+  }
+}
