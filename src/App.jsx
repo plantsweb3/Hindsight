@@ -7,6 +7,7 @@ import { AchievementProvider } from './contexts/AchievementContext'
 import { analyzeWallet, analyzeBehavior, isValidSolanaAddress, convertTradesToJournalEntries, createJournalEntriesBatch, getJournalPatterns, getCrossWalletStats } from './services/solana'
 import { ARCHETYPES } from './data/quizData'
 import LandingPage from './components/LandingPage'
+import LandingPageV2 from './components/LandingPageV2'
 import Quiz from './components/Quiz'
 import QuizResult from './components/QuizResult'
 import Results from './components/Results'
@@ -579,9 +580,14 @@ function AppContent() {
     )
   }
 
+  // Check if we're on the new landing page route
+  const isNewLandingPage = location.pathname === '/hindsightlanding'
+
+  const LandingComponent = isNewLandingPage ? LandingPageV2 : LandingPage
+
   return (
     <>
-      <LandingPage
+      <LandingComponent
         onAnalyze={handleAnalyze}
         onStartQuiz={handleStartQuiz}
         onShowAuth={handleShowAuth}
