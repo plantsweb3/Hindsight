@@ -202,6 +202,39 @@ export async function fetchLeaderboard(token = null, limit = 50) {
 // CROSS-DEVICE PROGRESS SYNC
 // ==============================================
 
+const LAST_USER_ID_KEY = 'hindsight_last_user_id'
+
+// Clear all progress-related localStorage keys (for account switching)
+function clearLocalProgress() {
+  const keysToRemove = [
+    'hindsight_academy_progress',
+    'hindsight_academy_stats',
+    'hindsight_achievements',
+    'academy_streak_data',
+    'hindsight_journal_xp',
+    'daily_goal_id',
+    'placementTestCompleted',
+    'placementTestBestScores',
+    'placementTestLatestScores',
+    'placementTestBestQuestionResults',
+    'masterExamBestQuestionResults'
+  ]
+  keysToRemove.forEach(key => localStorage.removeItem(key))
+}
+
+// Check if current user matches stored user, clear data if different
+function handleUserSwitch(userId) {
+  const lastUserId = localStorage.getItem(LAST_USER_ID_KEY)
+
+  if (lastUserId && lastUserId !== String(userId)) {
+    // Different user - clear old progress data
+    clearLocalProgress()
+  }
+
+  // Store current user ID
+  localStorage.setItem(LAST_USER_ID_KEY, String(userId))
+}
+
 // Gather all localStorage progress data
 function gatherLocalProgress() {
   const progress = JSON.parse(localStorage.getItem('hindsight_academy_progress') || '{}')
@@ -295,8 +328,13 @@ export async function syncProgressToServer(token) {
 
 // Fetch progress from server and merge with localStorage
 // Server data wins for most fields, but we merge arrays/objects intelligently
-export async function fetchAndMergeProgress(token) {
+export async function fetchAndMergeProgress(token, userId) {
   if (!token) return null
+
+  // Handle user switching - clear stale data from previous user
+  if (userId) {
+    handleUserSwitch(userId)
+  }
 
   try {
     const response = await fetch('/api/academy/sync-progress', {
@@ -310,9 +348,9 @@ export async function fetchAndMergeProgress(token) {
     const serverData = await response.json()
 
     if (!serverData.hasData) {
-      // No server data - sync current local data to server
-      await syncProgressToServer(token)
-      return { merged: false, source: 'local' }
+      // No server data - this is a fresh account, start clean
+      // Don't sync local data (could be from a previous user)
+      return { merged: false, source: 'fresh' }
     }
 
     // Get local data for merging

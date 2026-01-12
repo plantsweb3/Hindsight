@@ -1302,7 +1302,7 @@ export default function AcademyDashboard() {
       // Cross-device progress sync: Fetch server progress and merge with localStorage
       if (token) {
         try {
-          await fetchAndMergeProgress(token)
+          await fetchAndMergeProgress(token, user?.id)
         } catch (err) {
           console.warn('Failed to merge progress:', err)
         }
