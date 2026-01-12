@@ -2582,4 +2582,44 @@ export async function getUserProgress(userId) {
   }
 }
 
+// Delete user and all associated data
+export async function deleteUser(userId) {
+  // Delete from all tables that reference this user
+  // Order matters due to foreign key constraints (delete children first)
+  const tablesToDelete = [
+    'user_progress_sync',
+    'user_xp_progress',
+    'user_achievements',
+    'quiz_attempts',
+    'quiz_best_scores',
+    'module_completions',
+    'user_academy_progress',
+    'journal_entries',
+    'analyses',
+    'saved_wallets',
+    'users'  // Delete user last
+  ]
+
+  for (const table of tablesToDelete) {
+    try {
+      if (table === 'users') {
+        await getDb().execute({
+          sql: `DELETE FROM ${table} WHERE id = ?`,
+          args: [userId],
+        })
+      } else {
+        await getDb().execute({
+          sql: `DELETE FROM ${table} WHERE user_id = ?`,
+          args: [userId],
+        })
+      }
+    } catch (err) {
+      // Table might not exist or no matching rows - continue
+      console.log(`[DB] deleteUser: Could not delete from ${table}:`, err.message)
+    }
+  }
+
+  return { success: true }
+}
+
 export default getDb

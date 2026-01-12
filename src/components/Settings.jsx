@@ -99,8 +99,75 @@ function SettingsHeader({ user, onNavigate, onLogout }) {
   )
 }
 
+// Delete Account Confirmation Modal
+function DeleteAccountModal({ isOpen, onClose, onConfirm, isDeleting }) {
+  const [confirmText, setConfirmText] = useState('')
+
+  if (!isOpen) return null
+
+  const canDelete = confirmText === 'DELETE'
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content delete-account-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="delete-account-icon">⚠️</div>
+        <h3 className="delete-account-title">Delete Account</h3>
+        <p className="delete-account-warning">
+          This action is <strong>permanent</strong> and cannot be undone. All your data will be deleted including:
+        </p>
+        <ul className="delete-account-list">
+          <li>Your trading history and analysis</li>
+          <li>Journal entries</li>
+          <li>Academy progress and XP</li>
+          <li>Saved wallets</li>
+          <li>Achievements</li>
+        </ul>
+        <p className="delete-account-confirm-text">
+          Type <strong>DELETE</strong> to confirm:
+        </p>
+        <input
+          type="text"
+          value={confirmText}
+          onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
+          placeholder="Type DELETE"
+          className="delete-account-input"
+          autoComplete="off"
+        />
+        <div className="delete-account-actions">
+          <button className="settings-btn" onClick={onClose} disabled={isDeleting}>
+            Cancel
+          </button>
+          <button
+            className="settings-btn danger"
+            onClick={onConfirm}
+            disabled={!canDelete || isDeleting}
+          >
+            {isDeleting ? 'Deleting...' : 'Delete My Account'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Account Section
-function AccountSection({ user, onLogout }) {
+function AccountSection({ user, onLogout, onDeleteAccount }) {
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true)
+    setError('')
+    try {
+      await onDeleteAccount()
+      // User will be logged out and redirected by the parent
+    } catch (err) {
+      setError(err.message || 'Failed to delete account')
+      setIsDeleting(false)
+    }
+  }
+
   return (
     <section className="settings-section">
       <h2 className="settings-section-title">Account</h2>
@@ -125,7 +192,30 @@ function AccountSection({ user, onLogout }) {
             Logout
           </button>
         </div>
+        {error && <p className="settings-error">{error}</p>}
+        <div className="settings-danger-zone">
+          <h4 className="danger-zone-title">Danger Zone</h4>
+          <p className="danger-zone-description">
+            Permanently delete your account and all associated data.
+          </p>
+          <button className="settings-btn danger-outline" onClick={() => setShowDeleteModal(true)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              <line x1="10" y1="11" x2="10" y2="17" />
+              <line x1="14" y1="11" x2="14" y2="17" />
+            </svg>
+            Delete Account
+          </button>
+        </div>
       </div>
+
+      <DeleteAccountModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteAccount}
+        isDeleting={isDeleting}
+      />
     </section>
   )
 }
@@ -468,10 +558,15 @@ function HelpDocsSection() {
 
 // Main Settings Component
 export default function Settings({ onNavigate, onRetakeQuiz, onOpenPro }) {
-  const { user, logout, addWallet, removeWallet, updateWalletLabel } = useAuth()
+  const { user, logout, deleteAccount, addWallet, removeWallet, updateWalletLabel } = useAuth()
 
   const handleLogout = () => {
     logout()
+    onNavigate('landing')
+  }
+
+  const handleDeleteAccount = async () => {
+    await deleteAccount()
     onNavigate('landing')
   }
 
@@ -499,7 +594,7 @@ export default function Settings({ onNavigate, onRetakeQuiz, onOpenPro }) {
       <main className="settings-main">
         <h1 className="settings-title">Settings</h1>
 
-        <AccountSection user={user} onLogout={handleLogout} />
+        <AccountSection user={user} onLogout={handleLogout} onDeleteAccount={handleDeleteAccount} />
         <SavedWalletsSection
           wallets={user?.savedWallets || []}
           onAdd={addWallet}

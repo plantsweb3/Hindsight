@@ -16,6 +16,7 @@ import {
   canAddWallet,
   updateProStatus,
   checkSightBalance,
+  deleteUser,
   FREE_TIER_LIMITS,
   WALLET_LABELS,
   initDb,
@@ -348,6 +349,25 @@ export default async function handler(req, res) {
       }))
 
       return json(res, parsed)
+    }
+
+    // DELETE /api/auth/delete-account - Permanently delete user account
+    if (route === 'delete-account' && req.method === 'DELETE') {
+      const decoded = authenticateRequest(req)
+      if (!decoded) {
+        return error(res, 'Authentication required', 401)
+      }
+
+      console.log('[API] delete-account: Deleting user', decoded.id)
+
+      try {
+        await deleteUser(decoded.id)
+        console.log('[API] delete-account: User deleted successfully')
+        return json(res, { success: true })
+      } catch (err) {
+        console.error('[API] delete-account: Error deleting user', err)
+        return error(res, 'Failed to delete account', 500)
+      }
     }
 
     // POST /api/auth/verify-sight - Verify $SIGHT holdings and grant Pro

@@ -278,6 +278,32 @@ export function AuthProvider({ children }) {
     return data.wallets
   }
 
+  // Delete user account permanently
+  const deleteAccount = async () => {
+    if (!token) throw new Error('Not authenticated')
+
+    const res = await fetch(`${API_URL}/delete-account`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to delete account')
+    }
+
+    // Clear local storage and state
+    localStorage.removeItem('hindsight_token')
+    localStorage.removeItem('hindsight_last_user_id')
+    setToken(null)
+    setUser(null)
+
+    return data
+  }
+
   const value = {
     user,
     token,
@@ -286,6 +312,7 @@ export function AuthProvider({ children }) {
     signup,
     login,
     logout,
+    deleteAccount,
     saveArchetype,
     saveAnalysis,
     getAnalyses,

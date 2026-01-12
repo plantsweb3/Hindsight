@@ -7267,6 +7267,140 @@ input, button {
   border-color: rgba(239, 68, 68, 0.5);
 }
 
+.settings-btn.danger-outline {
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+.settings-btn.danger-outline:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+/* Danger Zone */
+.settings-danger-zone {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.settings-danger-zone h4 {
+  color: #f87171;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.settings-danger-zone p {
+  color: #71717a;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+/* Delete Account Modal */
+.delete-account-modal {
+  max-width: 400px;
+  text-align: center;
+}
+
+.delete-account-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.delete-account-title {
+  color: #f87171;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.delete-account-warning {
+  color: #a1a1aa;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.delete-account-confirm-section {
+  margin-bottom: 1.5rem;
+}
+
+.delete-account-confirm-section label {
+  display: block;
+  color: #71717a;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.delete-account-confirm-section code {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.delete-account-confirm-section input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  text-align: center;
+  letter-spacing: 0.1em;
+}
+
+.delete-account-confirm-section input:focus {
+  outline: none;
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.delete-account-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.delete-account-actions button {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-cancel-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #a1a1aa;
+}
+
+.delete-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.delete-confirm-btn {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+.delete-confirm-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+.delete-confirm-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* Saved Wallets */
 .wallet-counter {
   font-size: 0.85rem;
