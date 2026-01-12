@@ -2488,7 +2488,7 @@ export default function AcademyDashboard() {
                 {/* Section 1: Compact Hero */}
                 <ArchetypeHeroCompact
                   archetype={userArchetypeId}
-                  onRetakeQuiz={() => navigate('/')}
+                  onRetakeQuiz={() => navigate('/quiz')}
                 />
 
                 {/* Section 2: Your Archetype (Green Border) */}
@@ -2577,7 +2577,7 @@ export default function AcademyDashboard() {
                       }
                     </p>
                     {isAuthenticated ? (
-                      <Link to="/" className="archetype-cta-btn">Take the Quiz</Link>
+                      <Link to="/quiz" className="archetype-cta-btn">Take the Quiz</Link>
                     ) : (
                       <button onClick={() => openAuthModal('signup')} className="archetype-cta-btn">
                         Sign In
