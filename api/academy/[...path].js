@@ -618,6 +618,7 @@ export default async function handler(req, res) {
 
     // POST /api/academy/course-requests - Submit a new course request
     if (method === 'POST' && segments.length === 1 && segments[0] === 'course-requests') {
+      console.log('[Academy] Creating course request, body:', req.body)
       const user = await authenticateUser(req)
       const userId = user ? user.id : null
 
@@ -635,7 +636,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Reason must be less than 1000 characters' })
       }
 
-      const validLevels = ['beginner', 'intermediate', 'advanced', 'all']
+      const validLevels = ['beginner', 'basics', 'intermediate', 'advanced', 'all']
       if (experienceLevel && !validLevels.includes(experienceLevel)) {
         return res.status(400).json({ error: 'Invalid experience level' })
       }
