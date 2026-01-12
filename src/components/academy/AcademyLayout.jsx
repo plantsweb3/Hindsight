@@ -67,10 +67,6 @@ export default function AcademyLayout() {
     setShowAuthModal(true)
   }
 
-  useEffect(() => {
-    checkOnboardingStatus()
-  }, [isAuthenticated, token])
-
   const checkOnboardingStatus = async () => {
     // First check localStorage (works for both logged in and guest users)
     const localData = localStorage.getItem('academy_onboarding')
@@ -114,6 +110,10 @@ export default function AcademyLayout() {
     // Not onboarded
     setIsOnboarded(false)
   }
+
+  useEffect(() => {
+    checkOnboardingStatus()
+  }, [isAuthenticated, token])
 
   const handleOnboardingComplete = (startSection) => {
     setOnboardingData({

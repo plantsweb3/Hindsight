@@ -295,9 +295,24 @@ export function AuthProvider({ children }) {
       throw new Error(data.error || 'Failed to delete account')
     }
 
-    // Clear local storage and state
+    // Clear all local storage and state
     localStorage.removeItem('hindsight_token')
     localStorage.removeItem('hindsight_last_user_id')
+    // Clear academy/quiz progress to prevent new account inheriting data
+    localStorage.removeItem('hindsight_academy_progress')
+    localStorage.removeItem('hindsight_academy_stats')
+    localStorage.removeItem('hindsight_achievements')
+    localStorage.removeItem('academy_streak_data')
+    localStorage.removeItem('hindsight_journal_xp')
+    localStorage.removeItem('daily_goal_id')
+    localStorage.removeItem('placementTestCompleted')
+    localStorage.removeItem('placementTestBestScores')
+    localStorage.removeItem('placementTestLatestScores')
+    localStorage.removeItem('placementTestBestQuestionResults')
+    localStorage.removeItem('masterExamBestQuestionResults')
+    localStorage.removeItem('academy_onboarding')
+    localStorage.removeItem('pendingQuizResults')
+    localStorage.removeItem('pendingWalletAnalysis')
     setToken(null)
     setUser(null)
 
