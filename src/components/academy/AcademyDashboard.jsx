@@ -2359,18 +2359,28 @@ export default function AcademyDashboard() {
         {/* Trading 101 Tab */}
         {activeTab === 'trading-101' && (
           <>
-            {/* Trading 101 Header with Placement Test Link */}
-            <div className="trading-101-header">
-              <div className="trading-101-header-content">
-                <h2 className="trading-101-title">Trading 101</h2>
-                <p className="trading-101-subtitle">Structured path from beginner to pro</p>
+            {/* Trading 101 Hero Card */}
+            <div className="trading-101-hero-card">
+              <span className="trading-101-hero-icon">📚</span>
+              <div className="trading-101-hero-info">
+                <div className="trading-101-hero-badges">
+                  <span className="trading-101-hero-badge">Core Curriculum</span>
+                </div>
+                <h2 className="trading-101-hero-title">Trading 101</h2>
+                <p className="trading-101-hero-tagline">FOUNDATIONAL KNOWLEDGE</p>
+                <p className="trading-101-hero-desc">
+                  Master the fundamentals of memecoin trading — from wallets to entries to risk management.
+                </p>
+                <button
+                  className="trading-101-hero-btn"
+                  onClick={handlePlacementTest}
+                >
+                  Take Placement Test
+                </button>
+                <p className="trading-101-hero-subtext">
+                  Test out of lessons you already know. Retake anytime — but completing individual lesson quizzes earns more XP.
+                </p>
               </div>
-              <button
-                className="placement-test-link"
-                onClick={handlePlacementTest}
-              >
-                Test out of levels →
-              </button>
             </div>
 
             {/* Module Grid - PRIMARY CONTENT */}
