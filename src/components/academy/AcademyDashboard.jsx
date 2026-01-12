@@ -1718,14 +1718,19 @@ function ComingSoonTabContent({ token }) {
 
   return (
     <div className="coming-soon-tab">
-      {/* Hero Section */}
-      <div className="coming-soon-hero">
+      {/* Hero Card - matches archetype hero compact styling */}
+      <div className="coming-soon-hero-card">
         <span className="coming-soon-hero-icon">🔭</span>
-        <h2 className="coming-soon-hero-title">Beyond the Trenches</h2>
-        <p className="coming-soon-hero-subtitle">Advanced modules for traders ready to level up</p>
-        <p className="coming-soon-hero-desc">
-          We're building specialized courses for traders who want to go deeper. These modules cover skills beyond basic trading - from launching your own projects to building your network in crypto.
-        </p>
+        <div className="coming-soon-hero-info">
+          <div className="coming-soon-hero-badges">
+            <span className="coming-soon-hero-badge">Advanced Modules</span>
+          </div>
+          <h2 className="coming-soon-hero-title">Beyond the Trenches</h2>
+          <p className="coming-soon-hero-tagline">LEVEL UP YOUR TRADING</p>
+          <p className="coming-soon-hero-desc">
+            Specialized courses for traders ready to go deeper. Master skills beyond basic trading - from launching your own projects to building your network in crypto.
+          </p>
+        </div>
       </div>
 
       {/* Module Grid */}
