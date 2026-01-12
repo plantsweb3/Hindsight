@@ -1496,7 +1496,7 @@ function ComingSoonPopup({ module, onClose }) {
 
         <div className="coming-soon-popup-actions">
           <a
-            href="https://discord.gg/CNNpe3vyvv"
+            href="https://discord.gg/fQjx6NBHTz"
             target="_blank"
             rel="noopener noreferrer"
             className="coming-soon-popup-btn primary"
@@ -1789,7 +1789,7 @@ function ComingSoonTabContent({ token }) {
       <div className="coming-soon-footer-cta">
         <p>Want to help shape these courses? Join our Discord.</p>
         <a
-          href="https://discord.gg/CNNpe3vyvv"
+          href="https://discord.gg/fQjx6NBHTz"
           target="_blank"
           rel="noopener noreferrer"
           className="coming-soon-discord-btn"
