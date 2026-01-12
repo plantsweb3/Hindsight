@@ -25,10 +25,18 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  overflow-x: hidden;
+  /* Prevent horizontal scroll on in-app browsers */
+  max-width: 100vw;
+  /* Safe area insets for notched phones */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 #root {
   min-height: 100vh;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 input, button {
@@ -1663,6 +1671,107 @@ input, button {
 
   .hero-learn-more {
     margin-top: 2rem;
+  }
+}
+
+/* ============================================
+   ULTRA-SMALL SCREENS (In-app browsers, small phones)
+   Telegram, Phantom, MetaMask, Trust Wallet browsers
+   ============================================ */
+@media (max-width: 480px) {
+  .hero-section {
+    padding: 80px 1rem 2rem;
+  }
+
+  .hero-content {
+    max-width: 100%;
+    padding: 0 0.5rem;
+  }
+
+  .hero-headline {
+    font-size: clamp(1.75rem, 8vw, 2.5rem);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    padding: 0 0.25rem;
+  }
+
+  .hero-subheadline {
+    font-size: clamp(0.9rem, 4vw, 1.1rem);
+    padding: 0 0.5rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .hero-wallet-form {
+    width: 100%;
+    padding: 0;
+  }
+
+  .hero-input-wrapper {
+    width: 100%;
+  }
+
+  .hero-wallet-input {
+    font-size: 0.85rem;
+    padding: 0.875rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .hero-analyze-btn {
+    font-size: 0.9rem;
+    padding: 0.875rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .hero-analyze-btn .spinner {
+    flex-shrink: 0;
+  }
+}
+
+/* Extra small screens (320px and below) */
+@media (max-width: 360px) {
+  .hero-section {
+    padding: 70px 0.75rem 1.5rem;
+  }
+
+  .hero-content {
+    padding: 0 0.25rem;
+  }
+
+  .hero-logo-img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .hero-headline {
+    font-size: clamp(1.5rem, 7vw, 2rem);
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+
+  .hero-subheadline {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-wallet-input {
+    font-size: 0.8rem;
+    padding: 0.75rem;
+  }
+
+  .hero-analyze-btn {
+    font-size: 0.85rem;
+    padding: 0.75rem;
+  }
+
+  .hero-learn-more {
+    font-size: 0.9rem;
   }
 }
 
