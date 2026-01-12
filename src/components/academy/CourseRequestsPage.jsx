@@ -25,9 +25,12 @@ export default function CourseRequestsPage() {
     setIsLoading(true)
     try {
       const res = await fetch('/api/academy/course-requests/all')
+      const data = await res.json()
+      console.log('Course requests response:', data)
       if (res.ok) {
-        const data = await res.json()
         setRequests(data.requests || [])
+      } else {
+        console.error('API error:', data)
       }
     } catch (err) {
       console.error('Failed to fetch requests:', err)

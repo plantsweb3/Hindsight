@@ -676,8 +676,10 @@ export default async function handler(req, res) {
 
     // GET /api/academy/course-requests/all - Get all course requests
     if (method === 'GET' && segments.length === 2 && segments[0] === 'course-requests' && segments[1] === 'all') {
+      console.log('[Academy] Fetching all course requests')
       try {
         const requests = await getAllCourseRequests()
+        console.log('[Academy] Found', requests.length, 'course requests')
         return res.status(200).json({ requests })
       } catch (err) {
         console.error('Get all course requests error:', err)
