@@ -19326,25 +19326,59 @@ input, button {
   transform: translateY(-4px);
 }
 
-/* Request card special styles */
+/* Request card special styles - Master Exam style in cyan */
 .coming-soon-module-card.request-card {
   cursor: pointer;
-  border-style: dashed;
-  border-color: rgba(139, 92, 246, 0.3);
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(59, 130, 246, 0.05));
+  background: rgba(6, 182, 212, 0.03);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.15),
+              0 0 40px rgba(6, 182, 212, 0.1);
+  overflow: hidden;
 }
 
 .coming-soon-module-card.request-card:hover {
-  border-color: rgba(139, 92, 246, 0.5);
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(59, 130, 246, 0.08));
+  border-color: rgba(6, 182, 212, 0.5);
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.25),
+              0 0 60px rgba(6, 182, 212, 0.15);
 }
 
-/* Badges Row */
+/* Request card glow background */
+.request-card-glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg,
+    rgba(6, 182, 212, 0.08) 0%,
+    rgba(34, 211, 238, 0.05) 50%,
+    rgba(6, 182, 212, 0.08) 100%);
+  pointer-events: none;
+}
+
+/* Request card icon with cyan glow */
+.request-card .coming-soon-module-icon {
+  filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.6));
+}
+
+/* Request card title in cyan gradient */
+.request-card .coming-soon-module-name {
+  background: linear-gradient(135deg, #22d3ee, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Request card tagline in lighter cyan */
+.request-card .coming-soon-module-tagline {
+  color: #67e8f9;
+}
+
+/* Badges Row - positioned top-right like archetype cards */
 .coming-soon-module-badges {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
 }
 
 .coming-soon-badge-type {
@@ -19358,9 +19392,9 @@ input, button {
 }
 
 .coming-soon-badge-type.request-badge {
-  background: rgba(139, 92, 246, 0.15);
-  border-color: rgba(139, 92, 246, 0.4);
-  color: #a78bfa;
+  background: rgba(6, 182, 212, 0.3);
+  border-color: rgba(6, 182, 212, 0.5);
+  color: #22d3ee;
 }
 
 .coming-soon-badge-date {
@@ -19439,8 +19473,8 @@ input, button {
 .coming-soon-progress-track.request-track {
   background: repeating-linear-gradient(
     90deg,
-    rgba(139, 92, 246, 0.2) 0px,
-    rgba(139, 92, 246, 0.2) 4px,
+    rgba(6, 182, 212, 0.3) 0px,
+    rgba(6, 182, 212, 0.3) 4px,
     transparent 4px,
     transparent 8px
   );
@@ -19460,7 +19494,7 @@ input, button {
 }
 
 .coming-soon-progress-label.request-label {
-  color: #a78bfa;
+  color: #22d3ee;
 }
 
 /* Notify Button - small like archetype card elements */
@@ -19491,9 +19525,9 @@ input, button {
 }
 
 .coming-soon-notify-btn.request-btn {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.15));
-  border-color: rgba(139, 92, 246, 0.4);
-  color: #a78bfa;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(34, 211, 238, 0.2));
+  border-color: rgba(6, 182, 212, 0.5);
+  color: #22d3ee;
 }
 
 /* Course Request Modal */

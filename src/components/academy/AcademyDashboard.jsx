@@ -1413,19 +1413,22 @@ function ComingSoonModuleCard({ module, isNotified, onToggleNotify }) {
   )
 }
 
-// Course Request Card Component - matches module card style
+// Course Request Card Component - Master Exam style in cyan
 function CourseRequestCard({ onOpenModal }) {
   return (
     <div className="coming-soon-module-card request-card" onClick={onOpenModal}>
-      {/* Badges */}
+      {/* Cyan glow background */}
+      <div className="request-card-glow" />
+
+      {/* Badge */}
       <div className="coming-soon-module-badges">
         <span className="coming-soon-badge-type request-badge">
-          Community
+          Suggest
         </span>
       </div>
 
-      {/* Icon */}
-      <span className="coming-soon-module-icon">💡</span>
+      {/* Icon with bounce animation */}
+      <span className="coming-soon-module-icon animate-bounce-subtle">💡</span>
 
       {/* Name & Tagline */}
       <h3 className="coming-soon-module-name">Request a Course</h3>
@@ -1434,14 +1437,14 @@ function CourseRequestCard({ onOpenModal }) {
       {/* Description */}
       <p className="coming-soon-module-desc">Tell us what to build next.</p>
 
-      {/* 8 Dots - different style for request card */}
+      {/* 8 Dots - cyan style for request card */}
       <div className="coming-soon-module-dots">
         {Array.from({ length: 8 }).map((_, index) => (
           <div
             key={index}
             className="module-dot hollow"
             style={{
-              borderColor: 'rgba(139, 92, 246, 0.4)',
+              borderColor: 'rgba(6, 182, 212, 0.5)',
               borderWidth: '2px',
               borderStyle: 'dashed',
               background: 'transparent'
@@ -1450,7 +1453,7 @@ function CourseRequestCard({ onOpenModal }) {
         ))}
       </div>
 
-      {/* Progress Bar - dashed for request card */}
+      {/* Progress Bar - dashed cyan */}
       <div className="coming-soon-module-progress">
         <div className="coming-soon-progress-track request-track">
           <div className="coming-soon-progress-fill" style={{ width: '0%' }} />
