@@ -322,7 +322,7 @@ function TheLoopSection() {
           {/* Top Row */}
           <div className="loop-step-v2 loop-step-tl">
             <div className="loop-step-circle" style={{ borderColor: '#8b5cf6' }}>
-              <span className="loop-step-icon">🔍</span>
+              <span className="loop-step-icon">👁️</span>
             </div>
             <div className="loop-step-label">ANALYZE</div>
             <div className="loop-step-desc">Copilot</div>
@@ -371,10 +371,10 @@ function TheLoopSection() {
           </div>
 
           <div className="loop-step-v2 loop-step-br">
-            <div className="loop-step-circle" style={{ borderColor: '#06b6d4' }}>
-              <span className="loop-step-icon">💬</span>
+            <div className="loop-step-circle" style={{ borderColor: '#f97316' }}>
+              <span className="loop-step-icon">⚔️</span>
             </div>
-            <div className="loop-step-label">PRACTICE</div>
+            <div className="loop-step-label">EXECUTE</div>
             <div className="loop-step-desc">Community</div>
           </div>
         </div>
