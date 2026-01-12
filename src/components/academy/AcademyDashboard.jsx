@@ -42,7 +42,7 @@ const COMING_SOON_MODULES = [
     icon: '🏴‍☠️',
     title: 'Community Takeovers',
     tagline: 'FROM LAUNCH TO GRADUATION',
-    description: 'Lead a memecoin community from day one. Learn coordination, narrative building, and how to take a token from pump.fun to sustained success.',
+    description: 'Lead a memecoin community from launch to graduation.',
     badge: 'Q2 2026',
     lessonCount: 8,
     color: '#f97316' // orange
@@ -52,7 +52,7 @@ const COMING_SOON_MODULES = [
     icon: '💧',
     title: 'Liquidity Pools',
     tagline: 'YIELD WITH INTENTION',
-    description: 'Master Meteora LP strategies. Understand impermanent loss, pick the right pools, and earn yield without getting rekt.',
+    description: 'Master Meteora LP strategies and earn yield without getting rekt.',
     badge: 'Q2 2026',
     lessonCount: 8,
     color: '#06b6d4' // cyan
@@ -62,7 +62,7 @@ const COMING_SOON_MODULES = [
     icon: '📈',
     title: 'Perpetual Futures',
     tagline: 'LEVERAGE RESPONSIBLY',
-    description: 'Advanced leverage trading on Jupiter Perps and beyond. Position sizing, funding rates, liquidation management, and when NOT to use leverage.',
+    description: 'Learn leverage on Jupiter Perps without getting liquidated.',
     badge: 'Q2 2026',
     lessonCount: 8,
     color: '#22c55e' // green
@@ -72,7 +72,7 @@ const COMING_SOON_MODULES = [
     icon: '🎬',
     title: 'Content Production',
     tagline: 'BUILD THE NARRATIVE',
-    description: 'For memecoin teams and KOLs. Create compelling content, build hype ethically, manage community expectations, and tell stories that spread.',
+    description: 'Create compelling content and tell stories that spread.',
     badge: 'Q3 2026',
     lessonCount: 8,
     color: '#ec4899' // pink
@@ -82,7 +82,7 @@ const COMING_SOON_MODULES = [
     icon: '🤝',
     title: 'Crypto Networking',
     tagline: 'YOUR NET WORTH IS YOUR NETWORK',
-    description: 'Build genuine connections in CT. Find alpha groups, approach KOLs, collaborate on launches, and create relationships that compound.',
+    description: 'Build genuine CT connections that compound over time.',
     badge: 'Q3 2026',
     lessonCount: 8,
     color: '#8b5cf6' // purple
@@ -1432,7 +1432,7 @@ function CourseRequestCard({ onOpenModal }) {
       <p className="coming-soon-module-tagline">SHAPE THE CURRICULUM</p>
 
       {/* Description */}
-      <p className="coming-soon-module-desc">Don't see what you need? Tell us what to build next. Most requested topics get priority.</p>
+      <p className="coming-soon-module-desc">Tell us what to build next.</p>
 
       {/* 8 Dots - different style for request card */}
       <div className="coming-soon-module-dots">
