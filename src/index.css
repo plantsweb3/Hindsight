@@ -19295,11 +19295,17 @@ input, button {
   margin-bottom: 2rem;
 }
 
-/* Coming Soon Module Grid - 2 columns */
+/* Coming Soon Module Grid - 3 columns like archetype grid */
 .coming-soon-modules-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .coming-soon-modules-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* Coming Soon Module Card - matches archetype card dimensions exactly */
