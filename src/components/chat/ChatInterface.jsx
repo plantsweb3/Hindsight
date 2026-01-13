@@ -446,7 +446,7 @@ export default function ChatInterface() {
       {/* Message limit indicator */}
       {chatStatus && !chatStatus.isPro && (
         <div className="coach-limit-indicator">
-          {chatStatus.messagesRemaining}/{chatStatus.dailyLimit}
+          {chatStatus.messagesRemaining ?? 5}/{chatStatus.dailyLimit ?? 5}
         </div>
       )}
 
