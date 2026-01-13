@@ -1248,10 +1248,7 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
               <a href="/coach" className="ai-coach-card">
                 <div className="ai-coach-card-header">
                   <div className="ai-coach-badge">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
+                    <img src="/hindsightlogo.png" alt="" className="ai-coach-badge-logo" />
                     <span>HINDSIGHT COACH</span>
                   </div>
                 </div>

@@ -22890,8 +22890,10 @@ input, button {
   letter-spacing: 0.05em;
 }
 
-.ai-coach-badge svg {
-  opacity: 0.9;
+.ai-coach-badge-logo {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
 }
 
 .ai-coach-card-text {
