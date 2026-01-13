@@ -10918,6 +10918,27 @@ input, button {
   -webkit-backdrop-filter: blur(8px);
 }
 
+/* Master Exam Card - Special red "important folder" treatment */
+.academy-tab-content .master-exam-card {
+  background: rgba(60, 20, 25, 0.9);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.12),
+              inset 0 0 40px rgba(239, 68, 68, 0.05);
+}
+
+.academy-tab-content .master-exam-card:hover {
+  background: rgba(75, 25, 30, 0.95);
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.2),
+              inset 0 0 40px rgba(239, 68, 68, 0.08);
+}
+
+.academy-tab-content .master-exam-card.locked {
+  background: rgba(45, 18, 22, 0.85);
+}
+
 /* Archetype Cards */
 .archetype-grid {
   margin-top: 1rem;
