@@ -2464,7 +2464,7 @@ export default function AcademyDashboard() {
 
       {/* Tab Navigation - File Folder Style */}
       <div
-        className="academy-tabs-container"
+        className={`academy-tabs-container ${activeTab === 'trading-101' ? 'first-tab-active' : ''} ${activeTab === 'coming-soon' ? 'last-tab-active' : ''}`}
         style={{
           '--folder-color': getTabColor(activeTab, userArchetypeId),
           '--folder-color-bg': `color-mix(in srgb, ${getTabColor(activeTab, userArchetypeId)} 12%, rgb(24, 24, 28))`,

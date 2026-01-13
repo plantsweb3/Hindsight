@@ -10862,6 +10862,7 @@ input, button {
 }
 
 /* Left inverse rounded corner - where content top meets active tab left side */
+/* Only show when active tab is NOT the first tab */
 .academy-tab.active::before {
   content: '';
   position: absolute;
@@ -10872,13 +10873,18 @@ input, button {
   background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
   z-index: 11;
   border-bottom-right-radius: var(--corner-radius);
-  /* Border on the curved edge */
   border-right: 1px solid var(--folder-color-border);
   border-bottom: 1px solid var(--folder-color-border);
   box-sizing: border-box;
 }
 
+/* Hide left inverse corner when first tab is active - edge flows straight down */
+.academy-tab.active:first-child::before {
+  display: none;
+}
+
 /* Right inverse rounded corner - where content top meets active tab right side */
+/* Only show when active tab is NOT the last tab */
 .academy-tab.active::after {
   content: '';
   position: absolute;
@@ -10889,10 +10895,14 @@ input, button {
   background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
   z-index: 11;
   border-bottom-left-radius: var(--corner-radius);
-  /* Border on the curved edge */
   border-left: 1px solid var(--folder-color-border);
   border-bottom: 1px solid var(--folder-color-border);
   box-sizing: border-box;
+}
+
+/* Hide right inverse corner when last tab is active - edge flows straight down */
+.academy-tab.active:last-child::after {
+  display: none;
 }
 
 /* Tab Content - File Folder Interior (connected to active tab) */
@@ -10908,7 +10918,7 @@ input, button {
   z-index: 5;
 }
 
-/* Top-left inverse corner border (where content meets first inactive tab) */
+/* Top-left inverse corner - only visible when first tab is NOT active */
 .academy-tab-content::before {
   content: '';
   position: absolute;
@@ -10924,7 +10934,12 @@ input, button {
   box-sizing: border-box;
 }
 
-/* Top-right inverse corner border (where content meets last inactive tab) */
+/* Hide top-left corner when first tab is active */
+.academy-tabs-container.first-tab-active .academy-tab-content::before {
+  display: none;
+}
+
+/* Top-right inverse corner - only visible when last tab is NOT active */
 .academy-tab-content::after {
   content: '';
   position: absolute;
@@ -10938,6 +10953,11 @@ input, button {
   border-top: 1px solid var(--folder-color-border);
   border-right: 1px solid var(--folder-color-border);
   box-sizing: border-box;
+}
+
+/* Hide top-right corner when last tab is active */
+.academy-tabs-container.last-tab-active .academy-tab-content::after {
+  display: none;
 }
 
 @keyframes folderOpen {
