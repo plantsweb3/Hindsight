@@ -130,6 +130,24 @@ export default async function handler(req, res) {
         return error(res, 'Token address and exit time are required', 400)
       }
 
+      // Check if entry already exists
+      const exists = await journalEntryExists(decoded.id, entry.tokenAddress, entry.exitTime)
+      if (exists) {
+        return json(res, { id: null, success: true, skipped: true, message: 'Entry already exists' })
+      }
+
+      // Check limits for free users
+      const canAdd = await canAddJournalEntry(decoded.id)
+      if (!canAdd.allowed) {
+        return json(res, {
+          error: 'limit_reached',
+          message: 'Journal entry limit reached',
+          requiresPro: true,
+          limit: FREE_TIER_LIMITS.MAX_JOURNAL_ENTRIES,
+          current: canAdd.count,
+        }, 403)
+      }
+
       const id = await createJournalEntry(decoded.id, entry)
       return json(res, { id, success: true })
     }

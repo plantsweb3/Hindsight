@@ -1,5 +1,8 @@
 import { Connection, PublicKey } from '@solana/web3.js'
-import { cors } from './lib/auth.js'
+import { cors, authenticateRequest } from './lib/auth.js'
+
+// Only log in development
+const debug = process.env.NODE_ENV !== 'production' ? console.log.bind(console) : () => {}
 
 // TODO: Update SIGHT_CA with actual contract address at launch
 const SIGHT_CA = 'PLACEHOLDER_UPDATE_AT_LAUNCH'
@@ -513,6 +516,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
+  // Require authentication for wallet analysis
+  const decoded = authenticateRequest(req)
+  if (!decoded) {
+    return res.status(401).json({ error: 'Authentication required' })
+  }
+
   const { walletAddress } = req.body
 
   if (!walletAddress) {
@@ -525,7 +534,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid Solana wallet address' })
   }
 
-  console.log(`Analyzing: ${walletAddress}`)
+  debug(`Analyzing: ${walletAddress}`)
 
   // Track execution time to avoid timeout
   const startTime = Date.now()
@@ -548,12 +557,12 @@ export default async function handler(req, res) {
     let lastSignature = null
     let pageCount = 0
 
-    console.log(`Fetching transaction history (up to ${MAX_SIGNATURES} transactions)...`)
+    debug(`Fetching transaction history (up to ${MAX_SIGNATURES} transactions)...`)
 
     while (allSignatures.length < MAX_SIGNATURES) {
       // Check timeout before fetching more signatures
       if (isApproachingTimeout()) {
-        console.log(`Approaching timeout, stopping signature fetch at ${allSignatures.length} signatures`)
+        debug(`Approaching timeout, stopping signature fetch at ${allSignatures.length} signatures`)
         break
       }
 
@@ -565,7 +574,7 @@ export default async function handler(req, res) {
       const signatures = await connection.getSignaturesForAddress(pubkey, options)
 
       if (signatures.length === 0) {
-        console.log(`No more transactions found after page ${pageCount}`)
+        debug(`No more transactions found after page ${pageCount}`)
         break
       }
 
@@ -573,11 +582,11 @@ export default async function handler(req, res) {
       lastSignature = signatures[signatures.length - 1].signature
       pageCount++
 
-      console.log(`Page ${pageCount}: fetched ${signatures.length} sigs, total: ${allSignatures.length}`)
+      debug(`Page ${pageCount}: fetched ${signatures.length} sigs, total: ${allSignatures.length}`)
 
       // If we got fewer than PAGE_SIZE, we've reached the end
       if (signatures.length < PAGE_SIZE) {
-        console.log(`Reached end of history (got ${signatures.length} < ${PAGE_SIZE})`)
+        debug(`Reached end of history (got ${signatures.length} < ${PAGE_SIZE})`)
         break
       }
 
@@ -587,7 +596,7 @@ export default async function handler(req, res) {
       }
     }
 
-    console.log(`Found ${allSignatures.length} total transactions across ${pageCount} pages`)
+    debug(`Found ${allSignatures.length} total transactions across ${pageCount} pages`)
 
     // Calculate date range of history
     let oldestDate = null
@@ -603,7 +612,7 @@ export default async function handler(req, res) {
       ? Math.ceil((newestDate - oldestDate) / (1000 * 60 * 60 * 24))
       : 0
 
-    console.log(`History spans ${historyDays} days`)
+    debug(`History spans ${historyDays} days`)
 
     if (!allSignatures.length) {
       return res.json({
@@ -622,7 +631,7 @@ export default async function handler(req, res) {
     for (let i = 0; i < allSignatures.length; i += BATCH_SIZE) {
       // Check timeout before processing more batches
       if (isApproachingTimeout()) {
-        console.log(`Approaching timeout, stopping at ${processedCount}/${allSignatures.length} transactions processed`)
+        debug(`Approaching timeout, stopping at ${processedCount}/${allSignatures.length} transactions processed`)
         break
       }
 
@@ -654,14 +663,14 @@ export default async function handler(req, res) {
         // Progress log every 100 txs
         if ((i + BATCH_SIZE) % 100 === 0) {
           const elapsed = Math.round((Date.now() - startTime) / 1000)
-          console.log(`[${elapsed}s] Processed ${processedCount}/${allSignatures.length} transactions, found ${trades.length} trades`)
+          debug(`[${elapsed}s] Processed ${processedCount}/${allSignatures.length} transactions, found ${trades.length} trades`)
         }
         await new Promise(r => setTimeout(r, 25))
       }
     }
 
     const elapsed = Math.round((Date.now() - startTime) / 1000)
-    console.log(`[${elapsed}s] Found ${trades.length} DEX trades from ${processedCount}/${allSignatures.length} transactions (${historyDays} days)`)
+    debug(`[${elapsed}s] Found ${trades.length} DEX trades from ${processedCount}/${allSignatures.length} transactions (${historyDays} days)`)
 
     // Track if we have partial results due to timeout
     const isPartialResult = processedCount < allSignatures.length
@@ -681,7 +690,7 @@ export default async function handler(req, res) {
     if (!isApproachingTimeout()) {
       openPositions = await analyzeOpenPositions(walletAddress, trades)
     } else {
-      console.log('Skipping open positions analysis due to timeout')
+      debug('Skipping open positions analysis due to timeout')
     }
 
     // Add token symbols to trades
@@ -695,7 +704,7 @@ export default async function handler(req, res) {
     }))
 
     const totalElapsed = Math.round((Date.now() - startTime) / 1000)
-    console.log(`[${totalElapsed}s] Analysis complete, returning ${trades.length} trades`)
+    debug(`[${totalElapsed}s] Analysis complete, returning ${trades.length} trades`)
 
     const result = {
       walletAddress,

@@ -71,7 +71,10 @@ const LEVEL_THRESHOLDS = [
   { level: 15, xpRequired: 6475, title: 'Legend' },
 ]
 
-const JWT_SECRET = process.env.JWT_SECRET || 'hindsight-secret-key-change-in-production'
+const JWT_SECRET = process.env.JWT_SECRET
+if (!JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET environment variable is required')
+}
 
 // Initialize database and seed content on cold start
 let dbInitialized = false
@@ -212,8 +215,11 @@ export default async function handler(req, res) {
     if (method === 'POST' && segments.length === 1 && segments[0] === 'seed') {
       // Check for admin password (hidden route) or authenticated admin user
       const adminPassword = req.headers['x-admin-password']
-      const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'change-admin-password-in-env'
-      const isAdminPassword = adminPassword === ADMIN_PASSWORD
+      const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
+      // Use timing-safe comparison to prevent timing attacks
+      const isAdminPassword = ADMIN_PASSWORD && adminPassword &&
+        adminPassword.length === ADMIN_PASSWORD.length &&
+        require('crypto').timingSafeEqual(Buffer.from(adminPassword), Buffer.from(ADMIN_PASSWORD))
 
       if (!isAdminPassword) {
         const user = await authenticateUser(req)

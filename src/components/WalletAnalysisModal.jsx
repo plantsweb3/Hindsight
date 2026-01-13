@@ -17,6 +17,7 @@ export default function WalletAnalysisModal({
   const [messageIndex, setMessageIndex] = useState(0)
   const [isMessageVisible, setIsMessageVisible] = useState(true)
   const abortControllerRef = useRef(null)
+  const fadeTimeoutRef = useRef(null)
 
   const isPro = user?.isPro || false
   const walletCount = user?.savedWallets?.length || 0
@@ -35,7 +36,7 @@ export default function WalletAnalysisModal({
       setIsMessageVisible(false)
 
       // After fade out, change message and fade in
-      setTimeout(() => {
+      fadeTimeoutRef.current = setTimeout(() => {
         setMessageIndex((prev) => {
           // If we've hit the end, cycle through last 10 messages
           if (prev >= LOADING_MESSAGES.length - 1) {
@@ -49,7 +50,12 @@ export default function WalletAnalysisModal({
       }, 300)
     }, 3500)
 
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(interval)
+      if (fadeTimeoutRef.current) {
+        clearTimeout(fadeTimeoutRef.current)
+      }
+    }
   }, [isLoading])
 
   // Reset state when modal opens

@@ -156,6 +156,10 @@ export async function initDb() {
     await getDb().execute(`ALTER TABLE bug_reports ADD COLUMN screenshot TEXT`)
   } catch (e) { /* Column already exists */ }
 
+  // Bug reports indexes
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_bug_reports_status ON bug_reports(status)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_bug_reports_created_at ON bug_reports(created_at DESC)`)
+
   // Academy modules table
   await getDb().execute(`
     CREATE TABLE IF NOT EXISTS academy_modules (
@@ -2653,9 +2657,15 @@ export async function deleteUser(userId) {
     'quiz_best_scores',
     'module_completions',
     'user_academy_progress',
-    'journal_entries',
+    'trade_journal',  // Fixed: was 'journal_entries'
     'analyses',
     'saved_wallets',
+    'chat_messages',  // Added: must delete before chat_conversations (FK constraint)
+    'chat_conversations',  // Added
+    'daily_message_counts',  // Added
+    'user_context_cache',  // Added
+    'course_request_votes',  // Added: must delete before course_requests (FK constraint)
+    'course_requests',  // Added
     'users'  // Delete user last
   ]
 
@@ -2666,6 +2676,12 @@ export async function deleteUser(userId) {
           sql: `DELETE FROM ${table} WHERE id = ?`,
           args: [userId],
         })
+      } else if (table === 'chat_messages') {
+        // chat_messages doesn't have user_id directly - delete via conversation
+        await getDb().execute({
+          sql: `DELETE FROM chat_messages WHERE conversation_id IN (SELECT id FROM chat_conversations WHERE user_id = ?)`,
+          args: [userId],
+        })
       } else {
         await getDb().execute({
           sql: `DELETE FROM ${table} WHERE user_id = ?`,
@@ -2673,8 +2689,10 @@ export async function deleteUser(userId) {
         })
       }
     } catch (err) {
-      // Table might not exist or no matching rows - continue
-      console.log(`[DB] deleteUser: Could not delete from ${table}:`, err.message)
+      // Only log in development, don't expose in production
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[DB] deleteUser: Could not delete from ${table}:`, err.message)
+      }
     }
   }
 
@@ -2711,10 +2729,13 @@ export async function initCourseRequestsTable() {
     )
   `)
 
-  // Create index for faster lookups
+  // Create indexes for faster lookups
   try {
     await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_course_requests_votes ON course_requests(votes DESC)`)
+    await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_course_requests_user_id ON course_requests(user_id)`)
+    await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_course_requests_created_at ON course_requests(created_at DESC)`)
     await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_course_request_votes_request ON course_request_votes(request_id)`)
+    await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_course_request_votes_user_id ON course_request_votes(user_id)`)
   } catch (e) { /* Index might already exist */ }
 }
 
@@ -2842,8 +2863,19 @@ export async function saveMessage(conversationId, role, content, tokenCount = nu
   return id
 }
 
-// Get messages for a conversation
-export async function getConversationHistory(conversationId, limit = 50) {
+// Get messages for a conversation (with optional user verification for defense-in-depth)
+export async function getConversationHistory(conversationId, userId = null, limit = 50) {
+  // If userId provided, verify conversation belongs to user
+  if (userId) {
+    const convCheck = await getDb().execute({
+      sql: `SELECT id FROM chat_conversations WHERE id = ? AND user_id = ?`,
+      args: [conversationId, userId]
+    })
+    if (convCheck.rows.length === 0) {
+      return [] // Conversation doesn't exist or doesn't belong to user
+    }
+  }
+
   const result = await getDb().execute({
     sql: `SELECT id, role, content, token_count, created_at FROM chat_messages
           WHERE conversation_id = ? ORDER BY created_at ASC LIMIT ?`,

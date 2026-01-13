@@ -1,5 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { cors } from './lib/auth.js'
+import { cors, authenticateRequest } from './lib/auth.js'
+
+// Only log in development
+const debug = process.env.NODE_ENV !== 'production' ? console.log.bind(console) : () => {}
 
 // Anthropic client
 const anthropic = new Anthropic({
@@ -19,15 +22,21 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
+  // Require authentication for AI analysis
+  const decoded = authenticateRequest(req)
+  if (!decoded) {
+    return res.status(401).json({ error: 'Authentication required' })
+  }
+
   const { trades, stats, openPositions, userArchetype, journalPatterns, crossWalletStats } = req.body
 
   if (!trades || !trades.length) {
     return res.status(400).json({ error: 'No trades to analyze' })
   }
 
-  console.log(`Analyzing behavior for ${trades.length} trades...`)
+  debug(`Analyzing behavior for ${trades.length} trades...`)
   if (crossWalletStats) {
-    console.log(`Cross-wallet analysis: ${crossWalletStats.length} wallets`)
+    debug(`Cross-wallet analysis: ${crossWalletStats.length} wallets`)
   }
 
   // Prepare trade summary with token symbols and PnL
@@ -198,7 +207,7 @@ CRITICAL RULES for accurate analysis:
     })
 
     const responseText = message.content[0].text
-    console.log('Claude response:', responseText)
+    debug('Claude response received')
 
     const jsonMatch = responseText.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
@@ -209,6 +218,7 @@ CRITICAL RULES for accurate analysis:
     res.json(analysis)
   } catch (err) {
     console.error('AI analysis failed:', err.message)
-    res.status(500).json({ error: 'AI analysis failed: ' + err.message })
+    // Don't expose internal error details to client
+    res.status(500).json({ error: 'AI analysis failed. Please try again.' })
   }
 }

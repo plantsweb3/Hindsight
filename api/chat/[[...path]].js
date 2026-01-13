@@ -235,7 +235,7 @@ export default async function handler(req, res) {
         if (!conv) {
           return error(res, 'Conversation not found', 404)
         }
-        existingMessages = await getConversationHistory(convId, 20)
+        existingMessages = await getConversationHistory(convId, decoded.id, 20)
       } else {
         // Create new conversation
         convId = await createConversation(decoded.id)

@@ -187,6 +187,7 @@ function HeroSection({ onScrollDown, onAnalyze, onStartQuiz, isLoading, progress
   const [walletAddress, setWalletAddress] = useState('')
   const [messageIndex, setMessageIndex] = useState(0)
   const [isMessageVisible, setIsMessageVisible] = useState(true)
+  const fadeTimeoutRef = useRef(null)
 
   // Cycle through loading messages with loop behavior for last 10 messages
   useEffect(() => {
@@ -200,7 +201,7 @@ function HeroSection({ onScrollDown, onAnalyze, onStartQuiz, isLoading, progress
       setIsMessageVisible(false)
 
       // After fade out, change message and fade in
-      setTimeout(() => {
+      fadeTimeoutRef.current = setTimeout(() => {
         setMessageIndex((prev) => {
           // If we've hit the end, cycle through last 10 messages
           if (prev >= LOADING_MESSAGES.length - 1) {
@@ -214,7 +215,12 @@ function HeroSection({ onScrollDown, onAnalyze, onStartQuiz, isLoading, progress
       }, 300)
     }, 3500)
 
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(interval)
+      if (fadeTimeoutRef.current) {
+        clearTimeout(fadeTimeoutRef.current)
+      }
+    }
   }, [isLoading])
 
   const handleSubmit = (e) => {

@@ -61,7 +61,7 @@ export default async function handler(req, res) {
 
     // GET /api/conversations/:id - Get conversation with messages
     if (subRoute === '' && req.method === 'GET') {
-      const messages = await getConversationHistory(conversationId)
+      const messages = await getConversationHistory(conversationId, decoded.id)
       return json(res, {
         ...conversation,
         messages,
