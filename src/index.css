@@ -10805,22 +10805,21 @@ input, button {
 /* Academy Tabs - File Folder Design */
 .academy-tabs-container {
   margin-bottom: 0;
+  position: relative;
 }
 
 .academy-tabs {
   display: flex;
-  gap: 0.5rem;
-  padding: 0 1rem;
+  gap: 0;
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .academy-tab {
   position: relative;
   flex: 1;
-  max-width: 260px;
   padding: 1rem 1.5rem 1.25rem;
-  background: rgba(30, 30, 35, 0.6);
+  background: rgba(30, 30, 35, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-bottom: none;
   border-radius: 12px 12px 0 0;
@@ -10829,74 +10828,49 @@ input, button {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.25s ease;
-  transform: translateY(4px);
-  overflow: hidden;
+  margin-bottom: -1px;
 }
 
-/* Tab color edge (left side accent) */
+/* Hide the left color edge - not needed */
 .tab-color-edge {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: var(--tab-color);
-  opacity: 0.4;
-  transition: opacity 0.25s ease;
+  display: none;
 }
 
-.academy-tab:hover {
+.academy-tab:hover:not(.active) {
   color: #a1a1aa;
   background: rgba(40, 40, 48, 0.8);
-  transform: translateY(2px);
 }
 
-.academy-tab:hover .tab-color-edge {
-  opacity: 0.6;
-}
-
-/* Active tab - lifted and connected to content */
+/* Active tab - seamlessly connects to content */
 .academy-tab.active {
   color: #fff;
-  background: rgba(24, 24, 28, 0.95);
-  border-color: var(--tab-color-muted);
-  transform: translateY(0);
-  z-index: 2;
-  box-shadow: 0 -4px 20px var(--tab-color-glow);
+  background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
+  border-color: var(--folder-color-border);
+  border-bottom: none;
+  z-index: 3;
 }
 
-.academy-tab.active .tab-color-edge {
-  opacity: 1;
-  box-shadow: 0 0 12px var(--tab-color-glow);
-}
-
-/* Hide bottom border on active tab to connect with content */
+/* Cover the content border under the active tab */
 .academy-tab.active::after {
   content: '';
   position: absolute;
-  bottom: -1px;
+  bottom: 0;
   left: 0;
   right: 0;
   height: 2px;
-  background: rgba(24, 24, 28, 0.95);
+  background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
 }
 
 /* Tab Content - File Folder Interior */
 .academy-tab-content {
   position: relative;
-  background: linear-gradient(180deg,
-    var(--folder-color-tint) 0%,
-    transparent 100px
-  );
+  background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
   border: 1px solid var(--folder-color-border);
-  border-radius: 0 12px 12px 12px;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
   padding: 1.5rem;
-  margin-top: -1px;
   min-height: 400px;
   animation: folderOpen 0.3s ease;
-  box-shadow:
-    0 4px 30px var(--folder-color-glow),
-    inset 0 1px 0 var(--folder-color-border);
 }
 
 @keyframes folderOpen {
@@ -13151,25 +13125,18 @@ input, button {
 
   /* Tabs Mobile - File Folder Design */
   .academy-tabs {
-    padding: 0 0.5rem;
-    gap: 0.25rem;
+    gap: 0;
   }
 
   .academy-tab {
     padding: 0.75rem 0.5rem 0.875rem;
-    padding-left: 1rem;
     font-size: 0.9375rem;
-    max-width: none;
     border-radius: 8px 8px 0 0;
-  }
-
-  .tab-color-edge {
-    width: 3px;
   }
 
   .academy-tab-content {
     padding: 1rem;
-    border-radius: 0 8px 8px 8px;
+    border-radius: 0 0 8px 8px;
   }
 
   .tab-subtitle {
@@ -13265,13 +13232,8 @@ input, button {
 
   .academy-tab {
     padding: 0.625rem 0.375rem 0.75rem;
-    padding-left: 0.75rem;
     font-size: 0.8rem;
     border-radius: 6px 6px 0 0;
-  }
-
-  .tab-color-edge {
-    width: 2px;
   }
 
   .tab-label {
@@ -15074,10 +15036,9 @@ input, button {
 .academy-tabs .academy-tab {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.25rem;
   padding: 0.875rem 1.25rem 1rem 1.25rem;
-  padding-left: 1.5rem; /* Extra space for color edge */
 }
 
 .tab-label {
@@ -15103,8 +15064,8 @@ input, button {
 }
 
 .academy-tab.active .tab-subtitle {
-  color: var(--tab-color);
-  opacity: 0.8;
+  color: var(--folder-color);
+  opacity: 0.9;
 }
 
 /* Module Sections */
@@ -16015,7 +15976,6 @@ input, button {
 
   .academy-tabs .academy-tab {
     padding: 0.75rem 1rem 0.875rem;
-    padding-left: 1.25rem;
     border-radius: 10px 10px 0 0;
   }
 
@@ -16029,7 +15989,7 @@ input, button {
 
   .academy-tab-content {
     padding: 1.25rem;
-    border-radius: 0 10px 10px 10px;
+    border-radius: 0 0 10px 10px;
   }
 
   .archetype-profile-card {

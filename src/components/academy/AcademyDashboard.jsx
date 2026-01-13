@@ -2449,23 +2449,23 @@ export default function AcademyDashboard() {
       />
 
       {/* Tab Navigation - File Folder Style */}
-      <div className="academy-tabs-container">
+      <div
+        className="academy-tabs-container"
+        style={{
+          '--folder-color': getTabColor(activeTab, userArchetypeId),
+          '--folder-color-bg': `color-mix(in srgb, ${getTabColor(activeTab, userArchetypeId)} 12%, rgb(24, 24, 28))`,
+          '--folder-color-border': `${getTabColor(activeTab, userArchetypeId)}40`,
+        }}
+      >
         <div className="academy-tabs">
           {ACADEMY_TABS.map(tab => {
-            const tabColor = getTabColor(tab.id, userArchetypeId)
             const isActive = activeTab === tab.id
             return (
               <button
                 key={tab.id}
                 className={`academy-tab ${isActive ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab.id)}
-                style={{
-                  '--tab-color': tabColor,
-                  '--tab-color-muted': `${tabColor}40`,
-                  '--tab-color-glow': `${tabColor}30`,
-                }}
               >
-                <span className="tab-color-edge" />
                 <span className="tab-label">{tab.label}</span>
                 <span className="tab-subtitle">{tab.subtitle}</span>
               </button>
@@ -2474,15 +2474,7 @@ export default function AcademyDashboard() {
         </div>
 
         {/* Tab Content - File Folder Interior */}
-        <div
-          className="academy-tab-content"
-          style={{
-            '--folder-color': getTabColor(activeTab, userArchetypeId),
-            '--folder-color-tint': `${getTabColor(activeTab, userArchetypeId)}08`,
-            '--folder-color-border': `${getTabColor(activeTab, userArchetypeId)}30`,
-            '--folder-color-glow': `${getTabColor(activeTab, userArchetypeId)}15`,
-          }}
-        >
+        <div className="academy-tab-content">
         {/* Trading 101 Tab */}
         {activeTab === 'trading-101' && (
           <>
