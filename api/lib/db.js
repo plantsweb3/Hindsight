@@ -337,6 +337,65 @@ export async function initDb() {
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_module_completions_user_id ON module_completions(user_id)`)
   await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_user_progress_sync_user_id ON user_progress_sync(user_id)`)
 
+  // ============================================
+  // AI COACH TABLES
+  // ============================================
+
+  // Chat conversations
+  await getDb().execute(`
+    CREATE TABLE IF NOT EXISTS chat_conversations (
+      id TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      title TEXT,
+      message_count INTEGER DEFAULT 0,
+      is_archived INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `)
+
+  // Chat messages
+  await getDb().execute(`
+    CREATE TABLE IF NOT EXISTS chat_messages (
+      id TEXT PRIMARY KEY,
+      conversation_id TEXT NOT NULL,
+      role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+      content TEXT NOT NULL,
+      token_count INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (conversation_id) REFERENCES chat_conversations(id) ON DELETE CASCADE
+    )
+  `)
+
+  // Daily message tracking for free tier limits
+  await getDb().execute(`
+    CREATE TABLE IF NOT EXISTS daily_message_counts (
+      id TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      date TEXT NOT NULL,
+      message_count INTEGER DEFAULT 0,
+      UNIQUE(user_id, date),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `)
+
+  // Context cache for expensive context generation
+  await getDb().execute(`
+    CREATE TABLE IF NOT EXISTS user_context_cache (
+      user_id INTEGER PRIMARY KEY,
+      context_json TEXT NOT NULL,
+      generated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      expires_at DATETIME NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `)
+
+  // Chat indexes
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_chat_conversations_user ON chat_conversations(user_id, updated_at DESC)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_chat_messages_conversation ON chat_messages(conversation_id, created_at ASC)`)
+  await getDb().execute(`CREATE INDEX IF NOT EXISTS idx_daily_message_counts_user_date ON daily_message_counts(user_id, date)`)
+
   // Run one-time XP backfill for existing users (only runs once)
   await runOneTimeXpBackfill()
 }
@@ -2745,6 +2804,206 @@ export async function voteCourseRequest(requestId, userId, ipHash) {
   })
 
   return { success: true, votes: Number(updated.rows[0]?.votes || 0) }
+}
+
+// ============================================
+// AI COACH HELPER FUNCTIONS
+// ============================================
+
+// Generate unique ID for chat entities
+function generateChatId() {
+  return `chat_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+}
+
+// Create a new conversation
+export async function createConversation(userId, title = null) {
+  const id = generateChatId()
+  await getDb().execute({
+    sql: `INSERT INTO chat_conversations (id, user_id, title) VALUES (?, ?, ?)`,
+    args: [id, userId, title]
+  })
+  return id
+}
+
+// Save a message to a conversation
+export async function saveMessage(conversationId, role, content, tokenCount = null) {
+  const id = generateChatId()
+  await getDb().execute({
+    sql: `INSERT INTO chat_messages (id, conversation_id, role, content, token_count) VALUES (?, ?, ?, ?, ?)`,
+    args: [id, conversationId, role, content, tokenCount]
+  })
+
+  // Update conversation metadata
+  await getDb().execute({
+    sql: `UPDATE chat_conversations SET message_count = message_count + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+    args: [conversationId]
+  })
+
+  return id
+}
+
+// Get messages for a conversation
+export async function getConversationHistory(conversationId, limit = 50) {
+  const result = await getDb().execute({
+    sql: `SELECT id, role, content, token_count, created_at FROM chat_messages
+          WHERE conversation_id = ? ORDER BY created_at ASC LIMIT ?`,
+    args: [conversationId, limit]
+  })
+
+  return result.rows.map(row => ({
+    id: row.id,
+    role: row.role,
+    content: row.content,
+    tokenCount: row.token_count ? Number(row.token_count) : null,
+    createdAt: row.created_at
+  }))
+}
+
+// Get all conversations for a user
+export async function getUserConversations(userId, includeArchived = false) {
+  const result = await getDb().execute({
+    sql: `SELECT id, title, message_count, is_archived, created_at, updated_at FROM chat_conversations
+          WHERE user_id = ? ${includeArchived ? '' : 'AND is_archived = 0'}
+          ORDER BY updated_at DESC`,
+    args: [userId]
+  })
+
+  return result.rows.map(row => ({
+    id: row.id,
+    title: row.title,
+    messageCount: Number(row.message_count),
+    isArchived: Boolean(row.is_archived),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  }))
+}
+
+// Get single conversation
+export async function getConversation(conversationId, userId) {
+  const result = await getDb().execute({
+    sql: `SELECT id, user_id, title, message_count, is_archived, created_at, updated_at
+          FROM chat_conversations WHERE id = ? AND user_id = ?`,
+    args: [conversationId, userId]
+  })
+
+  if (result.rows.length === 0) return null
+
+  const row = result.rows[0]
+  return {
+    id: row.id,
+    userId: Number(row.user_id),
+    title: row.title,
+    messageCount: Number(row.message_count),
+    isArchived: Boolean(row.is_archived),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  }
+}
+
+// Update conversation title
+export async function updateConversationTitle(conversationId, userId, title) {
+  await getDb().execute({
+    sql: `UPDATE chat_conversations SET title = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
+    args: [title, conversationId, userId]
+  })
+}
+
+// Archive a conversation
+export async function archiveConversation(conversationId, userId) {
+  await getDb().execute({
+    sql: `UPDATE chat_conversations SET is_archived = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
+    args: [conversationId, userId]
+  })
+}
+
+// Delete a conversation and its messages
+export async function deleteConversation(conversationId, userId) {
+  // Messages are deleted via CASCADE
+  await getDb().execute({
+    sql: `DELETE FROM chat_conversations WHERE id = ? AND user_id = ?`,
+    args: [conversationId, userId]
+  })
+}
+
+// Get today's date string in YYYY-MM-DD format
+function getTodayDateString() {
+  return new Date().toISOString().split('T')[0]
+}
+
+// Check daily message limit for free tier
+export async function getDailyMessageCount(userId) {
+  const today = getTodayDateString()
+  const result = await getDb().execute({
+    sql: `SELECT message_count FROM daily_message_counts WHERE user_id = ? AND date = ?`,
+    args: [userId, today]
+  })
+
+  return result.rows.length > 0 ? Number(result.rows[0].message_count) : 0
+}
+
+// Increment daily message count
+export async function incrementDailyMessageCount(userId) {
+  const today = getTodayDateString()
+  const id = `daily_${userId}_${today}`
+
+  // Upsert: insert or update
+  await getDb().execute({
+    sql: `INSERT INTO daily_message_counts (id, user_id, date, message_count)
+          VALUES (?, ?, ?, 1)
+          ON CONFLICT(user_id, date) DO UPDATE SET message_count = message_count + 1`,
+    args: [id, userId, today]
+  })
+}
+
+// Get cached user context
+export async function getCachedUserContext(userId) {
+  const result = await getDb().execute({
+    sql: `SELECT context_json, expires_at FROM user_context_cache WHERE user_id = ?`,
+    args: [userId]
+  })
+
+  if (result.rows.length === 0) return null
+
+  const row = result.rows[0]
+  const expiresAt = new Date(row.expires_at)
+
+  // Check if expired
+  if (expiresAt < new Date()) {
+    // Delete expired cache
+    await getDb().execute({
+      sql: `DELETE FROM user_context_cache WHERE user_id = ?`,
+      args: [userId]
+    })
+    return null
+  }
+
+  try {
+    return JSON.parse(row.context_json)
+  } catch (e) {
+    console.error('[DB] Failed to parse cached context:', e)
+    return null
+  }
+}
+
+// Set cached user context (1 hour expiry)
+export async function setCachedUserContext(userId, contextData, expiryMinutes = 60) {
+  const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000).toISOString()
+  const contextJson = JSON.stringify(contextData)
+
+  await getDb().execute({
+    sql: `INSERT INTO user_context_cache (user_id, context_json, generated_at, expires_at)
+          VALUES (?, ?, CURRENT_TIMESTAMP, ?)
+          ON CONFLICT(user_id) DO UPDATE SET context_json = ?, generated_at = CURRENT_TIMESTAMP, expires_at = ?`,
+    args: [userId, contextJson, expiresAt, contextJson, expiresAt]
+  })
+}
+
+// Clear user context cache
+export async function clearUserContextCache(userId) {
+  await getDb().execute({
+    sql: `DELETE FROM user_context_cache WHERE user_id = ?`,
+    args: [userId]
+  })
 }
 
 export default getDb

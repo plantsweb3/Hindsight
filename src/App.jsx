@@ -30,6 +30,7 @@ import CourseRequestsPage from './components/academy/CourseRequestsPage'
 import LeaderboardPage from './components/academy/LeaderboardPage'
 import AchievementCelebration from './components/academy/AchievementCelebration'
 import LevelUpCelebration from './components/academy/LevelUpCelebration'
+import ChatInterface from './components/chat/ChatInterface'
 
 // Scroll to top on route change
 function ScrollToTop() {
@@ -658,6 +659,9 @@ export default function App() {
 
             {/* Leaderboard - standalone page */}
             <Route path="/leaderboard" element={<LeaderboardPage />} />
+
+            {/* AI Coach - requires authentication */}
+            <Route path="/coach" element={<ChatInterface />} />
 
             {/* Everything else - existing state-based */}
             <Route path="/*" element={<AppContent />} />
