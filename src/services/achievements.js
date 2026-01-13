@@ -223,11 +223,13 @@ function clearLocalProgress() {
 }
 
 // Check if current user matches stored user, clear data if different
-function handleUserSwitch(userId) {
+// Exported so AuthContext can call it on login/signup
+export function handleUserSwitch(userId) {
   const lastUserId = localStorage.getItem(LAST_USER_ID_KEY)
 
   if (lastUserId && lastUserId !== String(userId)) {
     // Different user - clear old progress data
+    console.log('[XP] User switched from', lastUserId, 'to', userId, '- clearing local progress')
     clearLocalProgress()
   }
 

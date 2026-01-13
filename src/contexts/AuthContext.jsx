@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { handleUserSwitch } from '../services/achievements'
 
 const AuthContext = createContext(null)
 
@@ -42,6 +43,8 @@ export function AuthProvider({ children }) {
 
       if (res.ok) {
         const userData = await res.json()
+        // Ensure XP data matches current user (for page refresh)
+        handleUserSwitch(userData.id)
         setUser(userData)
       } else {
         // Token invalid, clear it
@@ -68,6 +71,9 @@ export function AuthProvider({ children }) {
       throw new Error(data.error || 'Signup failed')
     }
 
+    // Clear XP/progress data from any previous user
+    handleUserSwitch(data.user.id)
+
     localStorage.setItem('hindsight_token', data.token)
     setToken(data.token)
     setUser(data.user)
@@ -87,6 +93,9 @@ export function AuthProvider({ children }) {
     if (!res.ok) {
       throw new Error(data.error || 'Login failed')
     }
+
+    // Clear XP/progress data if switching to a different user
+    handleUserSwitch(data.user.id)
 
     localStorage.setItem('hindsight_token', data.token)
     setToken(data.token)

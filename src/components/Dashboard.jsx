@@ -383,7 +383,7 @@ function ArchetypeHero({ user, onRetakeQuiz }) {
 }
 
 // Journal Section - Shows unjournaled trades waiting for reflection
-function JournalSection({ trades, user, onOpenJournal, onJournalTrade }) {
+function JournalSection({ trades, user, onOpenJournal, onJournalTrade, onAddWallet }) {
   const hasWallet = user?.savedWallets?.length > 0
   const hasTrades = (trades || []).length > 0
 
@@ -409,9 +409,9 @@ function JournalSection({ trades, user, onOpenJournal, onJournalTrade }) {
           </h3>
         </div>
         <div className="journal-section-empty">
-          <p>Connect a wallet to start tracking and journaling your trades</p>
-          <button className="journal-section-cta" onClick={onOpenJournal}>
-            Connect Wallet
+          <p>Add a wallet to start tracking and journaling your trades</p>
+          <button className="journal-section-cta" onClick={onAddWallet}>
+            Add Wallet
           </button>
         </div>
       </div>
@@ -1317,6 +1317,7 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
               user={user}
               onOpenJournal={onOpenJournal}
               onJournalTrade={handleJournalTrade}
+              onAddWallet={() => setShowWalletAnalysisModal(true)}
             />
 
             {/* Row 2: Archetype Hero */}
