@@ -10889,7 +10889,10 @@ input, button {
 .academy-tab-content .module-card,
 .academy-tab-content .coming-soon-card,
 .academy-tab-content .archetype-card,
-.academy-tab-content .archetype-module-card {
+.academy-tab-content .archetype-module-card,
+.academy-tab-content .lesson-recommendation-card,
+.academy-tab-content .most-requested-card,
+.academy-tab-content .coming-soon-footer-cta {
   background: rgba(24, 24, 27, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(8px);
@@ -10900,7 +10903,10 @@ input, button {
 .academy-tab-content .module-card:hover,
 .academy-tab-content .coming-soon-card:hover,
 .academy-tab-content .archetype-card:hover,
-.academy-tab-content .archetype-module-card:hover {
+.academy-tab-content .archetype-module-card:hover,
+.academy-tab-content .lesson-recommendation-card:hover,
+.academy-tab-content .most-requested-card:hover,
+.academy-tab-content .coming-soon-footer-cta:hover {
   background: rgba(32, 32, 38, 0.95);
   border-color: rgba(255, 255, 255, 0.12);
 }
@@ -10914,6 +10920,27 @@ input, button {
 
 .academy-tab-content .archetype-profile-card {
   background: rgba(24, 24, 27, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Your Archetype section container */
+.academy-tab-content .your-archetype-section {
+  background: rgba(24, 24, 27, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.5rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Most Requested section container */
+.academy-tab-content .most-requested-section {
+  background: rgba(24, 24, 27, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.5rem;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
