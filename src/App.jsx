@@ -6,7 +6,6 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AchievementProvider } from './contexts/AchievementContext'
 import { analyzeWallet, analyzeBehavior, isValidSolanaAddress, convertTradesToJournalEntries, createJournalEntriesBatch, getJournalPatterns, getCrossWalletStats } from './services/solana'
 import { ARCHETYPES } from './data/quizData'
-import LandingPage from './components/LandingPage'
 import LandingPageV2 from './components/LandingPageV2'
 import Quiz from './components/Quiz'
 import QuizResult from './components/QuizResult'
@@ -98,11 +97,10 @@ function AppContent() {
   useEffect(() => {
     const targetPath = VIEW_TO_PATH[view]
     // Don't redirect if:
-    // - on /hindsightlanding (new landing page test route)
     // - on academy routes
     // - current path is a valid view path (user navigated intentionally, let the other effect catch up)
     const isValidViewPath = PATH_TO_VIEW[location.pathname] !== undefined
-    if (targetPath && location.pathname !== targetPath && !location.pathname.startsWith('/academy') && location.pathname !== '/hindsightlanding' && !isValidViewPath) {
+    if (targetPath && location.pathname !== targetPath && !location.pathname.startsWith('/academy') && !isValidViewPath) {
       navigate(targetPath, { replace: false })
     }
   }, [view, navigate, location.pathname])
@@ -585,14 +583,9 @@ function AppContent() {
     )
   }
 
-  // Check if we're on the new landing page route
-  const isNewLandingPage = location.pathname === '/hindsightlanding'
-
-  const LandingComponent = isNewLandingPage ? LandingPageV2 : LandingPage
-
   return (
     <>
-      <LandingComponent
+      <LandingPageV2
         onAnalyze={handleAnalyze}
         onStartQuiz={handleStartQuiz}
         onShowAuth={handleShowAuth}
