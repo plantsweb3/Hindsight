@@ -10865,34 +10865,34 @@ input, button {
 .academy-tab.active::before {
   content: '';
   position: absolute;
-  bottom: -1px;
+  bottom: 0;
   left: calc(-1 * var(--corner-radius));
   width: var(--corner-radius);
   height: var(--corner-radius);
-  background: transparent;
+  background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
   z-index: 11;
-  /* Box shadow creates the fill and border for inverse corner */
   border-bottom-right-radius: var(--corner-radius);
-  box-shadow:
-    5px 5px 0 0 var(--folder-color-bg, rgba(30, 30, 35, 0.95)),
-    6px 1px 0 0 var(--folder-color-border);
+  /* Border on the curved edge */
+  border-right: 1px solid var(--folder-color-border);
+  border-bottom: 1px solid var(--folder-color-border);
+  box-sizing: border-box;
 }
 
 /* Right inverse rounded corner - where content top meets active tab right side */
 .academy-tab.active::after {
   content: '';
   position: absolute;
-  bottom: -1px;
+  bottom: 0;
   right: calc(-1 * var(--corner-radius));
   width: var(--corner-radius);
   height: var(--corner-radius);
-  background: transparent;
+  background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
   z-index: 11;
-  /* Box shadow creates the fill and border for inverse corner */
   border-bottom-left-radius: var(--corner-radius);
-  box-shadow:
-    -5px 5px 0 0 var(--folder-color-bg, rgba(30, 30, 35, 0.95)),
-    -6px 1px 0 0 var(--folder-color-border);
+  /* Border on the curved edge */
+  border-left: 1px solid var(--folder-color-border);
+  border-bottom: 1px solid var(--folder-color-border);
+  box-sizing: border-box;
 }
 
 /* Tab Content - File Folder Interior (connected to active tab) */
@@ -10906,6 +10906,38 @@ input, button {
   min-height: 400px;
   animation: folderOpen 0.3s ease;
   z-index: 5;
+}
+
+/* Top-left inverse corner border (where content meets first inactive tab) */
+.academy-tab-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -1px;
+  width: var(--corner-radius);
+  height: var(--corner-radius);
+  background: transparent;
+  z-index: 6;
+  border-top-left-radius: var(--corner-radius);
+  border-top: 1px solid var(--folder-color-border);
+  border-left: 1px solid var(--folder-color-border);
+  box-sizing: border-box;
+}
+
+/* Top-right inverse corner border (where content meets last inactive tab) */
+.academy-tab-content::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -1px;
+  width: var(--corner-radius);
+  height: var(--corner-radius);
+  background: transparent;
+  z-index: 6;
+  border-top-right-radius: var(--corner-radius);
+  border-top: 1px solid var(--folder-color-border);
+  border-right: 1px solid var(--folder-color-border);
+  box-sizing: border-box;
 }
 
 @keyframes folderOpen {
