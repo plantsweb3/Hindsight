@@ -702,15 +702,11 @@ function SightSection({ onOpenPro }) {
   ]
 
   const proTier = [
-    'Unlimited wallet tracking',
-    'Unlimited journal entries',
-    'Wallet labels (Main / Gamble / Sniper / etc.)',
-    'Cross-wallet analysis',
-    'ATH tracking on all positions',
+    'Unlimited wallets',
+    'Full Journal with labels & tags',
+    'Cross-wallet insights & ATH tracking',
     'Full Academy access',
-    'Leaderboard eligibility',
-    'Token-gated Discord community',
-    'Priority new features',
+    'Private Discord community',
   ]
 
   return (
