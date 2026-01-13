@@ -28,6 +28,7 @@ import ArchetypeLessonView from './components/academy/ArchetypeLessonView'
 import MasterExamPage from './components/academy/MasterExamPage'
 import CourseRequestsPage from './components/academy/CourseRequestsPage'
 import LeaderboardPage from './components/academy/LeaderboardPage'
+import Legal from './components/Legal'
 import AchievementCelebration from './components/academy/AchievementCelebration'
 import LevelUpCelebration from './components/academy/LevelUpCelebration'
 import ChatInterface from './components/chat/ChatInterface'
@@ -662,6 +663,9 @@ export default function App() {
 
             {/* Leaderboard - standalone page */}
             <Route path="/leaderboard" element={<LeaderboardPage />} />
+
+            {/* Legal pages - Privacy Policy and Terms of Service */}
+            <Route path="/legal/:page" element={<Legal />} />
 
             {/* AI Coach - requires authentication */}
             <Route path="/coach" element={<ChatInterface />} />

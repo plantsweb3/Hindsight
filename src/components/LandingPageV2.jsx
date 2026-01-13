@@ -1111,8 +1111,8 @@ function Footer({ onOpenContact }) {
               </svg>
             </a>
             <a href="https://pump.fun" target="_blank" rel="noopener noreferrer" className="footer-link">Pump.fun</a>
-            <a href="#" className="footer-link">Privacy Policy</a>
-            <a href="#" className="footer-link">Terms of Service</a>
+            <a href="/legal/privacy" className="footer-link">Privacy Policy</a>
+            <a href="/legal/terms" className="footer-link">Terms of Service</a>
           </div>
         </div>
       </div>
