@@ -1,12 +1,12 @@
 // Use relative path - works for both local dev (via Vite proxy) and Vercel
 const API_URL = '/api'
 
-// TODO: Update SIGHT_CA with actual contract address at launch
-const SIGHT_CA = 'PLACEHOLDER_UPDATE_AT_LAUNCH'
+// $SIGHT token contract address - set via VITE_SIGHT_TOKEN_CA env var
+const SIGHT_CA = import.meta.env.VITE_SIGHT_TOKEN_CA || ''
 
 // Check if a trade involves the $SIGHT token (excluded from analytics)
 function involvesSightToken(trade) {
-  if (!trade?.changes || SIGHT_CA === 'PLACEHOLDER_UPDATE_AT_LAUNCH') return false
+  if (!trade?.changes || !SIGHT_CA) return false
   return trade.changes.some(c => c.mint === SIGHT_CA)
 }
 

@@ -347,8 +347,7 @@ export default async function handler(req, res) {
         return error(res, 'Invalid Solana wallet address', 400)
       }
 
-      // Check if wallet holds enough $SIGHT
-      // TODO: Plug in $SIGHT CA and actual balance check after launch
+      // Check if wallet holds enough $SIGHT (0.25 SOL worth)
       const balanceCheck = await checkSightBalance([walletAddress])
 
       if (!balanceCheck.isPro) {

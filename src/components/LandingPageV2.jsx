@@ -777,9 +777,12 @@ function CommunitySection({ onOpenPro }) {
 // SECTION 8: $SIGHT Token
 function SightSection({ onOpenPro }) {
   const [copied, setCopied] = useState(false)
-  const contractAddress = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+  const contractAddress = import.meta.env.VITE_SIGHT_TOKEN_CA || 'Coming Soon'
+
+  const isContractSet = import.meta.env.VITE_SIGHT_TOKEN_CA
 
   const handleCopy = async () => {
+    if (!isContractSet) return
     try {
       await navigator.clipboard.writeText(contractAddress)
       setCopied(true)
@@ -853,7 +856,7 @@ function SightSection({ onOpenPro }) {
           {/* Contract Address Box */}
           <div className="sight-ca-box">
             <code className="sight-ca-text">{contractAddress}</code>
-            <button className="sight-ca-copy" onClick={handleCopy}>
+            <button className="sight-ca-copy" onClick={handleCopy} disabled={!isContractSet}>
               {copied ? (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M20 6L9 17l-5-5" />
