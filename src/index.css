@@ -10860,7 +10860,7 @@ input, button {
   margin-top: -0.25rem;
 }
 
-/* Left inverse corner - uses box-shadow trick for true concave curve */
+/* Left inverse corner - creates concave curve where tab meets content */
 .academy-tab.active::before {
   content: '';
   position: absolute;
@@ -10870,10 +10870,13 @@ input, button {
   height: var(--corner-radius);
   background: transparent;
   z-index: 11;
-  /* Round bottom-right, shadow fills the inverse curve area */
   border-bottom-right-radius: var(--corner-radius);
+  /* Box-shadow fills the inverse corner area (offset + spread technique) */
   box-shadow:
-    var(--corner-radius) var(--corner-radius) 0 0 var(--folder-color-bg, rgba(30, 30, 35, 0.95));
+    /* Border stroke on the curve */
+    1px 1px 0 0 var(--folder-color-border),
+    /* Fill behind the border */
+    6px 6px 0 6px var(--folder-color-bg, rgba(30, 30, 35, 0.95));
 }
 
 /* Hide left inverse corner when first tab is active */
@@ -10881,7 +10884,7 @@ input, button {
   display: none;
 }
 
-/* Right inverse corner - uses box-shadow trick for true concave curve */
+/* Right inverse corner - creates concave curve where tab meets content */
 .academy-tab.active::after {
   content: '';
   position: absolute;
@@ -10891,10 +10894,13 @@ input, button {
   height: var(--corner-radius);
   background: transparent;
   z-index: 11;
-  /* Round bottom-left, shadow fills the inverse curve area */
   border-bottom-left-radius: var(--corner-radius);
+  /* Box-shadow fills the inverse corner area (offset + spread technique) */
   box-shadow:
-    calc(-1 * var(--corner-radius)) var(--corner-radius) 0 0 var(--folder-color-bg, rgba(30, 30, 35, 0.95));
+    /* Border stroke on the curve */
+    -1px 1px 0 0 var(--folder-color-border),
+    /* Fill behind the border */
+    -6px 6px 0 6px var(--folder-color-bg, rgba(30, 30, 35, 0.95));
 }
 
 /* Hide right inverse corner when last tab is active */
