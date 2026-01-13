@@ -10884,6 +10884,40 @@ input, button {
   }
 }
 
+/* Neutral Cards Inside Folder Content - Dark documents in colored folder */
+.academy-tab-content .glass-card,
+.academy-tab-content .module-card,
+.academy-tab-content .coming-soon-card,
+.academy-tab-content .archetype-card,
+.academy-tab-content .archetype-module-card {
+  background: rgba(24, 24, 27, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.academy-tab-content .glass-card:hover,
+.academy-tab-content .module-card:hover,
+.academy-tab-content .coming-soon-card:hover,
+.academy-tab-content .archetype-card:hover,
+.academy-tab-content .archetype-module-card:hover {
+  background: rgba(32, 32, 38, 0.95);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Hero cards keep accent borders but neutral fill */
+.academy-tab-content .trading-101-hero-card {
+  background: rgba(24, 24, 27, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.academy-tab-content .archetype-profile-card {
+  background: rgba(24, 24, 27, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
 /* Archetype Cards */
 .archetype-grid {
   margin-top: 1rem;
