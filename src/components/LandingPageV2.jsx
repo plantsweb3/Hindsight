@@ -200,7 +200,8 @@ function HeroSection({ onScrollDown, onAnalyze, onStartQuiz, isLoading, progress
         </div>
 
         <h1 className="hero-headline hero-headline-compact">
-          The trading improvement system<br className="hero-line-break" />
+          The trading improvement system{' '}
+          <br className="hero-line-break" />
           for Solana <span className="text-gradient-purple">traders</span>
         </h1>
 
