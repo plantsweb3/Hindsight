@@ -10860,21 +10860,22 @@ input, button {
   margin-top: -0.25rem;
 }
 
-/* Left inverse corner - fills the notch and draws curved border */
+/* Left inverse corner - solid fill with top-left radius creates inverse curve at bottom-right */
 .academy-tab.active::before {
   content: '';
   position: absolute;
-  bottom: -1px;
-  left: calc(-1 * var(--corner-radius) - 1px);
-  width: calc(var(--corner-radius) + 1px);
-  height: calc(var(--corner-radius) + 1px);
-  background: transparent;
+  bottom: 0;
+  left: calc(-1 * var(--corner-radius));
+  width: var(--corner-radius);
+  height: var(--corner-radius);
+  background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
   z-index: 11;
-  /* Use box-shadow to draw the inverse curve border */
-  border-radius: 0 0 var(--corner-radius) 0;
-  box-shadow:
-    inset calc(-1 * var(--corner-radius)) calc(-1 * var(--corner-radius)) 0 0 var(--folder-color-bg, rgba(30, 30, 35, 0.95)),
-    inset -1px -1px 0 0 var(--folder-color-border);
+  /* Round the top-left corner - this creates inverse curve at bottom-right */
+  border-top-left-radius: var(--corner-radius);
+  /* Border on the curved edge (top and left follow the radius) */
+  border-top: 1px solid var(--folder-color-border);
+  border-left: 1px solid var(--folder-color-border);
+  box-sizing: border-box;
 }
 
 /* Hide left inverse corner when first tab is active */
@@ -10882,21 +10883,22 @@ input, button {
   display: none;
 }
 
-/* Right inverse corner - fills the notch and draws curved border */
+/* Right inverse corner - solid fill with top-right radius creates inverse curve at bottom-left */
 .academy-tab.active::after {
   content: '';
   position: absolute;
-  bottom: -1px;
-  right: calc(-1 * var(--corner-radius) - 1px);
-  width: calc(var(--corner-radius) + 1px);
-  height: calc(var(--corner-radius) + 1px);
-  background: transparent;
+  bottom: 0;
+  right: calc(-1 * var(--corner-radius));
+  width: var(--corner-radius);
+  height: var(--corner-radius);
+  background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
   z-index: 11;
-  /* Use box-shadow to draw the inverse curve border */
-  border-radius: 0 0 0 var(--corner-radius);
-  box-shadow:
-    inset var(--corner-radius) calc(-1 * var(--corner-radius)) 0 0 var(--folder-color-bg, rgba(30, 30, 35, 0.95)),
-    inset 1px -1px 0 0 var(--folder-color-border);
+  /* Round the top-right corner - this creates inverse curve at bottom-left */
+  border-top-right-radius: var(--corner-radius);
+  /* Border on the curved edge (top and right follow the radius) */
+  border-top: 1px solid var(--folder-color-border);
+  border-right: 1px solid var(--folder-color-border);
+  box-sizing: border-box;
 }
 
 /* Hide right inverse corner when last tab is active */
