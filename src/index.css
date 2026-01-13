@@ -24473,6 +24473,21 @@ input, button {
   font-size: 1.1rem;
 }
 
+/* Agreement Notice (bottom of Terms) */
+.legal-agreement-notice {
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.legal-agreement-notice p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
 /* Legal Footer */
 .legal-footer {
   padding: 2rem 1.5rem;
