@@ -21584,6 +21584,21 @@ input, button {
   color: rgba(245, 245, 245, 0.5);
 }
 
+/* Clickable loop steps */
+.loop-step-clickable {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.loop-step-clickable:hover .loop-step-circle {
+  transform: scale(1.1);
+}
+
+.loop-step-clickable:active .loop-step-circle {
+  transform: scale(0.98);
+}
+
 /* Position loop steps in 2x2 grid */
 .loop-step-tl { grid-area: 1 / 1 / 2 / 2; }
 .loop-step-tr { grid-area: 1 / 3 / 2 / 4; }

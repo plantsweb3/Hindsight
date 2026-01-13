@@ -309,7 +309,19 @@ function CredibilityBar() {
 }
 
 // SECTION 3: The Loop - How It Works
-function TheLoopSection() {
+function TheLoopSection({ onShowAuth, onOpenJournal, isAuthenticated }) {
+  const scrollToHero = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleJournalClick = () => {
+    if (isAuthenticated) {
+      onOpenJournal()
+    } else {
+      onShowAuth('login')
+    }
+  }
+
   return (
     <section className="loop-section" id="loop-section">
       <div className="section-container">
@@ -320,7 +332,7 @@ function TheLoopSection() {
         {/* 2x2 Grid Layout */}
         <div className="loop-diagram-v2">
           {/* Top Row */}
-          <div className="loop-step-v2 loop-step-tl">
+          <div className="loop-step-v2 loop-step-tl loop-step-clickable" onClick={scrollToHero}>
             <div className="loop-step-circle" style={{ borderColor: '#8b5cf6' }}>
               <span className="loop-step-icon">👁️</span>
             </div>
@@ -334,13 +346,13 @@ function TheLoopSection() {
             </svg>
           </div>
 
-          <div className="loop-step-v2 loop-step-tr">
+          <Link to="/academy" className="loop-step-v2 loop-step-tr loop-step-clickable">
             <div className="loop-step-circle" style={{ borderColor: '#22c55e' }}>
               <span className="loop-step-icon">📚</span>
             </div>
             <div className="loop-step-label">LEARN</div>
             <div className="loop-step-desc">Academy</div>
-          </div>
+          </Link>
 
           {/* Vertical Arrows */}
           <div className="loop-arrow-v loop-arrow-v-left">
@@ -356,7 +368,7 @@ function TheLoopSection() {
           </div>
 
           {/* Bottom Row */}
-          <div className="loop-step-v2 loop-step-bl">
+          <div className="loop-step-v2 loop-step-bl loop-step-clickable" onClick={handleJournalClick}>
             <div className="loop-step-circle" style={{ borderColor: '#f59e0b' }}>
               <span className="loop-step-icon">📊</span>
             </div>
@@ -370,13 +382,13 @@ function TheLoopSection() {
             </svg>
           </div>
 
-          <div className="loop-step-v2 loop-step-br">
+          <a href="https://discord.gg/fQjx6NBHTz" target="_blank" rel="noopener noreferrer" className="loop-step-v2 loop-step-br loop-step-clickable">
             <div className="loop-step-circle" style={{ borderColor: '#f97316' }}>
               <span className="loop-step-icon">⚔️</span>
             </div>
             <div className="loop-step-label">EXECUTE</div>
             <div className="loop-step-desc">Community</div>
-          </div>
+          </a>
         </div>
 
         <p className="loop-description">
@@ -1073,7 +1085,11 @@ export default function LandingPageV2({
         error={error}
       />
       <CredibilityBar />
-      <TheLoopSection />
+      <TheLoopSection
+        onShowAuth={onShowAuth}
+        onOpenJournal={onOpenJournal}
+        isAuthenticated={isAuthenticated}
+      />
       <CopilotSection />
       <AcademySection />
       <ArchetypesSection />
