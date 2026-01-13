@@ -28,12 +28,30 @@ function getCompletedCountForModule(moduleSlug) {
   return progress.completedLessons.filter(key => key.startsWith(prefix)).length
 }
 
-// Tab configuration
+// Tab configuration with colors (file folder tabs)
+const TAB_COLORS = {
+  'trading-101': '#f59e0b', // Gold/Amber
+  'by-archetype': null, // Dynamic - uses user's archetype color or fallback purple
+  'coming-soon': '#06b6d4', // Cyan
+}
+
 const ACADEMY_TABS = [
   { id: 'trading-101', label: 'Trading 101', subtitle: 'Structured path from beginner to pro' },
   { id: 'by-archetype', label: 'Learn by Archetype', subtitle: 'Personalized for your style' },
   { id: 'coming-soon', label: 'Coming Soon', subtitle: 'Advanced modules in development' }
 ]
+
+// Get tab color - for archetype tab, use user's archetype color
+function getTabColor(tabId, userArchetypeId) {
+  if (tabId === 'by-archetype') {
+    // Use archetype color if user has one, otherwise default purple
+    if (userArchetypeId && ARCHETYPE_DOT_COLORS[userArchetypeId]) {
+      return ARCHETYPE_DOT_COLORS[userArchetypeId].filled
+    }
+    return '#8B5CF6' // Default Hindsight purple
+  }
+  return TAB_COLORS[tabId] || '#8B5CF6'
+}
 
 // Coming Soon modules data
 const COMING_SOON_MODULES = [
@@ -2430,22 +2448,41 @@ export default function AcademyDashboard() {
         onLeaderboardClick={handleLeaderboardClick}
       />
 
-      {/* Tab Navigation */}
-      <div className="academy-tabs">
-        {ACADEMY_TABS.map(tab => (
-          <button
-            key={tab.id}
-            className={`academy-tab ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            <span className="tab-label">{tab.label}</span>
-            <span className="tab-subtitle">{tab.subtitle}</span>
-          </button>
-        ))}
-      </div>
+      {/* Tab Navigation - File Folder Style */}
+      <div className="academy-tabs-container">
+        <div className="academy-tabs">
+          {ACADEMY_TABS.map(tab => {
+            const tabColor = getTabColor(tab.id, userArchetypeId)
+            const isActive = activeTab === tab.id
+            return (
+              <button
+                key={tab.id}
+                className={`academy-tab ${isActive ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  '--tab-color': tabColor,
+                  '--tab-color-muted': `${tabColor}40`,
+                  '--tab-color-glow': `${tabColor}30`,
+                }}
+              >
+                <span className="tab-color-edge" />
+                <span className="tab-label">{tab.label}</span>
+                <span className="tab-subtitle">{tab.subtitle}</span>
+              </button>
+            )
+          })}
+        </div>
 
-      {/* Tab Content */}
-      <div className="academy-tab-content">
+        {/* Tab Content - File Folder Interior */}
+        <div
+          className="academy-tab-content"
+          style={{
+            '--folder-color': getTabColor(activeTab, userArchetypeId),
+            '--folder-color-tint': `${getTabColor(activeTab, userArchetypeId)}08`,
+            '--folder-color-border': `${getTabColor(activeTab, userArchetypeId)}30`,
+            '--folder-color-glow': `${getTabColor(activeTab, userArchetypeId)}15`,
+          }}
+        >
         {/* Trading 101 Tab */}
         {activeTab === 'trading-101' && (
           <>
@@ -2680,6 +2717,7 @@ export default function AcademyDashboard() {
         {activeTab === 'coming-soon' && (
           <ComingSoonTabContent token={token} />
         )}
+        </div>
       </div>
 
       {/* Locked Module Popup */}

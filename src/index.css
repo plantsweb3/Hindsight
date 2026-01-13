@@ -10802,38 +10802,75 @@ input, button {
   opacity: 0.9;
 }
 
-/* Academy Tabs */
+/* Academy Tabs - File Folder Design */
+.academy-tabs-container {
+  margin-bottom: 0;
+}
+
 .academy-tabs {
   display: flex;
-  gap: 0;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 0.5rem;
+  padding: 0 1rem;
+  position: relative;
+  z-index: 1;
 }
 
 .academy-tab {
+  position: relative;
   flex: 1;
-  padding: 1rem 1.5rem;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: #a1a1aa;
+  max-width: 260px;
+  padding: 1rem 1.5rem 1.25rem;
+  background: rgba(30, 30, 35, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  color: #71717a;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
+  transition: all 0.25s ease;
+  transform: translateY(4px);
+  overflow: hidden;
+}
+
+/* Tab color edge (left side accent) */
+.tab-color-edge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--tab-color);
+  opacity: 0.4;
+  transition: opacity 0.25s ease;
 }
 
 .academy-tab:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.03);
+  color: #a1a1aa;
+  background: rgba(40, 40, 48, 0.8);
+  transform: translateY(2px);
 }
 
+.academy-tab:hover .tab-color-edge {
+  opacity: 0.6;
+}
+
+/* Active tab - lifted and connected to content */
 .academy-tab.active {
   color: #fff;
-  border-bottom-color: #8b5cf6;
+  background: rgba(24, 24, 28, 0.95);
+  border-color: var(--tab-color-muted);
+  transform: translateY(0);
+  z-index: 2;
+  box-shadow: 0 -4px 20px var(--tab-color-glow);
 }
 
+.academy-tab.active .tab-color-edge {
+  opacity: 1;
+  box-shadow: 0 0 12px var(--tab-color-glow);
+}
+
+/* Hide bottom border on active tab to connect with content */
 .academy-tab.active::after {
   content: '';
   position: absolute;
@@ -10841,16 +10878,36 @@ input, button {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+  background: rgba(24, 24, 28, 0.95);
 }
 
+/* Tab Content - File Folder Interior */
 .academy-tab-content {
-  animation: fadeIn 0.2s ease;
+  position: relative;
+  background: linear-gradient(180deg,
+    var(--folder-color-tint) 0%,
+    transparent 100px
+  );
+  border: 1px solid var(--folder-color-border);
+  border-radius: 0 12px 12px 12px;
+  padding: 1.5rem;
+  margin-top: -1px;
+  min-height: 400px;
+  animation: folderOpen 0.3s ease;
+  box-shadow:
+    0 4px 30px var(--folder-color-glow),
+    inset 0 1px 0 var(--folder-color-border);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes folderOpen {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Archetype Cards */
@@ -13092,14 +13149,31 @@ input, button {
     grid-template-columns: 1fr;
   }
 
-  /* Tabs Mobile */
+  /* Tabs Mobile - File Folder Design */
   .academy-tabs {
-    margin-bottom: 1.5rem;
+    padding: 0 0.5rem;
+    gap: 0.25rem;
   }
 
   .academy-tab {
-    padding: 0.875rem 0.5rem;
+    padding: 0.75rem 0.5rem 0.875rem;
+    padding-left: 1rem;
     font-size: 0.9375rem;
+    max-width: none;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .tab-color-edge {
+    width: 3px;
+  }
+
+  .academy-tab-content {
+    padding: 1rem;
+    border-radius: 0 8px 8px 8px;
+  }
+
+  .tab-subtitle {
+    display: none;
   }
 
   /* Archetype Quiz CTA Mobile */
@@ -13190,7 +13264,17 @@ input, button {
   }
 
   .academy-tab {
-    padding: 0.625rem 0.375rem;
+    padding: 0.625rem 0.375rem 0.75rem;
+    padding-left: 0.75rem;
+    font-size: 0.8rem;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .tab-color-edge {
+    width: 2px;
+  }
+
+  .tab-label {
     font-size: 0.8rem;
   }
 
@@ -14986,29 +15070,41 @@ input, button {
   color: #22c55e;
 }
 
-/* Tab Styling with Subtitles */
+/* Tab Styling with Subtitles - File Folder Design */
 .academy-tabs .academy-tab {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.25rem;
-  padding: 1rem 1.5rem;
+  padding: 0.875rem 1.25rem 1rem 1.25rem;
+  padding-left: 1.5rem; /* Extra space for color edge */
 }
 
 .tab-label {
   font-size: 1rem;
   font-weight: 600;
+  transition: color 0.2s ease;
 }
 
 .tab-subtitle {
   font-size: 0.7rem;
-  color: #71717a;
+  color: #52525b;
   text-transform: none;
   font-weight: 400;
+  transition: color 0.2s ease;
+}
+
+.academy-tab:hover .tab-subtitle {
+  color: #71717a;
+}
+
+.academy-tab.active .tab-label {
+  color: #fff;
 }
 
 .academy-tab.active .tab-subtitle {
-  color: #a1a1aa;
+  color: var(--tab-color);
+  opacity: 0.8;
 }
 
 /* Module Sections */
@@ -15918,7 +16014,9 @@ input, button {
   }
 
   .academy-tabs .academy-tab {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 1rem 0.875rem;
+    padding-left: 1.25rem;
+    border-radius: 10px 10px 0 0;
   }
 
   .tab-label {
@@ -15927,6 +16025,11 @@ input, button {
 
   .tab-subtitle {
     font-size: 0.625rem;
+  }
+
+  .academy-tab-content {
+    padding: 1.25rem;
+    border-radius: 0 10px 10px 10px;
   }
 
   .archetype-profile-card {
@@ -16106,11 +16209,7 @@ input, button {
   filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.6));
 }
 
-/* Tab Transition */
-.academy-tab-content {
-  animation: tabSlideIn 0.3s ease-out;
-}
-
+/* Tab Transition - uses folderOpen animation from main styles */
 @keyframes tabSlideIn {
   from {
     opacity: 0;
