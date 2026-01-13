@@ -97,8 +97,12 @@ function AppContent() {
   // Sync URL with view state (push to history when view changes)
   useEffect(() => {
     const targetPath = VIEW_TO_PATH[view]
-    // Don't redirect if on /hindsightlanding (new landing page test route)
-    if (targetPath && location.pathname !== targetPath && !location.pathname.startsWith('/academy') && location.pathname !== '/hindsightlanding') {
+    // Don't redirect if:
+    // - on /hindsightlanding (new landing page test route)
+    // - on academy routes
+    // - current path is a valid view path (user navigated intentionally, let the other effect catch up)
+    const isValidViewPath = PATH_TO_VIEW[location.pathname] !== undefined
+    if (targetPath && location.pathname !== targetPath && !location.pathname.startsWith('/academy') && location.pathname !== '/hindsightlanding' && !isValidViewPath) {
       navigate(targetPath, { replace: false })
     }
   }, [view, navigate, location.pathname])
