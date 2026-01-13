@@ -848,8 +848,8 @@ function AchievementShowcase({ earnedAchievements = [] }) {
   )
 }
 
-// Leaderboard Component
-function Leaderboard({ token, currentUserId }) {
+// Leaderboard Component - visible to all users, sign-in required for full view
+function Leaderboard({ token, currentUserId, isAuthenticated, openAuthModal }) {
   const [leaderboardData, setLeaderboardData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -867,7 +867,9 @@ function Leaderboard({ token, currentUserId }) {
         await syncXpToServer(token)
       }
 
-      const data = await fetchLeaderboard(token, 10)
+      // Fetch 10 for authenticated, 5 for guests (social proof)
+      const limit = isAuthenticated ? 10 : 5
+      const data = await fetchLeaderboard(token, limit)
       if (data) {
         setLeaderboardData(data)
       } else {
@@ -916,8 +918,8 @@ function Leaderboard({ token, currentUserId }) {
         XP Leaderboard
       </h3>
 
-      {/* User's rank card if not in top 10 */}
-      {userRank && userRank.rank > 10 && (
+      {/* User's rank card if authenticated and not in top 10 */}
+      {isAuthenticated && userRank && userRank.rank > 10 && (
         <div className="leaderboard-user-rank">
           <div className="leaderboard-rank-badge">#{userRank.rank}</div>
           <div className="leaderboard-rank-info">
@@ -964,20 +966,32 @@ function Leaderboard({ token, currentUserId }) {
         )}
       </div>
 
-      {/* Refresh button */}
-      <button className="leaderboard-refresh" onClick={loadLeaderboard}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <polyline points="23 4 23 10 17 10" />
-          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-        </svg>
-        Refresh
-      </button>
+      {/* Refresh button - only for authenticated users */}
+      {isAuthenticated && (
+        <button className="leaderboard-refresh" onClick={loadLeaderboard}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="23 4 23 10 17 10" />
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+          </svg>
+          Refresh
+        </button>
+      )}
 
-      {/* View Full Leaderboard button */}
-      <Link to="/leaderboard" className="leaderboard-view-full">
-        <span className="leaderboard-view-full-icon">📊</span>
-        View Full Leaderboard
-      </Link>
+      {/* View Full Leaderboard / Sign In CTA */}
+      {isAuthenticated ? (
+        <Link to="/leaderboard" className="leaderboard-view-full">
+          <span className="leaderboard-view-full-icon">📊</span>
+          View Full Leaderboard
+        </Link>
+      ) : (
+        <button
+          className="leaderboard-signin-cta"
+          onClick={() => openAuthModal('login')}
+        >
+          <span className="leaderboard-signin-icon">🔓</span>
+          Sign in to see your rank
+        </button>
+      )}
     </div>
   )
 }
@@ -2572,10 +2586,13 @@ export default function AcademyDashboard() {
               <AchievementShowcase earnedAchievements={achievements} />
             )}
 
-            {/* Leaderboard - show for authenticated users */}
-            {isAuthenticated && (
-              <Leaderboard token={token} currentUserId={user?.id} />
-            )}
+            {/* Leaderboard - visible to all users for social proof */}
+            <Leaderboard
+              token={token}
+              currentUserId={user?.id}
+              isAuthenticated={isAuthenticated}
+              openAuthModal={openAuthModal}
+            />
           </>
         )}
 
