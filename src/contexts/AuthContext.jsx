@@ -18,6 +18,20 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  // Multi-tab logout sync: logout when token is removed in another tab
+  useEffect(() => {
+    const handleStorageChange = (event) => {
+      if (event.key === 'hindsight_token' && event.newValue === null) {
+        // Token was removed in another tab - sync logout
+        setToken(null)
+        setUser(null)
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
+
   const fetchUser = async () => {
     try {
       const res = await fetch(`${API_URL}/me`, {
@@ -28,8 +42,6 @@ export function AuthProvider({ children }) {
 
       if (res.ok) {
         const userData = await res.json()
-        console.log('[AuthContext] fetchUser response:', userData)
-        console.log('[AuthContext] fetchUser primaryArchetype:', userData.primaryArchetype)
         setUser(userData)
       } else {
         // Token invalid, clear it
@@ -91,21 +103,11 @@ export function AuthProvider({ children }) {
 
   const saveArchetype = async (primaryArchetype, secondaryArchetype, quizAnswers, overrideToken = null) => {
     const currentToken = overrideToken || token || localStorage.getItem('hindsight_token')
-    console.log('[AuthContext] saveArchetype called with:', {
-      primaryArchetype,
-      secondaryArchetype,
-      quizAnswers,
-      quizAnswersType: typeof quizAnswers,
-      quizAnswersIsArray: Array.isArray(quizAnswers),
-      hasToken: !!currentToken
-    })
     if (!currentToken) {
-      console.log('[AuthContext] saveArchetype: No token, returning early')
       return
     }
 
     const payload = { primaryArchetype, secondaryArchetype, quizAnswers }
-    console.log('[AuthContext] Sending to API:', JSON.stringify(payload))
 
     const res = await fetch(`${API_URL}/archetype`, {
       method: 'POST',
@@ -117,24 +119,17 @@ export function AuthProvider({ children }) {
     })
 
     const data = await res.json()
-    console.log('[AuthContext] saveArchetype response:', { ok: res.ok, data })
 
     if (!res.ok) {
       throw new Error(data.error || 'Failed to save archetype')
     }
 
-    // Update local user state
-    console.log('[AuthContext] saveArchetype: Updating user state with archetype')
-    setUser(prev => {
-      console.log('[AuthContext] saveArchetype: prev user state:', prev)
-      const newUser = {
-        ...prev,
-        primaryArchetype,
-        secondaryArchetype,
-      }
-      console.log('[AuthContext] saveArchetype: new user state:', newUser)
-      return newUser
-    })
+    // Update local user state (with null check)
+    setUser(prev => prev ? {
+      ...prev,
+      primaryArchetype,
+      secondaryArchetype,
+    } : null)
 
     return data
   }
@@ -157,12 +152,12 @@ export function AuthProvider({ children }) {
       throw new Error(data.error || 'Failed to save analysis')
     }
 
-    // Update saved wallets in local state
-    if (!user.savedWallets?.includes(walletAddress)) {
-      setUser(prev => ({
+    // Update saved wallets in local state (with null check)
+    if (user && !user.savedWallets?.includes(walletAddress)) {
+      setUser(prev => prev ? {
         ...prev,
         savedWallets: [...(prev.savedWallets || []), walletAddress],
-      }))
+      } : null)
     }
 
     return data

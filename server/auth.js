@@ -14,7 +14,11 @@ import {
 
 const router = Router()
 
-const JWT_SECRET = process.env.JWT_SECRET || 'hindsight-secret-key-change-in-production'
+// JWT_SECRET is required - fail fast if not configured
+if (!process.env.JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is required')
+}
+const JWT_SECRET = process.env.JWT_SECRET
 const JWT_EXPIRES_IN = '7d'
 
 // Middleware to verify JWT token
@@ -63,8 +67,8 @@ router.post('/signup', async (req, res) => {
     return res.status(400).json({ error: 'Username must be 3-20 characters' })
   }
 
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters' })
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters' })
   }
 
   // Check if username exists

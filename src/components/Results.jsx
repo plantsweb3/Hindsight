@@ -406,7 +406,7 @@ export default function Results({ analysis, stats, onReset, isAuthenticated, onS
         <section className="patterns-section">
           <h2 className="section-title">Behavioral Patterns</h2>
           <div className="patterns-grid">
-            {analysis.patterns.map((pattern, i) => (
+            {(analysis.patterns || []).map((pattern, i) => (
               <PatternCard key={i} pattern={pattern} />
             ))}
           </div>

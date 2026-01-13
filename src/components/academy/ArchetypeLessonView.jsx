@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate, useOutletContext } from 'react-router-dom'
+import DOMPurify from 'dompurify'
 import { getArchetypeLesson, getArchetypeModule, getArchetypeLessonQuiz } from './archetypeData'
 import Quiz from './Quiz'
 
@@ -59,7 +60,11 @@ function MarkdownContent({ content }) {
     html = html.replace(/<p>\s*<table/gim, '<table')
     html = html.replace(/<\/table>\s*<\/p>/gim, '</table>')
 
-    return html
+    // Sanitize HTML to prevent XSS
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'strong', 'em', 'ul', 'li', 'code', 'pre', 'table', 'tr', 'td'],
+      ALLOWED_ATTR: ['class']
+    })
   }
 
   return (

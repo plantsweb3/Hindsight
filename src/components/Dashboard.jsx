@@ -4,6 +4,7 @@ import { ARCHETYPES } from '../data/quizData'
 import { ProBadge } from './ProBadge'
 import WalletLabelBadge, { LABEL_COLORS } from './WalletLabelBadge'
 import { getCalculatedXPInfo } from '../services/achievements'
+import { DashboardSkeleton } from './Skeleton'
 
 // Wave Background
 function WaveBackground() {
@@ -476,7 +477,10 @@ function RecentActivityFeed({ activities }) {
     return (
       <div className="activity-card glass-card">
         <h3 className="activity-title">Recent Activity</h3>
-        <p className="activity-empty">No recent activity yet.</p>
+        <div className="activity-empty">
+          <p>Your activity will appear here</p>
+          <span className="empty-hint">Analyze wallets, journal trades, and complete lessons</span>
+        </div>
       </div>
     )
   }
@@ -677,7 +681,13 @@ function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh }) {
       <div className="wallets-list">
         {wallets.length === 0 ? (
           <div className="wallets-empty">
-            <p>No wallets tracked yet</p>
+            <p>Track a wallet to see your trading patterns and insights</p>
+            <button className="wallets-empty-cta" onClick={handleAddWalletClick}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Add Your First Wallet
+            </button>
           </div>
         ) : (
           wallets.map((wallet, i) => {
@@ -902,7 +912,14 @@ function TradeHistory({ trades, onJournal }) {
       <div className="trade-history glass-card">
         <h3 className="trade-history-title">Trade History</h3>
         <div className="trade-history-empty">
-          <p>No trades recorded yet. Analyze a wallet to import your trading history.</p>
+          <div className="empty-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M3 3v18h18" />
+              <path d="M18 17V9" /><path d="M13 17V5" /><path d="M8 17v-3" />
+            </svg>
+          </div>
+          <p>Analyze a wallet to see your trade history here</p>
+          <span className="empty-hint">Your trades will automatically sync from the blockchain</span>
         </div>
       </div>
     )
@@ -1170,7 +1187,7 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
 
       <main className="dashboard-main">
         {isLoading ? (
-          <div className="dashboard-loading">Loading...</div>
+          <DashboardSkeleton />
         ) : (
           <>
             {/* Row 1: Stats Bar */}

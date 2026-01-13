@@ -67,8 +67,8 @@ export default async function handler(req, res) {
         return error(res, 'Username must be 3-20 characters', 400)
       }
 
-      if (password.length < 6) {
-        return error(res, 'Password must be at least 6 characters', 400)
+      if (password.length < 8) {
+        return error(res, 'Password must be at least 8 characters', 400)
       }
 
       const existingUser = await getUserByUsername(username)
@@ -94,47 +94,37 @@ export default async function handler(req, res) {
 
     // POST /api/auth/login
     if (route === 'login' && req.method === 'POST') {
-      console.log('[API] Login attempt started')
       const { username, password } = req.body || {}
 
       if (!username || !password) {
         return error(res, 'Username and password are required', 400)
       }
 
-      console.log('[API] Looking up user:', username)
       const user = await getUserByUsername(username)
       if (!user) {
         return error(res, 'Invalid username or password', 401)
       }
 
-      console.log('[API] Validating password')
       const validPassword = await bcrypt.compare(password, user.password_hash)
       if (!validPassword) {
         return error(res, 'Invalid username or password', 401)
       }
 
-      console.log('[API] Generating token and fetching user data')
       const token = signToken({ id: user.id, username: user.username })
 
       let wallets = []
       try {
         wallets = await getUserWallets(user.id)
-        console.log('[API] Got wallets:', wallets?.length || 0)
       } catch (walletErr) {
-        console.error('[API] Error fetching wallets:', walletErr)
         // Continue without wallets
       }
 
       let usageStats = null
       try {
         usageStats = await getUserUsageStats(user.id)
-        console.log('[API] Got usage stats:', usageStats)
       } catch (statsErr) {
-        console.error('[API] Error fetching usage stats:', statsErr)
         // Continue without stats
       }
-
-      console.log('[API] Login successful, returning response')
       return json(res, {
         token,
         user: {
@@ -164,13 +154,6 @@ export default async function handler(req, res) {
       const usageStats = await getUserUsageStats(decoded.id)
       const wallets = await getUserWallets(decoded.id)
 
-      console.log('[API] GET /api/auth/me - user data:', {
-        id: user.id,
-        username: user.username,
-        primaryArchetype: user.primary_archetype,
-        secondaryArchetype: user.secondary_archetype,
-      })
-
       return json(res, {
         id: user.id,
         username: user.username,
@@ -189,28 +172,12 @@ export default async function handler(req, res) {
 
     // POST /api/auth/archetype
     if (route === 'archetype' && req.method === 'POST') {
-      console.log('[API] POST /api/auth/archetype - received request')
       const decoded = authenticateRequest(req)
       if (!decoded) {
         return error(res, 'Authentication required', 401)
       }
 
       const { primaryArchetype, secondaryArchetype, quizAnswers } = req.body || {}
-
-      // Debug: Log types and values
-      console.log('[API] Archetype raw data:', {
-        primaryArchetype,
-        secondaryArchetype,
-        quizAnswers,
-        userId: decoded.id,
-      })
-      console.log('[API] Types:', {
-        primaryType: typeof primaryArchetype,
-        secondaryType: typeof secondaryArchetype,
-        quizAnswersType: typeof quizAnswers,
-        quizAnswersIsArray: Array.isArray(quizAnswers),
-        userIdType: typeof decoded.id,
-      })
 
       if (!primaryArchetype || !secondaryArchetype) {
         return error(res, 'Archetype data required', 400)
@@ -221,10 +188,7 @@ export default async function handler(req, res) {
       const secondary = typeof secondaryArchetype === 'string' ? secondaryArchetype : String(secondaryArchetype)
       const userId = typeof decoded.id === 'number' ? decoded.id : Number(decoded.id)
 
-      console.log('[API] Sanitized values:', { primary, secondary, userId })
-
       await updateUserArchetype(userId, primary, secondary, quizAnswers)
-      console.log('[API] Archetype saved to database')
 
       return json(res, {
         success: true,
@@ -358,14 +322,11 @@ export default async function handler(req, res) {
         return error(res, 'Authentication required', 401)
       }
 
-      console.log('[API] delete-account: Deleting user', decoded.id)
-
       try {
         await deleteUser(decoded.id)
-        console.log('[API] delete-account: User deleted successfully')
         return json(res, { success: true })
       } catch (err) {
-        console.error('[API] delete-account: Error deleting user', err)
+        console.error('[API] Error deleting account')
         return error(res, 'Failed to delete account', 500)
       }
     }
@@ -386,14 +347,11 @@ export default async function handler(req, res) {
         return error(res, 'Invalid Solana wallet address', 400)
       }
 
-      console.log('[API] verify-sight: Checking wallet', walletAddress, 'for user', decoded.id)
-
       // Check if wallet holds enough $SIGHT
       // TODO: Plug in $SIGHT CA and actual balance check after launch
       const balanceCheck = await checkSightBalance([walletAddress])
 
       if (!balanceCheck.isPro) {
-        console.log('[API] verify-sight: Insufficient balance', balanceCheck)
         return json(res, {
           error: 'Insufficient $SIGHT balance',
           insufficientBalance: true,
@@ -403,13 +361,11 @@ export default async function handler(req, res) {
       }
 
       // Grant Pro status
-      console.log('[API] verify-sight: Granting Pro status')
       await updateProStatus(decoded.id, true)
 
       // Add wallet to saved wallets (bypassing free tier limit)
       const wallets = await addSavedWalletBypassLimit(decoded.id, walletAddress)
 
-      console.log('[API] verify-sight: Success! User is now Pro')
       return json(res, {
         success: true,
         isPro: true,

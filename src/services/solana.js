@@ -14,7 +14,7 @@ export function isValidSolanaAddress(address) {
   return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)
 }
 
-export async function analyzeWallet(walletAddress, onProgress) {
+export async function analyzeWallet(walletAddress, onProgress, abortSignal) {
   if (!isValidSolanaAddress(walletAddress)) {
     throw new Error('Invalid Solana wallet address')
   }
@@ -25,6 +25,7 @@ export async function analyzeWallet(walletAddress, onProgress) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ walletAddress }),
+    signal: abortSignal,
   })
 
   if (!response.ok) {
@@ -33,10 +34,6 @@ export async function analyzeWallet(walletAddress, onProgress) {
   }
 
   const result = await response.json()
-
-  console.log('=== WALLET ANALYSIS ===')
-  console.log('Stats:', result.stats)
-  console.log('Trades:', result.trades)
 
   return result
 }
@@ -56,9 +53,6 @@ export async function analyzeBehavior(trades, stats, openPositions, onProgress, 
   }
 
   const analysis = await response.json()
-
-  console.log('=== BEHAVIORAL ANALYSIS ===')
-  console.log(analysis)
 
   return analysis
 }

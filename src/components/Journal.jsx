@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { analyzeWallet, convertTradesToJournalEntries, createJournalEntriesBatch } from '../services/solana'
 import { awardJournalEntryXp, canEarnJournalXp, syncXpToServer } from '../services/achievements'
+import { getUserFriendlyError } from '../utils/helpers'
 import WalletLabelBadge from './WalletLabelBadge'
+import { JournalSkeleton } from './Skeleton'
 
 const API_URL = '/api/journal'
 
@@ -755,7 +757,7 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
 
     } catch (err) {
       console.error('[Refresh] Error:', err)
-      setRefreshError(err.message || 'Failed to fetch trades')
+      setRefreshError(getUserFriendlyError(err))
     } finally {
       setIsRefreshing(false)
       setRefreshProgress('')
@@ -877,7 +879,7 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
         </section>
 
         {isLoading ? (
-          <div className="loading-state">Loading journal...</div>
+          <JournalSkeleton />
         ) : entries.length === 0 && !Object.values(filters).some(v => v) ? (
           <EmptyState
             onAnalyze={onAnalyze}

@@ -5,6 +5,7 @@ import { SpeedInsights } from '@vercel/speed-insights/react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AchievementProvider } from './contexts/AchievementContext'
 import { analyzeWallet, analyzeBehavior, isValidSolanaAddress, convertTradesToJournalEntries, createJournalEntriesBatch, getJournalPatterns, getCrossWalletStats } from './services/solana'
+import { getUserFriendlyError } from './utils/helpers'
 import { ARCHETYPES } from './data/quizData'
 import LandingPageV2 from './components/LandingPageV2'
 import Quiz from './components/Quiz'
@@ -88,6 +89,9 @@ function AppContent() {
 
   const [isHiddenAdmin, setIsHiddenAdmin] = useState(() => window.location.pathname === '/salveregina')
 
+  // AbortController for cancelling wallet scans
+  const abortControllerRef = useRef(null)
+
   // Scroll to top on view change
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -160,6 +164,16 @@ function AppContent() {
     }
   }
 
+  const handleCancelScan = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
+    setIsLoading(false)
+    setProgress('')
+    setError('Scan cancelled')
+  }
+
   const handleAnalyze = async (walletAddress) => {
     // Validate
     if (!walletAddress) {
@@ -172,13 +186,21 @@ function AppContent() {
       return
     }
 
+    // Cancel any existing scan
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    // Create new AbortController for this scan
+    abortControllerRef.current = new AbortController()
+
     setError('')
     setIsLoading(true)
     setProgress('Fetching transactions...')
 
     try {
       // Step 1: Get wallet trades and open positions
-      const walletData = await analyzeWallet(walletAddress, setProgress)
+      const walletData = await analyzeWallet(walletAddress, setProgress, abortControllerRef.current.signal)
 
       if (!walletData.trades.length) {
         throw new Error('No trades found for this wallet')
@@ -244,11 +266,16 @@ function AppContent() {
       })
       setView('results')
     } catch (err) {
+      // Don't show error for cancelled scans (already handled in handleCancelScan)
+      if (err.name === 'AbortError') {
+        return
+      }
       console.error('Analysis failed:', err)
-      setError(err.message || 'Analysis failed')
+      setError(getUserFriendlyError(err))
     } finally {
       setIsLoading(false)
       setProgress('')
+      abortControllerRef.current = null
     }
   }
 
@@ -599,6 +626,7 @@ function AppContent() {
         error={error}
         isAuthenticated={isAuthenticated}
         user={user}
+        onCancelScan={handleCancelScan}
       />
       <AuthModal
         isOpen={showAuthModal}

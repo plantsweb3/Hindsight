@@ -182,7 +182,7 @@ function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, onOpe
 }
 
 // SECTION 1: Updated Hero Section
-function HeroSection({ onScrollDown, onAnalyze, onStartQuiz, isLoading, progress, error }) {
+function HeroSection({ onScrollDown, onAnalyze, onStartQuiz, isLoading, progress, error, onCancelScan }) {
   const [walletAddress, setWalletAddress] = useState('')
 
   const handleSubmit = (e) => {
@@ -227,6 +227,11 @@ function HeroSection({ onScrollDown, onAnalyze, onStartQuiz, isLoading, progress
                 <>Analyze<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg></>
               )}
             </button>
+            {isLoading && onCancelScan && (
+              <button type="button" onClick={onCancelScan} className="hero-cancel-btn">
+                Cancel
+              </button>
+            )}
           </div>
           {error && <p className="hero-error">{error}</p>}
         </form>
@@ -1052,6 +1057,7 @@ export default function LandingPageV2({
   error,
   isAuthenticated,
   user,
+  onCancelScan,
 }) {
   const handleLogoClick = (e) => {
     e.preventDefault()
@@ -1083,6 +1089,7 @@ export default function LandingPageV2({
         isLoading={isLoading}
         progress={progress}
         error={error}
+        onCancelScan={onCancelScan}
       />
       <CredibilityBar />
       <TheLoopSection

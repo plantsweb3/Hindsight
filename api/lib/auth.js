@@ -1,6 +1,10 @@
 import jwt from 'jsonwebtoken'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'hindsight-secret-key-change-in-production'
+// JWT_SECRET is required - fail fast if not configured
+if (!process.env.JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is required')
+}
+const JWT_SECRET = process.env.JWT_SECRET
 const JWT_EXPIRES_IN = '7d'
 
 export function signToken(payload) {
@@ -44,10 +48,10 @@ export function error(res, message, status = 400) {
 }
 
 // CORS headers for API routes
-// In production, set ALLOWED_ORIGINS env var to restrict origins
+// ALLOWED_ORIGINS should be set in production, defaults to localhost for dev
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-  : null // null means allow all (development mode)
+  : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175']
 
 export function cors(res, req) {
   res.setHeader('Access-Control-Allow-Credentials', 'true')
@@ -57,13 +61,8 @@ export function cors(res, req) {
   // Get the request origin
   const origin = req?.headers?.origin
 
-  if (ALLOWED_ORIGINS) {
-    // Production: only allow configured origins
-    if (origin && ALLOWED_ORIGINS.includes(origin)) {
-      res.setHeader('Access-Control-Allow-Origin', origin)
-    }
-  } else {
-    // Development: allow all origins
-    res.setHeader('Access-Control-Allow-Origin', origin || '*')
+  // Only allow configured origins (no wildcard)
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
   }
 }

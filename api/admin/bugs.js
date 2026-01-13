@@ -1,7 +1,8 @@
 import { getBugReports, updateBugReportStatus } from '../lib/db.js'
 import { cors, json, error, authenticateRequest } from '../lib/auth.js'
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'change-admin-password-in-env'
+// ADMIN_PASSWORD is required - no fallback
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
 const VALID_STATUSES = ['new', 'reviewing', 'resolved']
 
 export default async function handler(req, res) {
@@ -9,6 +10,11 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
+  }
+
+  // Require ADMIN_PASSWORD to be configured
+  if (!ADMIN_PASSWORD) {
+    return error(res, 'Admin endpoints not configured', 503)
   }
 
   // Check for admin password auth (for hidden route)

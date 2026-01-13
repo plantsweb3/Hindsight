@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate, useOutletContext } from 'react-router-dom'
+import DOMPurify from 'dompurify'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAchievements } from '../../contexts/AchievementContext'
 import Quiz from './Quiz'
@@ -74,7 +75,11 @@ function MarkdownContent({ content }) {
     html = html.replace(/<p>\s*<ul>/gim, '<ul>')
     html = html.replace(/<\/ul>\s*<\/p>/gim, '</ul>')
 
-    return html
+    // Sanitize HTML to prevent XSS
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'strong', 'em', 'ul', 'li', 'code', 'pre'],
+      ALLOWED_ATTR: []
+    })
   }
 
   return (

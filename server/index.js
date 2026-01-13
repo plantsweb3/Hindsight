@@ -14,7 +14,17 @@ app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
   credentials: true,
 }))
-app.use(express.json())
+app.use(express.json({ limit: '1mb' })) // Limit request size
+
+// Security headers middleware
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('X-XSS-Protection', '1; mode=block')
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  next()
+})
+
 app.use(cookieParser())
 
 // Auth routes
@@ -24,8 +34,17 @@ app.use('/api/auth', authRoutes)
 app.use('/api/journal', journalRoutes)
 
 // Academy seed endpoint (for local dev)
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'change-admin-password-in-env'
+// ADMIN_PASSWORD is required for admin endpoints
+if (!process.env.ADMIN_PASSWORD) {
+  console.warn('WARNING: ADMIN_PASSWORD not set - admin endpoints will be disabled')
+}
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
 app.post('/api/academy/seed', async (req, res) => {
+  // Require ADMIN_PASSWORD to be configured
+  if (!ADMIN_PASSWORD) {
+    return res.status(503).json({ error: 'Admin endpoints not configured' })
+  }
+
   const adminPassword = req.headers['x-admin-password']
   if (adminPassword !== ADMIN_PASSWORD) {
     return res.status(403).json({ error: 'Admin access required' })
@@ -40,7 +59,7 @@ app.post('/api/academy/seed', async (req, res) => {
     res.json({ success: true, message: force ? 'Academy content reseeded' : 'Academy content seeded' })
   } catch (err) {
     console.error('Seed failed:', err)
-    res.status(500).json({ error: err.message })
+    res.status(500).json({ error: 'Seed operation failed' })
   }
 })
 
@@ -673,7 +692,7 @@ app.post('/api/analyze', async (req, res) => {
     res.json(result)
   } catch (err) {
     console.error('Analysis failed:', err.message)
-    res.status(500).json({ error: err.message })
+    res.status(500).json({ error: 'Analysis failed. Please try again.' })
   }
 })
 
@@ -903,7 +922,7 @@ CRITICAL RULES for accurate analysis:
     res.json(analysis)
   } catch (err) {
     console.error('AI analysis failed:', err.message)
-    res.status(500).json({ error: 'AI analysis failed: ' + err.message })
+    res.status(500).json({ error: 'AI analysis failed. Please try again.' })
   }
 })
 
