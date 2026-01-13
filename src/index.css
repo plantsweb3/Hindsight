@@ -10855,62 +10855,62 @@ input, button {
   border-bottom: none;
   z-index: 10;
   padding-top: 1rem;
-  /* Active tab doesn't need to extend as far - it connects to content */
   margin-bottom: 0;
   padding-bottom: 1.25rem;
   margin-top: -0.25rem;
 }
 
-/* Left inverse rounded corner - where content top meets active tab left side */
-/* Only show when active tab is NOT the first tab */
+/* Left inverse corner - fills the notch and draws curved border */
 .academy-tab.active::before {
   content: '';
   position: absolute;
-  bottom: 0;
-  left: calc(-1 * var(--corner-radius));
-  width: var(--corner-radius);
-  height: var(--corner-radius);
-  background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
+  bottom: -1px;
+  left: calc(-1 * var(--corner-radius) - 1px);
+  width: calc(var(--corner-radius) + 1px);
+  height: calc(var(--corner-radius) + 1px);
+  background: transparent;
   z-index: 11;
-  border-bottom-right-radius: var(--corner-radius);
-  border-right: 1px solid var(--folder-color-border);
-  border-bottom: 1px solid var(--folder-color-border);
-  box-sizing: border-box;
+  /* Use box-shadow to draw the inverse curve border */
+  border-radius: 0 0 var(--corner-radius) 0;
+  box-shadow:
+    inset calc(-1 * var(--corner-radius)) calc(-1 * var(--corner-radius)) 0 0 var(--folder-color-bg, rgba(30, 30, 35, 0.95)),
+    inset -1px -1px 0 0 var(--folder-color-border);
 }
 
-/* Hide left inverse corner when first tab is active - edge flows straight down */
+/* Hide left inverse corner when first tab is active */
 .academy-tab.active:first-child::before {
   display: none;
 }
 
-/* Right inverse rounded corner - where content top meets active tab right side */
-/* Only show when active tab is NOT the last tab */
+/* Right inverse corner - fills the notch and draws curved border */
 .academy-tab.active::after {
   content: '';
   position: absolute;
-  bottom: 0;
-  right: calc(-1 * var(--corner-radius));
-  width: var(--corner-radius);
-  height: var(--corner-radius);
-  background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
+  bottom: -1px;
+  right: calc(-1 * var(--corner-radius) - 1px);
+  width: calc(var(--corner-radius) + 1px);
+  height: calc(var(--corner-radius) + 1px);
+  background: transparent;
   z-index: 11;
-  border-bottom-left-radius: var(--corner-radius);
-  border-left: 1px solid var(--folder-color-border);
-  border-bottom: 1px solid var(--folder-color-border);
-  box-sizing: border-box;
+  /* Use box-shadow to draw the inverse curve border */
+  border-radius: 0 0 0 var(--corner-radius);
+  box-shadow:
+    inset var(--corner-radius) calc(-1 * var(--corner-radius)) 0 0 var(--folder-color-bg, rgba(30, 30, 35, 0.95)),
+    inset 1px -1px 0 0 var(--folder-color-border);
 }
 
-/* Hide right inverse corner when last tab is active - edge flows straight down */
+/* Hide right inverse corner when last tab is active */
 .academy-tab.active:last-child::after {
   display: none;
 }
 
-/* Tab Content - File Folder Interior (connected to active tab) */
+/* Tab Content - File Folder Interior */
 .academy-tab-content {
   position: relative;
   background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
   border: 1px solid var(--folder-color-border);
   border-top: none;
+  /* Default: rounded on all corners */
   border-radius: var(--corner-radius);
   padding: 1.5rem;
   min-height: 400px;
@@ -10918,46 +10918,61 @@ input, button {
   z-index: 5;
 }
 
-/* Top-left inverse corner - only visible when first tab is NOT active */
+/* When first tab active: top-left should be square to meet tab edge */
+.academy-tabs-container.first-tab-active .academy-tab-content {
+  border-top-left-radius: 0;
+}
+
+/* When last tab active: top-right should be square to meet tab edge */
+.academy-tabs-container.last-tab-active .academy-tab-content {
+  border-top-right-radius: 0;
+}
+
+/* Top border LEFT segment - from content left edge toward active tab */
 .academy-tab-content::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: -1px;
-  width: var(--corner-radius);
-  height: var(--corner-radius);
-  background: transparent;
+  top: -1px;
+  left: 0;
+  height: 1px;
+  background: var(--folder-color-border);
   z-index: 6;
+  /* Width calculated based on which tab is active - default for middle tab */
+  width: calc(33.333% - var(--corner-radius));
   border-top-left-radius: var(--corner-radius);
-  border-top: 1px solid var(--folder-color-border);
-  border-left: 1px solid var(--folder-color-border);
-  box-sizing: border-box;
 }
 
-/* Hide top-left corner when first tab is active */
+/* When first tab active: no left top border segment */
 .academy-tabs-container.first-tab-active .academy-tab-content::before {
   display: none;
 }
 
-/* Top-right inverse corner - only visible when last tab is NOT active */
+/* Top border RIGHT segment - from active tab toward content right edge */
 .academy-tab-content::after {
   content: '';
   position: absolute;
-  top: 0;
-  right: -1px;
-  width: var(--corner-radius);
-  height: var(--corner-radius);
-  background: transparent;
+  top: -1px;
+  right: 0;
+  height: 1px;
+  background: var(--folder-color-border);
   z-index: 6;
+  /* Width calculated based on which tab is active - default for middle tab */
+  width: calc(33.333% - var(--corner-radius));
   border-top-right-radius: var(--corner-radius);
-  border-top: 1px solid var(--folder-color-border);
-  border-right: 1px solid var(--folder-color-border);
-  box-sizing: border-box;
 }
 
-/* Hide top-right corner when last tab is active */
+/* When last tab active: no right top border segment */
 .academy-tabs-container.last-tab-active .academy-tab-content::after {
   display: none;
+}
+
+/* Adjust top border widths for first/last tab active */
+.academy-tabs-container.first-tab-active .academy-tab-content::after {
+  width: calc(66.666% - var(--corner-radius));
+}
+
+.academy-tabs-container.last-tab-active .academy-tab-content::before {
+  width: calc(66.666% - var(--corner-radius));
 }
 
 @keyframes folderOpen {
