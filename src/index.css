@@ -2652,12 +2652,17 @@ input, button {
 
 .share-card-stat {
   width: 100px;
+  height: 70px;
   padding: 12px 16px;
   background: rgba(139, 92, 246, 0.08);
   border: 1px solid rgba(139, 92, 246, 0.3);
   border-radius: 10px;
   box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .share-card-stat-value {
@@ -2665,6 +2670,8 @@ input, button {
   font-weight: 700;
   color: #FAFAFA;
   margin-bottom: 4px;
+  white-space: nowrap;
+  line-height: 1;
 }
 
 .share-card-stat-value.primary {
@@ -2809,7 +2816,14 @@ input, button {
 
 .cta-icon {
   color: #8b5cf6;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.cta-icon-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.5));
 }
 
 .cta-title {

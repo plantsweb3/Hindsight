@@ -102,6 +102,58 @@ function PatternCard({ pattern }) {
   )
 }
 
+// Format average hold time to keep it short for share card
+function formatAvgHold(holdTime) {
+  if (!holdTime) return 'N/A'
+
+  const str = holdTime.toLowerCase()
+
+  // Handle range formats like "30 minutes to 2 hours"
+  if (str.includes(' to ') || str.includes('-')) {
+    // Extract numbers and units
+    const matches = str.match(/(\d+)\s*(minute|hour|day|second|min|hr|h|m|d|s)/gi) || []
+    if (matches.length >= 2) {
+      // Take midpoint or just return abbreviated range
+      const first = matches[0]
+      const last = matches[matches.length - 1]
+      return `${abbreviateTime(first)}-${abbreviateTime(last)}`
+    }
+  }
+
+  // Single value
+  return abbreviateTime(holdTime)
+}
+
+function abbreviateTime(timeStr) {
+  if (!timeStr) return ''
+  const str = timeStr.toLowerCase()
+
+  // Extract number and unit
+  const match = str.match(/(\d+)\s*(second|minute|hour|day|week|month|min|hr|sec|s|m|h|d|w)/i)
+  if (!match) return timeStr.length <= 6 ? timeStr : timeStr.slice(0, 6)
+
+  const num = parseInt(match[1])
+  const unit = match[2].toLowerCase()
+
+  // Abbreviate
+  if (unit.startsWith('sec') || unit === 's') return `${num}s`
+  if (unit.startsWith('min') || unit === 'm') return `${num}m`
+  if (unit.startsWith('hour') || unit === 'hr' || unit === 'h') return `${num}h`
+  if (unit.startsWith('day') || unit === 'd') return `${num}d`
+  if (unit.startsWith('week') || unit === 'w') return `${num}w`
+  if (unit.startsWith('month')) return `${num}mo`
+
+  return `${num}${unit[0]}`
+}
+
+// Get font size based on value length for stat boxes
+function getStatFontSize(value) {
+  const len = String(value).length
+  if (len <= 4) return 22
+  if (len <= 6) return 18
+  return 14
+}
+
 // Pattern color mapping
 const PATTERN_COLORS = {
   'hyperactive day trading': '#EF4444',
@@ -229,7 +281,7 @@ function ShareCard({ analysis, stats }) {
               "{analysis.verdict}"
             </div>
 
-            {/* Stats Row - consistent purple borders */}
+            {/* Stats Row - consistent purple borders, fixed height */}
             <div className="share-card-stats">
               <div className="share-card-stat">
                 <div className="share-card-stat-value primary">{analysis.winRate}</div>
@@ -240,7 +292,12 @@ function ShareCard({ analysis, stats }) {
                 <div className="share-card-stat-label">TRADES</div>
               </div>
               <div className="share-card-stat">
-                <div className="share-card-stat-value">{analysis.avgHoldTime}</div>
+                <div
+                  className="share-card-stat-value"
+                  style={{ fontSize: getStatFontSize(formatAvgHold(analysis.avgHoldTime)) }}
+                >
+                  {formatAvgHold(analysis.avgHoldTime)}
+                </div>
                 <div className="share-card-stat-label">AVG HOLD</div>
               </div>
             </div>
@@ -331,26 +388,24 @@ function ShareCard({ analysis, stats }) {
   )
 }
 
-// Progress CTA Section
+// Progress CTA Section - Updated copy to be more action-oriented
 function ProgressCTA({ isAuthenticated, onStartTracking }) {
   return (
     <div className="progress-cta glass-card">
       <div className="cta-icon">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-        </svg>
+        <img src="/hindsightlogo.png" alt="" className="cta-icon-logo" />
       </div>
-      <h3 className="cta-title">Want to track your progress?</h3>
+      <h3 className="cta-title">Ready to actually fix this?</h3>
       <p className="cta-description">
-        Save your analysis, get weekly insights, and see if your corrections are actually working.
+        Your AI coach has seen your wallet. It has thoughts. Get personalized feedback, learn from the Academy, and stop being exit liquidity.
       </p>
       <button className="cta-btn btn-primary" onClick={onStartTracking}>
-        Start tracking
+        Meet your coach
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M5 12h14M12 5l7 7-7 7" />
         </svg>
       </button>
-      {!isAuthenticated && <p className="cta-note">Sign up to start tracking your trades</p>}
+      {!isAuthenticated && <p className="cta-note">Free tier available • Pro unlocks unlimited</p>}
     </div>
   )
 }
