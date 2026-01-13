@@ -10820,7 +10820,7 @@ input, button {
 .academy-tab {
   position: relative;
   flex: 1;
-  padding: 0.75rem 1.5rem 1.25rem;
+  padding: 0.75rem 1.5rem 1rem;
   background: rgba(30, 30, 35, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-bottom: none;
@@ -10830,7 +10830,6 @@ input, button {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.25s ease;
-  margin-bottom: -1px;
   z-index: 1;
 }
 
@@ -10845,7 +10844,7 @@ input, button {
   z-index: 2;
 }
 
-/* Active tab - seamlessly connects to content, taller to show it's selected */
+/* Active tab - seamlessly connects to content */
 .academy-tab.active {
   color: #fff;
   background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
@@ -10857,15 +10856,16 @@ input, button {
   margin-top: -0.25rem;
 }
 
-/* Cover the content border under the active tab */
+/* Cover the gap between active tab and content - extends below tab bottom */
 .academy-tab.active::after {
   content: '';
   position: absolute;
-  bottom: 0;
+  bottom: -2px;
   left: 0;
   right: 0;
-  height: 2px;
+  height: 6px;
   background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
+  z-index: 15;
 }
 
 /* Tab Content - File Folder Interior */
@@ -10873,17 +10873,14 @@ input, button {
   position: relative;
   background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
   border: 1px solid var(--folder-color-border);
-  border-top: 1px solid var(--folder-color-border);
-  border-radius: 0 0 12px 12px;
+  border-top: none;
+  border-radius: 12px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
   padding: 1.5rem;
   min-height: 400px;
   animation: folderOpen 0.3s ease;
   z-index: 5;
-}
-
-/* Create smooth corner transition where first tab meets content */
-.academy-tabs-container::before {
-  display: none;
 }
 
 @keyframes folderOpen {
