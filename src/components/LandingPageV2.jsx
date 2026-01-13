@@ -1118,6 +1118,18 @@ function Footer({ onOpenContact }) {
             <a href="/legal/terms" className="footer-link">Terms of Service</a>
           </div>
         </div>
+
+        {/* Powered By Section */}
+        <div className="footer-powered-by">
+          <span className="powered-by-text">Powered by</span>
+          <a href="https://www.anthropic.com" target="_blank" rel="noopener noreferrer" className="powered-by-link">
+            <img src="/anthropic-logo.svg" alt="Anthropic" className="powered-by-logo" />
+          </a>
+          <span className="powered-by-separator">&</span>
+          <a href="https://www.helius.dev" target="_blank" rel="noopener noreferrer" className="powered-by-link">
+            <img src="/helius-logo.svg" alt="Helius" className="powered-by-logo" />
+          </a>
+        </div>
       </div>
     </footer>
   )
