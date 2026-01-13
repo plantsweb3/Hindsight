@@ -10871,17 +10871,23 @@ input, button {
   background: transparent;
   z-index: 11;
   border-bottom-right-radius: var(--corner-radius);
-  /* Box-shadow fills the inverse corner area (offset + spread technique) */
-  box-shadow:
-    /* Border stroke on the curve */
-    1px 1px 0 0 var(--folder-color-border),
-    /* Fill behind the border */
-    6px 6px 0 6px var(--folder-color-bg, rgba(30, 30, 35, 0.95));
+  /* Border on bottom and right edges - curves with the radius */
+  border-bottom: 1px solid var(--folder-color-border);
+  border-right: 1px solid var(--folder-color-border);
+  /* Box-shadow fills the inverse corner area */
+  box-shadow: 6px 6px 0 6px var(--folder-color-bg, rgba(30, 30, 35, 0.95));
 }
 
-/* Hide left inverse corner when first tab is active */
+/* First tab active: repurpose ::before as vertical border on outside left edge */
 .academy-tab.active:first-child::before {
-  display: none;
+  left: -1px;
+  bottom: -1px;
+  width: 1px;
+  height: calc(var(--corner-radius) + 1px);
+  background: var(--folder-color-border);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* Right inverse corner - creates concave curve where tab meets content */
@@ -10895,17 +10901,23 @@ input, button {
   background: transparent;
   z-index: 11;
   border-bottom-left-radius: var(--corner-radius);
-  /* Box-shadow fills the inverse corner area (offset + spread technique) */
-  box-shadow:
-    /* Border stroke on the curve */
-    -1px 1px 0 0 var(--folder-color-border),
-    /* Fill behind the border */
-    -6px 6px 0 6px var(--folder-color-bg, rgba(30, 30, 35, 0.95));
+  /* Border on bottom and left edges - curves with the radius */
+  border-bottom: 1px solid var(--folder-color-border);
+  border-left: 1px solid var(--folder-color-border);
+  /* Box-shadow fills the inverse corner area */
+  box-shadow: -6px 6px 0 6px var(--folder-color-bg, rgba(30, 30, 35, 0.95));
 }
 
-/* Hide right inverse corner when last tab is active */
+/* Last tab active: repurpose ::after as vertical border on outside right edge */
 .academy-tab.active:last-child::after {
-  display: none;
+  right: -1px;
+  bottom: -1px;
+  width: 1px;
+  height: calc(var(--corner-radius) + 1px);
+  background: var(--folder-color-border);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* Tab Content - File Folder Interior */
