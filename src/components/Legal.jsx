@@ -64,109 +64,458 @@ function PrivacyPolicy() {
   return (
     <article className="legal-article">
       <h1>Privacy Policy</h1>
-      <p className="legal-updated">Last updated: January 2025</p>
+      <p className="legal-updated">Last Updated: January 13, 2026</p>
 
       <section>
         <h2>1. Introduction</h2>
         <p>
-          Welcome to Hindsight ("we," "our," or "us"). This Privacy Policy explains how we collect,
-          use, disclose, and safeguard your information when you use our trading analytics platform
-          and related services.
+          Hindsight ("we," "us," or "our") respects your privacy and is committed to protecting your
+          personal data. This Privacy Policy explains how we collect, use, store, and protect your
+          information when you use our platform at tradehindsight.com ("the Platform").
         </p>
+        <p>By using Hindsight, you consent to the practices described in this Privacy Policy.</p>
       </section>
 
       <section>
         <h2>2. Information We Collect</h2>
 
         <h3>2.1 Information You Provide</h3>
+        <p><strong>Account Information:</strong></p>
         <ul>
-          <li><strong>Account Information:</strong> Username and password when you create an account</li>
-          <li><strong>Wallet Addresses:</strong> Solana wallet addresses you submit for analysis</li>
-          <li><strong>Journal Entries:</strong> Trading notes and reflections you create</li>
-          <li><strong>Quiz Responses:</strong> Answers to our trader archetype assessment</li>
+          <li>Email address</li>
+          <li>Username/display name</li>
+          <li>Password (encrypted)</li>
+          <li>Profile preferences</li>
         </ul>
 
-        <h3>2.2 Information Collected Automatically</h3>
+        <p><strong>Trading Journal Data:</strong></p>
         <ul>
-          <li><strong>Blockchain Data:</strong> Publicly available transaction history from submitted wallet addresses</li>
-          <li><strong>Usage Data:</strong> How you interact with our platform (pages visited, features used)</li>
-          <li><strong>Device Information:</strong> Browser type, operating system, and device identifiers</li>
+          <li>Journal entries and notes you create</li>
+          <li>Tags and categories you assign</li>
+          <li>Trade reflections and analysis</li>
         </ul>
+
+        <p><strong>Quiz and Assessment Data:</strong></p>
+        <ul>
+          <li>Archetype quiz responses</li>
+          <li>Placement test answers and scores</li>
+          <li>Academy progress and completion data</li>
+        </ul>
+
+        <p><strong>Communications:</strong></p>
+        <ul>
+          <li>Support requests</li>
+          <li>Feedback and suggestions</li>
+          <li>AI coaching conversations</li>
+        </ul>
+
+        <h3>2.2 Wallet and Blockchain Data</h3>
+        <p>When you connect or analyze a wallet, we access <strong>publicly available blockchain data</strong> including:</p>
+        <ul>
+          <li>Wallet addresses (public keys only)</li>
+          <li>Transaction history</li>
+          <li>Token holdings and transfers</li>
+          <li>Trading activity timestamps</li>
+          <li>Profit/loss calculations derived from on-chain data</li>
+        </ul>
+        <p><strong>IMPORTANT:</strong> We <strong>NEVER</strong> collect, request, or store:</p>
+        <ul>
+          <li>Private keys</li>
+          <li>Seed phrases / recovery phrases</li>
+          <li>Wallet passwords</li>
+          <li>Any credentials that control your funds</li>
+        </ul>
+
+        <h3>2.3 Automatically Collected Information</h3>
+        <p><strong>Usage Data:</strong></p>
+        <ul>
+          <li>Pages visited and features used</li>
+          <li>Time spent on the Platform</li>
+          <li>Click patterns and navigation</li>
+          <li>Feature engagement metrics</li>
+        </ul>
+
+        <p><strong>Device Information:</strong></p>
+        <ul>
+          <li>Browser type and version</li>
+          <li>Operating system</li>
+          <li>Device type (desktop/mobile)</li>
+          <li>Screen resolution</li>
+        </ul>
+
+        <p><strong>Technical Data:</strong></p>
+        <ul>
+          <li>IP address</li>
+          <li>Approximate location (country/region level)</li>
+          <li>Referring website</li>
+          <li>Session identifiers</li>
+        </ul>
+
+        <h3>2.4 Cookies and Similar Technologies</h3>
+        <p>We use cookies and similar tracking technologies to:</p>
+        <ul>
+          <li>Keep you logged in</li>
+          <li>Remember your preferences</li>
+          <li>Analyze Platform usage</li>
+          <li>Improve user experience</li>
+        </ul>
+        <p>
+          You can control cookies through your browser settings, but some features may not work
+          properly without them.
+        </p>
       </section>
 
       <section>
         <h2>3. How We Use Your Information</h2>
-        <p>We use your information to:</p>
+        <p>We use collected information to:</p>
+
+        <h3>3.1 Provide Our Services</h3>
         <ul>
-          <li>Provide trading behavior analysis and insights</li>
-          <li>Personalize your experience based on your trader archetype</li>
-          <li>Operate and improve our AI coaching features</li>
-          <li>Track your learning progress in Hindsight Academy</li>
-          <li>Communicate important updates about our service</li>
-          <li>Prevent fraud and ensure platform security</li>
+          <li>Analyze wallet transaction data</li>
+          <li>Generate trading insights and statistics</li>
+          <li>Power AI coaching conversations</li>
+          <li>Track your Academy progress</li>
+          <li>Store your journal entries</li>
+          <li>Determine your trader archetype</li>
+        </ul>
+
+        <h3>3.2 Improve the Platform</h3>
+        <ul>
+          <li>Understand how users interact with features</li>
+          <li>Identify bugs and technical issues</li>
+          <li>Develop new features based on usage patterns</li>
+          <li>Optimize performance and user experience</li>
+        </ul>
+
+        <h3>3.3 Communicate With You</h3>
+        <ul>
+          <li>Send important service updates</li>
+          <li>Respond to support requests</li>
+          <li>Notify you of changes to our Terms or Privacy Policy</li>
+          <li>Send optional educational content (with your consent)</li>
+        </ul>
+
+        <h3>3.4 Security and Compliance</h3>
+        <ul>
+          <li>Detect and prevent fraud or abuse</li>
+          <li>Enforce our Terms of Service</li>
+          <li>Comply with legal obligations</li>
+          <li>Protect the rights of users and third parties</li>
         </ul>
       </section>
 
       <section>
-        <h2>4. Data Sharing</h2>
-        <p>We do not sell your personal information. We may share data with:</p>
+        <h2>4. AI Coaching and Data Processing</h2>
+
+        <h3>4.1 How AI Coaching Works</h3>
+        <p>Our AI coaching feature uses your data to provide personalized feedback:</p>
         <ul>
-          <li><strong>Service Providers:</strong> Third-party services that help us operate (e.g., hosting, analytics)</li>
-          <li><strong>Blockchain Data Providers:</strong> APIs used to fetch public transaction data</li>
-          <li><strong>Legal Requirements:</strong> When required by law or to protect our rights</li>
+          <li>Your archetype and trading style</li>
+          <li>Patterns from your wallet analysis</li>
+          <li>Themes from your journal entries</li>
+          <li>Your Academy progress and weak areas</li>
+        </ul>
+
+        <h3>4.2 Third-Party AI Processing</h3>
+        <p>AI coaching is powered by Anthropic's Claude API. When you use AI coaching:</p>
+        <ul>
+          <li>Your conversation is sent to Anthropic for processing</li>
+          <li>Anthropic processes the data to generate responses</li>
+          <li>Anthropic's data practices are governed by their privacy policy</li>
+        </ul>
+
+        <h3>4.3 Conversation Storage</h3>
+        <ul>
+          <li>AI coaching conversations are stored to maintain chat history</li>
+          <li>You can delete conversations at any time</li>
+          <li>Deleted conversations are removed from our systems</li>
         </ul>
       </section>
 
       <section>
-        <h2>5. Data Security</h2>
+        <h2>5. Data Sharing and Disclosure</h2>
+
+        <h3>5.1 We Do NOT Sell Your Data</h3>
         <p>
-          We implement industry-standard security measures to protect your data, including encryption
-          in transit and at rest. However, no method of transmission over the Internet is 100% secure.
+          We do not sell, rent, or trade your personal information to third parties for marketing purposes.
+        </p>
+
+        <h3>5.2 Service Providers</h3>
+        <p>We share data with trusted service providers who help operate the Platform:</p>
+        <div className="legal-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Provider</th>
+                <th>Purpose</th>
+                <th>Data Shared</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Helius</td>
+                <td>Blockchain data API</td>
+                <td>Wallet addresses (public)</td>
+              </tr>
+              <tr>
+                <td>Anthropic</td>
+                <td>AI coaching</td>
+                <td>Conversation content</td>
+              </tr>
+              <tr>
+                <td>Vercel</td>
+                <td>Hosting</td>
+                <td>Technical/usage data</td>
+              </tr>
+              <tr>
+                <td>Turso</td>
+                <td>Database</td>
+                <td>All stored user data (encrypted)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          These providers are contractually obligated to protect your data and use it only for
+          providing their services.
+        </p>
+
+        <h3>5.3 Legal Requirements</h3>
+        <p>We may disclose information if required by law, such as:</p>
+        <ul>
+          <li>In response to valid legal process (subpoenas, court orders)</li>
+          <li>To protect our rights or property</li>
+          <li>To prevent fraud or illegal activity</li>
+          <li>In connection with a merger, acquisition, or sale of assets</li>
+        </ul>
+
+        <h3>5.4 Aggregated/Anonymized Data</h3>
+        <p>
+          We may share aggregated, anonymized data that cannot identify you (e.g., "50% of users
+          are FOMO Traders"). This data contains no personal information.
         </p>
       </section>
 
       <section>
-        <h2>6. Your Rights</h2>
+        <h2>6. Data Security</h2>
+
+        <h3>6.1 Security Measures</h3>
+        <p>We implement industry-standard security measures:</p>
+        <ul>
+          <li>Encryption of data in transit (HTTPS/TLS)</li>
+          <li>Encryption of sensitive data at rest</li>
+          <li>Secure password hashing</li>
+          <li>Regular security audits</li>
+          <li>Access controls and authentication</li>
+          <li>Rate limiting to prevent abuse</li>
+        </ul>
+
+        <h3>6.2 Your Responsibilities</h3>
+        <p>You are responsible for:</p>
+        <ul>
+          <li>Keeping your login credentials secure</li>
+          <li>Using a strong, unique password</li>
+          <li>Logging out on shared devices</li>
+          <li>Reporting any suspicious activity</li>
+        </ul>
+
+        <h3>6.3 No Guarantee</h3>
+        <p>
+          While we take security seriously, no system is 100% secure. We cannot guarantee absolute
+          security of your data.
+        </p>
+      </section>
+
+      <section>
+        <h2>7. Data Retention</h2>
+
+        <h3>7.1 How Long We Keep Data</h3>
+        <div className="legal-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Data Type</th>
+                <th>Retention Period</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Account information</td>
+                <td>Until you delete your account</td>
+              </tr>
+              <tr>
+                <td>Journal entries</td>
+                <td>Until you delete them or your account</td>
+              </tr>
+              <tr>
+                <td>Wallet analysis results</td>
+                <td>Until you delete them or your account</td>
+              </tr>
+              <tr>
+                <td>AI coaching conversations</td>
+                <td>Until you delete them or your account</td>
+              </tr>
+              <tr>
+                <td>Quiz/assessment results</td>
+                <td>Until you delete your account</td>
+              </tr>
+              <tr>
+                <td>Usage analytics</td>
+                <td>24 months (anonymized thereafter)</td>
+              </tr>
+              <tr>
+                <td>Server logs</td>
+                <td>90 days</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>7.2 Account Deletion</h3>
+        <p>When you delete your account:</p>
+        <ul>
+          <li>Your personal data is deleted within 30 days</li>
+          <li>Some anonymized/aggregated data may be retained</li>
+          <li>Backups are purged according to our backup retention schedule</li>
+          <li>Data shared with third parties is subject to their retention policies</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>8. Your Rights and Choices</h2>
+
+        <h3>8.1 Access and Portability</h3>
         <p>You have the right to:</p>
         <ul>
-          <li>Access the personal data we hold about you</li>
-          <li>Request correction of inaccurate data</li>
-          <li>Delete your account and associated data</li>
-          <li>Export your data in a portable format</li>
+          <li>Access your personal data</li>
+          <li>Request a copy of your data in a portable format</li>
+          <li>Know what data we have collected about you</li>
         </ul>
-        <p>To exercise these rights, visit your account settings or contact us.</p>
-      </section>
 
-      <section>
-        <h2>7. Cookies and Tracking</h2>
+        <h3>8.2 Correction</h3>
         <p>
-          We use essential cookies for authentication and session management. We also use
-          analytics tools to understand how users interact with our platform. You can manage
-          cookie preferences in your browser settings.
+          You can update or correct your account information at any time through your account settings.
         </p>
+
+        <h3>8.3 Deletion</h3>
+        <p>You can:</p>
+        <ul>
+          <li>Delete individual journal entries, conversations, or wallets</li>
+          <li>Delete your entire account (which removes all your data)</li>
+          <li>Request deletion by contacting us</li>
+        </ul>
+
+        <h3>8.4 Opt-Out</h3>
+        <p>You can opt out of:</p>
+        <ul>
+          <li>Marketing communications (unsubscribe link in emails)</li>
+          <li>Optional analytics (contact us)</li>
+          <li>Cookies (through browser settings)</li>
+        </ul>
+
+        <h3>8.5 Restrictions</h3>
+        <p>Some data may be retained for legal compliance even after deletion requests.</p>
       </section>
 
       <section>
-        <h2>8. Children's Privacy</h2>
+        <h2>9. Children's Privacy</h2>
         <p>
           Hindsight is not intended for users under 18 years of age. We do not knowingly collect
-          information from minors.
+          data from children. If we discover we have collected data from a child, we will delete
+          it promptly.
         </p>
       </section>
 
       <section>
-        <h2>9. Changes to This Policy</h2>
-        <p>
-          We may update this Privacy Policy from time to time. We will notify you of significant
-          changes by posting a notice on our platform.
-        </p>
-      </section>
+        <h2>10. International Users</h2>
 
-      <section>
-        <h2>10. Contact Us</h2>
+        <h3>10.1 Data Location</h3>
         <p>
-          If you have questions about this Privacy Policy, please contact us at{' '}
+          Our servers are located in the United States. By using the Platform, you consent to the
+          transfer of your data to the United States.
+        </p>
+
+        <h3>10.2 GDPR (European Users)</h3>
+        <p>If you are in the European Economic Area, you have additional rights under GDPR:</p>
+        <ul>
+          <li>Right to access</li>
+          <li>Right to rectification</li>
+          <li>Right to erasure</li>
+          <li>Right to restrict processing</li>
+          <li>Right to data portability</li>
+          <li>Right to object</li>
+          <li>Right to withdraw consent</li>
+        </ul>
+        <p>
+          To exercise these rights, contact us at{' '}
           <a href="mailto:hindsight.trade@proton.me">hindsight.trade@proton.me</a>.
+        </p>
+
+        <h3>10.3 CCPA (California Users)</h3>
+        <p>California residents have rights under the CCPA:</p>
+        <ul>
+          <li>Right to know what data is collected</li>
+          <li>Right to delete personal information</li>
+          <li>Right to opt-out of data sales (we don't sell data)</li>
+          <li>Right to non-discrimination</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>11. Third-Party Links</h2>
+        <p>
+          The Platform may contain links to third-party websites. We are not responsible for the
+          privacy practices of these sites. Review their privacy policies before providing any
+          information.
+        </p>
+      </section>
+
+      <section>
+        <h2>12. Changes to This Policy</h2>
+        <p>We may update this Privacy Policy from time to time. When we make significant changes:</p>
+        <ul>
+          <li>We will post the updated policy on this page</li>
+          <li>We will update the "Last Updated" date</li>
+          <li>We may notify you via email or Platform notification</li>
+        </ul>
+        <p>
+          Your continued use of the Platform after changes constitutes acceptance of the updated policy.
+        </p>
+      </section>
+
+      <section>
+        <h2>13. Contact Us</h2>
+        <p>For questions, concerns, or requests regarding this Privacy Policy or your data:</p>
+        <p>
+          <strong>Email:</strong> <a href="mailto:hindsight.trade@proton.me">hindsight.trade@proton.me</a>
+        </p>
+        <p><strong>For data deletion or access requests:</strong></p>
+        <p>Email us with the subject line "Data Request" and include:</p>
+        <ul>
+          <li>Your account email</li>
+          <li>The specific request (access, deletion, correction)</li>
+          <li>Any relevant details</li>
+        </ul>
+        <p>We will respond within 30 days.</p>
+      </section>
+
+      <section className="legal-summary">
+        <h2>14. Summary</h2>
+        <p><strong>In plain language:</strong></p>
+        <ul>
+          <li>We collect data to provide wallet analysis, AI coaching, and educational features</li>
+          <li>We access public blockchain data only - never your private keys</li>
+          <li>We use trusted third parties (Helius, Anthropic) to power our features</li>
+          <li>We don't sell your data</li>
+          <li>You can delete your data at any time</li>
+          <li>We take security seriously but can't guarantee perfection</li>
+          <li>Contact us if you have questions</li>
+        </ul>
+      </section>
+
+      <section className="legal-agreement-notice">
+        <p>
+          <strong>BY USING HINDSIGHT, YOU ACKNOWLEDGE THAT YOU HAVE READ AND UNDERSTOOD THIS PRIVACY POLICY.</strong>
         </p>
       </section>
     </article>
