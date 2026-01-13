@@ -22811,3 +22811,87 @@ input, button {
 .chat-auth-btn.secondary:hover {
   background: var(--bg-tertiary);
 }
+
+/* ============================================
+   AI COACH CARD (Copilot Dashboard)
+   ============================================ */
+
+.ai-coach-card {
+  display: block;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  margin-bottom: 1rem;
+}
+
+.ai-coach-card:hover {
+  border-color: rgba(168, 85, 247, 0.5);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.15);
+}
+
+.ai-coach-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.ai-coach-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--accent-purple);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.ai-coach-badge svg {
+  opacity: 0.9;
+}
+
+.ai-coach-card-text {
+  color: var(--text-primary);
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0 0 1rem 0;
+}
+
+.ai-coach-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.2s, gap 0.2s;
+}
+
+.ai-coach-card:hover .ai-coach-card-cta {
+  color: var(--accent-purple);
+  gap: 0.75rem;
+}
+
+.ai-coach-card-cta svg {
+  transition: transform 0.2s;
+}
+
+.ai-coach-card:hover .ai-coach-card-cta svg {
+  transform: translateX(2px);
+}
+
+@media (max-width: 768px) {
+  .ai-coach-card {
+    padding: 1rem 1.25rem;
+  }
+
+  .ai-coach-card-text {
+    font-size: 1rem;
+  }
+}

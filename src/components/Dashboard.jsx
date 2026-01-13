@@ -1193,6 +1193,27 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
             {/* Row 1: Stats Bar */}
             <StatsBar stats={stats} levelInfo={levelInfo} onXpClick={() => setShowXpPopup(true)} />
 
+            {/* AI Coach Card */}
+            <a href="/coach" className="ai-coach-card">
+              <div className="ai-coach-card-header">
+                <div className="ai-coach-badge">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
+                  </svg>
+                  <span>HINDSIGHT COACH</span>
+                </div>
+              </div>
+              <p className="ai-coach-card-text">
+                Questions about your trades? Get personalized insights powered by AI.
+              </p>
+              <span className="ai-coach-card-cta">
+                Start chatting
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </span>
+            </a>
+
             {/* Row 1.5: Journal Section */}
             <JournalSection
               trades={trades}
