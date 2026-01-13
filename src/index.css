@@ -10806,6 +10806,7 @@ input, button {
 .academy-tabs-container {
   margin-bottom: 0;
   position: relative;
+  --corner-radius: 12px;
 }
 
 .academy-tabs {
@@ -10813,24 +10814,26 @@ input, button {
   gap: 0;
   position: relative;
   z-index: 2;
-  /* Allow tabs to overlap vertically */
   align-items: flex-end;
 }
 
 .academy-tab {
   position: relative;
   flex: 1;
-  padding: 0.75rem 1.5rem 1rem;
+  padding: 0.75rem 1.5rem 1.25rem;
   background: rgba(30, 30, 35, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-bottom: none;
-  border-radius: 12px 12px 0 0;
+  border-radius: var(--corner-radius) var(--corner-radius) 0 0;
   color: #71717a;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.25s ease;
   z-index: 1;
+  /* Inactive tabs extend down to fill corner gaps */
+  margin-bottom: calc(-1 * var(--corner-radius));
+  padding-bottom: calc(1.25rem + var(--corner-radius));
 }
 
 /* Hide the left color edge - not needed */
@@ -10844,7 +10847,7 @@ input, button {
   z-index: 2;
 }
 
-/* Active tab - seamlessly connects to content */
+/* Active tab - forms one continuous shape with content */
 .academy-tab.active {
   color: #fff;
   background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
@@ -10852,31 +10855,53 @@ input, button {
   border-bottom: none;
   z-index: 10;
   padding-top: 1rem;
+  /* Active tab doesn't need to extend as far - it connects to content */
+  margin-bottom: 0;
   padding-bottom: 1.25rem;
   margin-top: -0.25rem;
 }
 
-/* Cover the gap between active tab and content - extends below tab bottom */
+/* Left inverse rounded corner - where content top meets active tab left side */
+.academy-tab.active::before {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: calc(-1 * var(--corner-radius));
+  width: var(--corner-radius);
+  height: var(--corner-radius);
+  background: transparent;
+  z-index: 11;
+  /* Box shadow creates the fill and border for inverse corner */
+  border-bottom-right-radius: var(--corner-radius);
+  box-shadow:
+    5px 5px 0 0 var(--folder-color-bg, rgba(30, 30, 35, 0.95)),
+    6px 1px 0 0 var(--folder-color-border);
+}
+
+/* Right inverse rounded corner - where content top meets active tab right side */
 .academy-tab.active::after {
   content: '';
   position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
-  z-index: 15;
+  bottom: -1px;
+  right: calc(-1 * var(--corner-radius));
+  width: var(--corner-radius);
+  height: var(--corner-radius);
+  background: transparent;
+  z-index: 11;
+  /* Box shadow creates the fill and border for inverse corner */
+  border-bottom-left-radius: var(--corner-radius);
+  box-shadow:
+    -5px 5px 0 0 var(--folder-color-bg, rgba(30, 30, 35, 0.95)),
+    -6px 1px 0 0 var(--folder-color-border);
 }
 
-/* Tab Content - File Folder Interior */
+/* Tab Content - File Folder Interior (connected to active tab) */
 .academy-tab-content {
   position: relative;
   background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
   border: 1px solid var(--folder-color-border);
   border-top: none;
-  border-radius: 12px;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+  border-radius: var(--corner-radius);
   padding: 1.5rem;
   min-height: 400px;
   animation: folderOpen 0.3s ease;
