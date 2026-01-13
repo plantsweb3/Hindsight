@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { PLACEMENT_TEST, determinePlacement, calculateSectionScore, LEVEL_INFO, savePlacementQuestionResults } from '../../data/academy/placementTest'
 import { calculatePlacementXP, awardPlacementRewards, ACHIEVEMENTS, hasCompletedPlacementTest } from '../../services/achievements'
+import PlacementShareCard, { getSharePromptMessage } from './PlacementShareCard'
 
 // Question Card Component
 function QuestionCard({ question, selected, onSelect, questionNumber }) {
@@ -105,6 +106,11 @@ function PlacementResults({ answers, onAccept, onStartFromBeginning, onNavigateT
     const info = LEVEL_INFO[level]
     return { level, name: info?.name || level, icon: info?.icon || '📚' }
   })
+
+  // Calculate average score across all sections for share card
+  const averageScore = Math.round(
+    sectionScores.reduce((sum, s) => sum + s.score, 0) / sectionScores.length
+  )
 
   // Determine which achievements would be earned
   const potentialAchievements = []
@@ -280,6 +286,20 @@ function PlacementResults({ answers, onAccept, onStartFromBeginning, onNavigateT
         <button className="results-btn secondary" onClick={onStartFromBeginning}>
           Start from Beginning Instead
         </button>
+      </div>
+
+      {/* Share Section */}
+      <div className="placement-share-divider" />
+      <div className="placement-share-container">
+        <p className="placement-share-prompt">{getSharePromptMessage(placementLevel, averageScore)}</p>
+        <h3 className="placement-share-title">Share your results</h3>
+        <PlacementShareCard
+          level={placementLevel}
+          modulesCleared={passedModules.length}
+          totalModules={5}
+          xpEarned={xpEarned}
+          averageScore={averageScore}
+        />
       </div>
     </div>
   )

@@ -18213,6 +18213,372 @@ input, button {
 }
 
 /* ============================================
+   PLACEMENT TEST SHARE CARD
+   ============================================ */
+
+/* Share section container */
+.placement-share-section {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.placement-share-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.placement-share-divider {
+  width: 100%;
+  max-width: 600px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(113, 113, 122, 0.5), transparent);
+  margin: 2rem auto;
+}
+
+.placement-share-prompt {
+  font-size: 1.125rem;
+  color: #a1a1aa;
+  font-style: italic;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.placement-share-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+/* Card wrapper - scales down the 1200x630 card for preview */
+.placement-share-card-wrapper {
+  width: 100%;
+  max-width: 600px;
+  overflow: hidden;
+  border-radius: 16px;
+  transform: scale(0.5);
+  transform-origin: top center;
+  margin-bottom: -157px; /* Compensate for scale */
+}
+
+/* The actual share card canvas (1200x630px) */
+.placement-share-card-canvas {
+  width: 1200px;
+  height: 630px;
+  position: relative;
+  background: #0a0a0a;
+  border: 2px solid rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 40px rgba(139, 92, 246, 0.3);
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.placement-share-card-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 30%, rgba(139, 92, 246, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.placement-share-card-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  box-sizing: border-box;
+}
+
+/* Header - Logo + Academy */
+.placement-share-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.placement-share-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.placement-share-brand {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.placement-share-academy-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #8B5CF6;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* Level Badge */
+.placement-share-level-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 48px;
+  border-radius: 16px;
+  border: 2px solid;
+  margin-bottom: 20px;
+}
+
+.placement-share-starting-as {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.placement-share-level-name {
+  font-size: 36px;
+  font-weight: 800;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Stars */
+.placement-share-stars {
+  display: flex;
+  gap: 6px;
+}
+
+.placement-share-star {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.placement-share-star.filled {
+  color: #FFD700;
+}
+
+.placement-share-star.empty {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* Flex Line (subtitle) */
+.placement-share-flex-line {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  margin-bottom: 32px;
+  font-style: italic;
+}
+
+/* Stats Row (for Trader/Specialist/Master) */
+.placement-share-stats {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.placement-share-stat {
+  width: 160px;
+  padding: 20px 16px;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.placement-share-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.placement-share-stat-value.primary {
+  color: #8B5CF6;
+}
+
+.placement-share-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.placement-share-stat-sublabel {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Journey variant - progress bar (for Newcomer/Apprentice) */
+.placement-share-journey {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.placement-share-progress-container {
+  width: 400px;
+}
+
+.placement-share-progress-track {
+  width: 100%;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.placement-share-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8B5CF6, #A78BFA);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+.placement-share-lessons-text {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* CTA */
+.placement-share-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+}
+
+.placement-share-cta-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #8B5CF6;
+}
+
+.placement-share-cta-url {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Share Buttons */
+.placement-share-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.placement-share-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.placement-share-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.placement-share-btn-twitter {
+  background: #fff;
+  color: #000;
+}
+
+.placement-share-btn-twitter:hover:not(:disabled) {
+  background: #e4e4e7;
+}
+
+.placement-share-btn-secondary {
+  background: #27272a;
+  color: #fff;
+  border: 1px solid #3f3f46;
+}
+
+.placement-share-btn-secondary:hover:not(:disabled) {
+  background: #3f3f46;
+}
+
+/* Toast notification */
+.placement-share-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #22c55e;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  z-index: 1000;
+  animation: toast-slide-up 0.3s ease;
+}
+
+@keyframes toast-slide-up {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Mobile responsiveness for share card */
+@media (max-width: 768px) {
+  .placement-share-card-wrapper {
+    transform: scale(0.35);
+    margin-bottom: -205px;
+  }
+
+  .placement-share-buttons {
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .placement-share-btn {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .placement-share-card-wrapper {
+    transform: scale(0.28);
+    margin-bottom: -230px;
+  }
+}
+
+/* ============================================
    ARCHETYPE SECTION REDESIGN
    ============================================ */
 
