@@ -5,6 +5,8 @@ import { ProBadge } from './ProBadge'
 import WalletLabelBadge, { LABEL_COLORS } from './WalletLabelBadge'
 import { getCalculatedXPInfo } from '../services/achievements'
 import { DashboardSkeleton } from './Skeleton'
+import WalletAnalysisModal from './WalletAnalysisModal'
+import VerifySightModal from './VerifySightModal'
 
 // Typewriter Text Component
 function TypewriterText({ text, delay = 30, className = '' }) {
@@ -625,13 +627,12 @@ function SuccessToast({ message, onClose }) {
 }
 
 // Tracked Wallets Section with label management
-function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh }) {
+function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh, onOpenWalletAnalysis }) {
   const { token } = useAuth()
   const [expandedWallet, setExpandedWallet] = useState(null)
   const [isUpdating, setIsUpdating] = useState(false)
   const [copyFeedback, setCopyFeedback] = useState(null)
   const [showLabelProPopup, setShowLabelProPopup] = useState(false)
-  const [showAddWalletProPopup, setShowAddWalletProPopup] = useState(false)
   const [successToast, setSuccessToast] = useState(null)
 
   const isPro = user?.isPro || false
@@ -687,21 +688,12 @@ function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh }) {
   }
 
   const handleAddWalletClick = () => {
-    if (atLimit) {
-      // Show Pro popup instead of going to settings
-      setShowAddWalletProPopup(true)
-    } else {
-      onOpenSettings?.()
-    }
+    // Open wallet analysis modal - it handles Pro limits internally
+    onOpenWalletAnalysis?.()
   }
 
   const handleLabelProLearnMore = () => {
     setShowLabelProPopup(false)
-    onOpenPro?.()
-  }
-
-  const handleAddWalletProLearnMore = () => {
-    setShowAddWalletProPopup(false)
     onOpenPro?.()
   }
 
@@ -833,15 +825,6 @@ function WalletsSection({ user, onOpenSettings, onOpenPro, onRefresh }) {
           text="Wallet labels help organize your trading strategy and unlock smarter AI insights."
           onLearnMore={handleLabelProLearnMore}
           onClose={() => setShowLabelProPopup(false)}
-        />
-      )}
-
-      {/* Pro Feature Popup - Add Wallet */}
-      {showAddWalletProPopup && (
-        <ProFeaturePopup
-          text="Track multiple wallets to see your full trading picture and compare strategies."
-          onLearnMore={handleAddWalletProLearnMore}
-          onClose={() => setShowAddWalletProPopup(false)}
         />
       )}
 
@@ -1017,6 +1000,8 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
   const [isLoading, setIsLoading] = useState(true)
   const [levelInfo, setLevelInfo] = useState(null)
   const [showXpPopup, setShowXpPopup] = useState(false)
+  const [showWalletAnalysisModal, setShowWalletAnalysisModal] = useState(false)
+  const [showVerifySightModal, setShowVerifySightModal] = useState(false)
 
   useEffect(() => {
     loadDashboardData()
@@ -1218,6 +1203,13 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
     }
   }
 
+  const handleWalletAnalysisComplete = async (walletAddress, analysis) => {
+    // Wallet is already saved during analysis in the modal
+    // Close modal and refresh dashboard data
+    setShowWalletAnalysisModal(false)
+    await loadDashboardData()
+  }
+
   return (
     <div className="dashboard-page">
       <WaveBackground />
@@ -1284,13 +1276,14 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
               onOpenSettings={onOpenSettings}
               onOpenPro={onOpenPro}
               onRefresh={refreshUser}
+              onOpenWalletAnalysis={() => setShowWalletAnalysisModal(true)}
             />
 
             {/* Row 3: Quick Actions */}
             <QuickActions
-              onAnalyze={onAnalyze}
+              onAnalyze={() => setShowWalletAnalysisModal(true)}
               onOpenJournal={onOpenJournal}
-              onAddWallet={handleAddWallet}
+              onAddWallet={() => setShowWalletAnalysisModal(true)}
             />
 
             {/* Row 3.5: Wallet Performance (Pro users with 2+ wallets) */}
@@ -1337,6 +1330,29 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
           </>
         )}
       </main>
+
+      {/* Wallet Analysis Modal */}
+      <WalletAnalysisModal
+        isOpen={showWalletAnalysisModal}
+        onClose={() => setShowWalletAnalysisModal(false)}
+        onAnalysisComplete={handleWalletAnalysisComplete}
+        onOpenProVerify={() => {
+          setShowWalletAnalysisModal(false)
+          setShowVerifySightModal(true)
+        }}
+      />
+
+      {/* Pro Verification Modal */}
+      {showVerifySightModal && (
+        <VerifySightModal
+          isOpen={showVerifySightModal}
+          onClose={() => setShowVerifySightModal(false)}
+          onVerified={() => {
+            setShowVerifySightModal(false)
+            refreshUser()
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -9440,6 +9440,187 @@ input, button {
   margin: 0;
 }
 
+/* ====================================
+   Wallet Analysis Modal
+   ==================================== */
+.wallet-analysis-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.wallet-analysis-modal {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  animation: modalSlideIn 0.25s ease-out;
+}
+
+.wallet-analysis-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #a1a1aa;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.wallet-analysis-modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fafafa;
+}
+
+/* Input State */
+.wallet-analysis-input-state {
+  text-align: center;
+  padding: 2.5rem 2rem;
+  background: rgba(24, 24, 28, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+.wallet-analysis-logo {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1.5rem;
+}
+
+.wallet-analysis-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.wallet-analysis-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #fafafa;
+  margin: 0 0 0.5rem;
+}
+
+.wallet-analysis-subtitle {
+  font-size: 0.95rem;
+  color: #a1a1aa;
+  margin: 0 0 1.5rem;
+  line-height: 1.5;
+}
+
+.wallet-analysis-form {
+  width: 100%;
+}
+
+.wallet-analysis-error {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: #ef4444;
+}
+
+/* Pro Prompt State */
+.wallet-analysis-pro-prompt {
+  text-align: center;
+  padding: 2.5rem 2rem;
+}
+
+.pro-prompt-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(168, 85, 247, 0.2));
+  border-radius: 50%;
+  color: #a855f7;
+}
+
+.pro-prompt-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #fafafa;
+  margin: 0 0 0.75rem;
+}
+
+.pro-prompt-text {
+  font-size: 0.95rem;
+  color: #a1a1aa;
+  margin: 0 0 1.5rem;
+  line-height: 1.6;
+}
+
+.pro-prompt-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pro-prompt-verify-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pro-prompt-verify-btn:hover {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  transform: translateY(-1px);
+}
+
+.pro-prompt-later-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 0.75rem 1.5rem;
+  color: #a1a1aa;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pro-prompt-later-btn:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fafafa;
+}
+
+/* Mobile responsive for wallet analysis modal */
+@media (max-width: 640px) {
+  .wallet-analysis-modal {
+    max-width: 100%;
+    margin: 0 0.5rem;
+  }
+
+  .wallet-analysis-input-state,
+  .wallet-analysis-pro-prompt {
+    padding: 2rem 1.25rem;
+  }
+
+  .wallet-analysis-title,
+  .pro-prompt-title {
+    font-size: 1.25rem;
+  }
+}
+
 /* Feature card Pro hint */
 .feature-card-pro {
   transition: all 0.2s;
@@ -19238,6 +19419,7 @@ input, button {
 
 /* User's archetype gets extra glow and bounce animation */
 .archetype-module-card.is-user-archetype {
+  opacity: 1; /* Override initial opacity: 0 since bounce animation replaces fade-in */
   animation: card-bounce-subtle 3s ease-in-out infinite;
 }
 
