@@ -20,8 +20,8 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
   }
 }
 
-// TODO: Update SIGHT_CA with actual contract address at launch
-const SIGHT_CA = 'PLACEHOLDER_UPDATE_AT_LAUNCH'
+// $SIGHT token contract address - set via environment variable at launch
+const SIGHT_CA = process.env.SIGHT_TOKEN_CA || 'PLACEHOLDER_UPDATE_AT_LAUNCH'
 
 // Helius RPC
 const HELIUS_KEY = process.env.HELIUS_API_KEY

@@ -1,7 +1,10 @@
 import { createClient } from '@libsql/client'
 
-// TODO: Update SIGHT_CA with actual contract address at launch
-const SIGHT_CA = 'PLACEHOLDER_UPDATE_AT_LAUNCH'
+// $SIGHT token contract address - set via environment variable at launch
+const SIGHT_CA = process.env.SIGHT_TOKEN_CA || 'PLACEHOLDER_UPDATE_AT_LAUNCH'
+
+// Minimum $SIGHT value in SOL required for Pro status
+const MIN_SIGHT_VALUE_SOL = 0.25
 
 // Turso database connection (lazy initialization)
 let db = null
@@ -900,18 +903,108 @@ export async function canAddJournalEntry(userId) {
   }
 }
 
-// Placeholder for $SIGHT token verification
-// TODO: Plug in $SIGHT CA after launch
+// Check $SIGHT token balance for Pro verification
 export async function checkSightBalance(walletAddresses) {
-  // This will be updated post-launch to actually check balances
-  // For now, returns not Pro
-  return {
-    isPro: false,
-    balance: 0,
-    requiredBalance: 0.25, // 0.25 SOL worth of $SIGHT
-    // TODO: Add actual token check here
-    // const SIGHT_CA = 'YOUR_TOKEN_CA_HERE'
-    // const MIN_BALANCE_SOL = 0.25
+  const HELIUS_KEY = process.env.HELIUS_API_KEY
+
+  // If SIGHT_CA is not configured, return not Pro
+  if (!SIGHT_CA || SIGHT_CA === 'PLACEHOLDER_UPDATE_AT_LAUNCH') {
+    console.warn('[checkSightBalance] SIGHT_TOKEN_CA not configured')
+    return {
+      isPro: false,
+      balance: 0,
+      requiredBalance: MIN_SIGHT_VALUE_SOL,
+      error: 'Token not configured yet',
+    }
+  }
+
+  if (!HELIUS_KEY) {
+    console.error('[checkSightBalance] HELIUS_API_KEY not configured')
+    return {
+      isPro: false,
+      balance: 0,
+      requiredBalance: MIN_SIGHT_VALUE_SOL,
+      error: 'API not configured',
+    }
+  }
+
+  try {
+    let totalBalance = 0
+
+    // Check each wallet address for $SIGHT balance
+    for (const walletAddress of walletAddresses) {
+      // Use Helius DAS API to get token balances
+      const response = await fetch(`https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 'sight-check',
+          method: 'searchAssets',
+          params: {
+            ownerAddress: walletAddress,
+            tokenType: 'fungible',
+            displayOptions: { showFungible: true },
+          },
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.result?.items) {
+        // Find $SIGHT token in the wallet
+        const sightToken = data.result.items.find(item => item.id === SIGHT_CA)
+
+        if (sightToken) {
+          const balance = sightToken.token_info?.balance || 0
+          const decimals = sightToken.token_info?.decimals || 0
+          totalBalance += balance / Math.pow(10, decimals)
+        }
+      }
+    }
+
+    // If no balance found, return early
+    if (totalBalance === 0) {
+      return {
+        isPro: false,
+        balance: 0,
+        requiredBalance: MIN_SIGHT_VALUE_SOL,
+      }
+    }
+
+    // Fetch token price from DexScreener to calculate SOL value
+    let priceInSol = 0
+    try {
+      const priceResponse = await fetch(
+        `https://api.dexscreener.com/tokens/v1/solana/${SIGHT_CA}`,
+        { headers: { 'Accept': 'application/json' } }
+      )
+      const priceData = await priceResponse.json()
+
+      if (priceData?.[0]?.priceNative) {
+        priceInSol = parseFloat(priceData[0].priceNative)
+      }
+    } catch (priceErr) {
+      console.warn('[checkSightBalance] Failed to fetch price:', priceErr.message)
+    }
+
+    const valueInSol = totalBalance * priceInSol
+    const isPro = valueInSol >= MIN_SIGHT_VALUE_SOL
+
+    return {
+      isPro,
+      balance: totalBalance,
+      valueInSol: Math.round(valueInSol * 1000) / 1000,
+      requiredBalance: MIN_SIGHT_VALUE_SOL,
+    }
+  } catch (err) {
+    console.error('[checkSightBalance] Error:', err.message)
+    return {
+      isPro: false,
+      balance: 0,
+      requiredBalance: MIN_SIGHT_VALUE_SOL,
+      error: 'Failed to check balance',
+    }
   }
 }
 
