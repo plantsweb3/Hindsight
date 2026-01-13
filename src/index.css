@@ -10813,14 +10813,16 @@ input, button {
   gap: 0;
   position: relative;
   z-index: 2;
+  /* Allow tabs to overlap vertically */
+  align-items: flex-end;
 }
 
 .academy-tab {
   position: relative;
   flex: 1;
-  padding: 1rem 1.5rem 1.25rem;
-  background: rgba(30, 30, 35, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.75rem 1.5rem 1.25rem;
+  background: rgba(30, 30, 35, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-bottom: none;
   border-radius: 12px 12px 0 0;
   color: #71717a;
@@ -10829,6 +10831,7 @@ input, button {
   cursor: pointer;
   transition: all 0.25s ease;
   margin-bottom: -1px;
+  z-index: 1;
 }
 
 /* Hide the left color edge - not needed */
@@ -10838,16 +10841,20 @@ input, button {
 
 .academy-tab:hover:not(.active) {
   color: #a1a1aa;
-  background: rgba(40, 40, 48, 0.8);
+  background: rgba(40, 40, 48, 0.9);
+  z-index: 2;
 }
 
-/* Active tab - seamlessly connects to content */
+/* Active tab - seamlessly connects to content, taller to show it's selected */
 .academy-tab.active {
   color: #fff;
   background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
   border-color: var(--folder-color-border);
   border-bottom: none;
-  z-index: 3;
+  z-index: 10;
+  padding-top: 1rem;
+  padding-bottom: 1.25rem;
+  margin-top: -0.25rem;
 }
 
 /* Cover the content border under the active tab */
@@ -10866,24 +10873,17 @@ input, button {
   position: relative;
   background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
   border: 1px solid var(--folder-color-border);
-  border-radius: 0 12px 12px 12px;
+  border-top: 1px solid var(--folder-color-border);
+  border-radius: 0 0 12px 12px;
   padding: 1.5rem;
   min-height: 400px;
   animation: folderOpen 0.3s ease;
+  z-index: 5;
 }
 
 /* Create smooth corner transition where first tab meets content */
 .academy-tabs-container::before {
-  content: '';
-  position: absolute;
-  top: calc(100% - 13px);
-  left: 0;
-  width: 12px;
-  height: 12px;
-  background: transparent;
-  border-bottom-left-radius: 12px;
-  box-shadow: -6px 6px 0 var(--folder-color-bg, rgba(30, 30, 35, 0.95));
-  z-index: 4;
+  display: none;
 }
 
 @keyframes folderOpen {
@@ -10900,7 +10900,7 @@ input, button {
 /* Neutral Cards Inside Folder Content - Dark documents in colored folder */
 .academy-tab-content .glass-card,
 .academy-tab-content .module-card,
-.academy-tab-content .coming-soon-card,
+.academy-tab-content .coming-soon-module-card,
 .academy-tab-content .archetype-card,
 .academy-tab-content .archetype-module-card,
 .academy-tab-content .lesson-recommendation-card,
@@ -10908,22 +10908,24 @@ input, button {
 .academy-tab-content .coming-soon-footer-cta,
 .academy-tab-content .coming-soon-hero-card,
 .academy-tab-content .archetype-hero-compact {
-  background: rgba(24, 24, 27, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(24, 24, 27, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
 
 .academy-tab-content .glass-card:hover,
 .academy-tab-content .module-card:hover,
-.academy-tab-content .coming-soon-card:hover,
+.academy-tab-content .coming-soon-module-card:hover,
 .academy-tab-content .archetype-card:hover,
 .academy-tab-content .archetype-module-card:hover,
 .academy-tab-content .lesson-recommendation-card:hover,
 .academy-tab-content .most-requested-card:hover,
 .academy-tab-content .coming-soon-footer-cta:hover {
-  background: rgba(32, 32, 38, 0.95);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(32, 32, 38, 0.98) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* Hero cards keep accent borders but neutral fill */
