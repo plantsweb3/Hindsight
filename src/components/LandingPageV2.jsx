@@ -573,7 +573,6 @@ function ArchetypesSection() {
     { name: 'Technical Analyst', focus: 'Chart mastery', color: '#22c55e', emoji: '📊' },
     { name: 'Copy Trader', focus: 'Following winners', color: '#06b6d4', emoji: '👀' },
     { name: 'Impulse Trader', focus: 'Quick decisions', color: '#eab308', emoji: '💥' },
-    { name: 'Contrarian', focus: 'Against the crowd', color: '#ec4899', emoji: '🔄' },
   ]
 
   return (
@@ -582,7 +581,7 @@ function ArchetypesSection() {
         <h2 className="section-headline">What kind of trader are you?</h2>
         <p className="section-subheadline">Take the 60-second quiz. Get a personalized learning path.</p>
 
-        <div className="archetypes-grid archetypes-grid-3x3">
+        <div className="archetypes-grid archetypes-grid-4x2">
           {archetypes.map((a, i) => (
             <div key={i} className="archetype-preview-card glass-card" style={{ '--archetype-color': a.color }}>
               <span className="archetype-preview-emoji">{a.emoji}</span>

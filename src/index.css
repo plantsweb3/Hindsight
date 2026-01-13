@@ -21637,12 +21637,12 @@ input, button {
   margin-top: 2rem;
 }
 
-/* Archetypes 3x3 Grid */
-.archetypes-grid-3x3 {
+/* Archetypes 4x2 Grid */
+.archetypes-grid-4x2 {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
-  max-width: 700px;
+  max-width: 900px;
   margin: 0 auto 2rem;
 }
 
@@ -21723,8 +21723,8 @@ input, button {
     height: 40px;
   }
 
-  .archetypes-grid-3x3 {
-    grid-template-columns: repeat(3, 1fr);
+  .archetypes-grid-4x2 {
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
   }
 
@@ -21744,7 +21744,7 @@ input, button {
     max-width: 200px;
   }
 
-  .archetypes-grid-3x3 {
+  .archetypes-grid-4x2 {
     grid-template-columns: repeat(2, 1fr);
   }
 
