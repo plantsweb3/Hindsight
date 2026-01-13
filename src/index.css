@@ -22796,22 +22796,81 @@ input, button {
    AI COACH CARD (Copilot Dashboard)
    ============================================ */
 
+/* Wrapper for glow effect */
+.ai-coach-card-wrapper {
+  position: relative;
+  margin-bottom: 1rem;
+  border-radius: 1rem;
+}
+
+/* Animated spinning glow border */
+.ai-coach-card-glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: 1.125rem;
+  background: conic-gradient(
+    from var(--coach-glow-angle, 0deg),
+    #8B5CF6 0deg,
+    #a78bfa 30deg,
+    transparent 60deg,
+    transparent 300deg,
+    #a78bfa 330deg,
+    #8B5CF6 360deg
+  );
+  opacity: 0.7;
+  z-index: 0;
+  animation: coach-card-glow-spin 4s linear infinite;
+}
+
+@keyframes coach-card-glow-spin {
+  from { --coach-glow-angle: 0deg; }
+  to { --coach-glow-angle: 360deg; }
+}
+
+@property --coach-glow-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
 .ai-coach-card {
+  position: relative;
   display: block;
   background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  border: 1px solid transparent;
   border-radius: 1rem;
   padding: 1.25rem 1.5rem;
   text-decoration: none;
-  transition: all 0.2s ease;
-  margin-bottom: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 1;
+}
+
+/* Inner background to cover glow */
+.ai-coach-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  background: var(--bg-secondary);
+  z-index: -1;
+}
+
+.ai-coach-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+  z-index: -1;
 }
 
 .ai-coach-card:hover {
-  border-color: rgba(168, 85, 247, 0.5);
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
   transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.15);
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.2);
+}
+
+.ai-coach-card-wrapper:hover .ai-coach-card-glow {
+  opacity: 1;
 }
 
 .ai-coach-card-header {
@@ -22841,6 +22900,21 @@ input, button {
   font-weight: 500;
   line-height: 1.4;
   margin: 0 0 1rem 0;
+  min-height: 1.6em;
+}
+
+/* Typewriter cursor */
+.typewriter-cursor {
+  display: inline-block;
+  color: var(--accent-purple);
+  animation: typewriter-blink 0.7s infinite;
+  margin-left: 1px;
+  font-weight: 400;
+}
+
+@keyframes typewriter-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }
 
 .ai-coach-card-cta {
