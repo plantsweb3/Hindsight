@@ -179,8 +179,8 @@ export default function WalletAnalysisModal({
     return (
       <div className="wallet-analysis-modal-overlay" onClick={handleOverlayClick}>
         <div className="wallet-analysis-modal glass-card" onClick={e => e.stopPropagation()}>
-          <button className="wallet-analysis-modal-close" onClick={onClose}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <button className="wallet-analysis-modal-close" onClick={onClose} aria-label="Close modal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
           </button>
@@ -225,8 +225,8 @@ export default function WalletAnalysisModal({
     <div className="wallet-analysis-modal-overlay" onClick={handleOverlayClick}>
       <div className="wallet-analysis-modal" onClick={e => e.stopPropagation()}>
         {!isLoading && (
-          <button className="wallet-analysis-modal-close" onClick={onClose}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <button className="wallet-analysis-modal-close" onClick={onClose} aria-label="Close modal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
           </button>
@@ -267,8 +267,8 @@ export default function WalletAnalysisModal({
               {error && (
                 <div className="wallet-analysis-error">
                   <span>{error}</span>
-                  <button className="error-dismiss" onClick={() => setError('')} type="button">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <button className="error-dismiss" onClick={() => setError('')} type="button" aria-label="Dismiss error">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                       <path d="M18 6L6 18M6 6l12 12" />
                     </svg>
                   </button>

@@ -104,7 +104,7 @@ function ProUpgradeModal({ onClose, resetsAt }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content pro-upgrade-modal" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>&times;</button>
+        <button className="modal-close" onClick={onClose} aria-label="Close modal">&times;</button>
         <div className="pro-upgrade-icon">
           <span>5/5</span>
         </div>

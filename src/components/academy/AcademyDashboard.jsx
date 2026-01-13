@@ -379,8 +379,8 @@ function DailyGoalModal({ isOpen, onClose, currentGoalId, onSave }) {
   return (
     <div className="daily-goal-modal-overlay" onClick={onClose}>
       <div className="daily-goal-modal glass-card" onClick={e => e.stopPropagation()}>
-        <button className="modal-close-btn" onClick={onClose}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
@@ -717,8 +717,8 @@ function AchievementDetailModal({ achievement, isEarned, onClose }) {
   return (
     <div className="modal-overlay achievement-detail-overlay" onClick={onClose}>
       <div className="modal-content glass-card achievement-detail-modal" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <button className="modal-close" onClick={onClose} aria-label="Close modal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <path d="M18 6L6 18M6 6l12 12" />
           </svg>
         </button>
@@ -1491,8 +1491,8 @@ function ComingSoonPopup({ module, onClose }) {
           boxShadow: `0 0 30px ${moduleColor}33`
         }}
       >
-        <button className="modal-close" onClick={onClose}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <button className="modal-close" onClick={onClose} aria-label="Close modal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <path d="M18 6L6 18M6 6l12 12" />
           </svg>
         </button>
@@ -1574,8 +1574,8 @@ function CourseRequestModal({ isOpen, onClose, onSubmit, isSubmitting }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="course-request-modal" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <button className="modal-close" onClick={onClose} aria-label="Close modal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <path d="M18 6L6 18M6 6l12 12" />
           </svg>
         </button>

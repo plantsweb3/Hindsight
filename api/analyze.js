@@ -4,6 +4,22 @@ import { cors, authenticateRequest } from './lib/auth.js'
 // Only log in development
 const debug = process.env.NODE_ENV !== 'production' ? console.log.bind(console) : () => {}
 
+// Fetch with timeout helper
+async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    })
+    return response
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
 // TODO: Update SIGHT_CA with actual contract address at launch
 const SIGHT_CA = 'PLACEHOLDER_UPDATE_AT_LAUNCH'
 
@@ -53,7 +69,7 @@ async function getTokenMetadata(mintAddress) {
   }
 
   try {
-    const response = await fetch(`https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`, {
+    const response = await fetchWithTimeout(`https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -62,7 +78,7 @@ async function getTokenMetadata(mintAddress) {
         method: 'getAsset',
         params: { id: mintAddress },
       }),
-    })
+    }, 10000) // 10 second timeout for metadata
 
     const data = await response.json()
 
@@ -76,7 +92,9 @@ async function getTokenMetadata(mintAddress) {
       return tokenInfo
     }
   } catch (err) {
-    console.warn(`Failed to fetch metadata for ${mintAddress}:`, err.message)
+    if (err.name !== 'AbortError') {
+      debug(`Failed to fetch metadata for ${mintAddress}:`, err.message)
+    }
   }
 
   const fallback = { symbol: mintAddress.slice(0, 6), name: 'Unknown' }
@@ -353,8 +371,10 @@ async function getCurrentPrices(mints) {
   for (let i = 0; i < mints.length; i += batchSize) {
     const batch = mints.slice(i, i + batchSize)
     try {
-      const response = await fetch(
-        `https://api.dexscreener.com/tokens/v1/solana/${batch.join(',')}`
+      const response = await fetchWithTimeout(
+        `https://api.dexscreener.com/tokens/v1/solana/${batch.join(',')}`,
+        {},
+        15000 // 15 second timeout for price data
       )
       const data = await response.json()
 
@@ -369,7 +389,9 @@ async function getCurrentPrices(mints) {
         })
       }
     } catch (err) {
-      console.warn('DexScreener fetch failed:', err.message)
+      if (err.name !== 'AbortError') {
+        debug('DexScreener fetch failed:', err.message)
+      }
     }
   }
 

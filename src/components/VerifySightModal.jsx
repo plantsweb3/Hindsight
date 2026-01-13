@@ -76,8 +76,8 @@ export default function VerifySightModal({ isOpen, onClose, onSuccess }) {
   return (
     <div className="upgrade-modal-overlay" onClick={handleClose}>
       <div className="upgrade-modal glass-card verify-sight-modal" onClick={e => e.stopPropagation()}>
-        <button className="upgrade-modal-close" onClick={handleClose}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <button className="upgrade-modal-close" onClick={handleClose} aria-label="Close modal">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <path d="M18 6L6 18M6 6l12 12" />
           </svg>
         </button>

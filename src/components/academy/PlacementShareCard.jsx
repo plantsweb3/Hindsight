@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
-import html2canvas from 'html2canvas'
 import { LEVEL_STYLES, getFlexLine, getTweetText, getSharePromptMessage, getLessonsToMaster } from '../../data/placementShareConfig'
+
+// html2canvas is lazy-loaded when needed to reduce initial bundle size
 
 // Star component for level badge
 function StarRow({ count, total = 5 }) {
@@ -127,6 +128,8 @@ export default function PlacementShareCard({ level, modulesCleared, totalModules
 
     setIsGenerating(true)
     try {
+      // Lazy-load html2canvas only when needed
+      const { default: html2canvas } = await import('html2canvas')
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: '#0a0a0a',
         scale: 2,
@@ -164,6 +167,8 @@ export default function PlacementShareCard({ level, modulesCleared, totalModules
 
     setIsGenerating(true)
     try {
+      // Lazy-load html2canvas only when needed
+      const { default: html2canvas } = await import('html2canvas')
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: '#0a0a0a',
         scale: 2,
@@ -193,6 +198,8 @@ export default function PlacementShareCard({ level, modulesCleared, totalModules
 
     setIsGenerating(true)
     try {
+      // Lazy-load html2canvas only when needed
+      const { default: html2canvas } = await import('html2canvas')
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: '#0a0a0a',
         scale: 2,

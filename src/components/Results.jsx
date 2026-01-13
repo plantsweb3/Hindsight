@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import html2canvas from 'html2canvas'
+
+// html2canvas is lazy-loaded when needed to reduce initial bundle size
 
 // Shared Wave Background (same as landing page)
 function WaveBackground() {
@@ -211,6 +212,8 @@ function ShareCard({ analysis, stats }) {
 
     setIsGenerating(true)
     try {
+      // Lazy-load html2canvas only when needed
+      const { default: html2canvas } = await import('html2canvas')
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: '#0a0a0a',
         scale: 2,
@@ -251,6 +254,8 @@ function ShareCard({ analysis, stats }) {
 
     setIsGenerating(true)
     try {
+      // Lazy-load html2canvas only when needed
+      const { default: html2canvas } = await import('html2canvas')
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: '#0a0a0a',
         scale: 2,

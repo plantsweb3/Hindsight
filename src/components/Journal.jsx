@@ -953,7 +953,7 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
       {/* XP Toast Animation */}
       {xpToast && (
         <div className="xp-toast xp-toast-success">
-          <button className="xp-toast-close" onClick={() => setXpToast(null)}>×</button>
+          <button className="xp-toast-close" onClick={() => setXpToast(null)} aria-label="Dismiss notification">×</button>
           <div className="xp-toast-header">
             <span className="xp-toast-icon">✓</span>
             <span className="xp-toast-title">Entry Saved!</span>

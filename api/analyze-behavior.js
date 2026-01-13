@@ -204,6 +204,8 @@ CRITICAL RULES for accurate analysis:
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1024,
       messages: [{ role: 'user', content: prompt }],
+    }, {
+      timeout: 55000, // 55 second timeout (Vercel has 60s limit)
     })
 
     const responseText = message.content[0].text
