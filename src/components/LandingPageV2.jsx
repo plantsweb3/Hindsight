@@ -181,9 +181,75 @@ function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, onOpe
   )
 }
 
-// SECTION 1: Updated Hero Section
+// Loading messages that progress from professional to increasingly casual/perplexed
+const LOADING_MESSAGES = [
+  // Phase 1: Professional (0-12 seconds)
+  "Connecting to Solana...",
+  "Fetching transaction history...",
+  "Analyzing past trades...",
+  "Identifying patterns...",
+
+  // Phase 2: Working Hard (12-24 seconds)
+  "Processing transactions...",
+  "Calculating win rates...",
+  "Examining hold times...",
+  "Mapping token behaviors...",
+
+  // Phase 3: Getting Curious (24-36 seconds)
+  "Hmm, interesting patterns here...",
+  "Running deeper analysis...",
+  "Cross-referencing with market data...",
+  "This wallet has stories to tell...",
+
+  // Phase 4: Increasingly Casual (36-48 seconds)
+  "Okay, some bold moves in here...",
+  "Still crunching... you trade a lot",
+  "Found some... choices",
+  "Taking notes for your roast...",
+
+  // Phase 5: Perplexed (48-60 seconds)
+  "Wait, you held that for HOW long?",
+  "This is... certainly a strategy",
+  "I have questions. Many questions.",
+  "Compiling thoughts... and concerns",
+  "Almost done judging—I mean analyzing",
+  "Preparing your reality check...",
+
+  // Phase 6: Extended wait (60+ seconds)
+  "You really went through it huh",
+  "Building a comprehensive diagnosis...",
+  "This one's gonna be good",
+  "Trust the process...",
+]
+
+// SECTION 1: Updated Hero Section with Loading Experience
 function HeroSection({ onScrollDown, onAnalyze, onStartQuiz, isLoading, progress, error, onCancelScan }) {
   const [walletAddress, setWalletAddress] = useState('')
+  const [messageIndex, setMessageIndex] = useState(0)
+  const [isMessageVisible, setIsMessageVisible] = useState(true)
+
+  // Cycle through loading messages
+  useEffect(() => {
+    if (!isLoading) {
+      setMessageIndex(0)
+      return
+    }
+
+    const interval = setInterval(() => {
+      // Fade out
+      setIsMessageVisible(false)
+
+      // After fade out, change message and fade in
+      setTimeout(() => {
+        setMessageIndex((prev) =>
+          prev < LOADING_MESSAGES.length - 1 ? prev + 1 : prev
+        )
+        setIsMessageVisible(true)
+      }, 300)
+    }, 3500)
+
+    return () => clearInterval(interval)
+  }, [isLoading])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -195,54 +261,84 @@ function HeroSection({ onScrollDown, onAnalyze, onStartQuiz, isLoading, progress
   return (
     <section className="hero-section hero-section-v2">
       <div className="hero-content">
-        <div className="hero-logo">
-          <img src="/hindsightlogo.png" alt="Hindsight" className="hero-logo-img" />
-        </div>
+        {!isLoading ? (
+          // Initial State - Input Form with Breathing Glow
+          <>
+            <div className="hero-logo">
+              <img src="/hindsightlogo.png" alt="Hindsight" className="hero-logo-img" />
+            </div>
 
-        <h1 className="hero-headline hero-headline-compact">
-          The trading improvement system{' '}
-          <br className="hero-line-break" />
-          for Solana <span className="text-gradient-purple">traders</span>
-        </h1>
+            <h1 className="hero-headline hero-headline-compact">
+              The trading improvement system{' '}
+              <br className="hero-line-break" />
+              for Solana <span className="text-gradient-purple">traders</span>
+            </h1>
 
-        <p className="hero-subheadline">
-          Analyze your trades. Learn from your mistakes. Level up with likeminded traders.
-        </p>
+            <p className="hero-subheadline">
+              Analyze your trades. Learn from your mistakes. Level up with likeminded traders.
+            </p>
 
-        {/* Wallet Input */}
-        <form className="hero-wallet-form" onSubmit={handleSubmit}>
-          <p className="hero-wallet-label">Paste a wallet to analyze instantly</p>
-          <div className="hero-input-wrapper">
-            <input
-              type="text"
-              value={walletAddress}
-              onChange={(e) => setWalletAddress(e.target.value)}
-              placeholder="Paste any Solana wallet address"
-              disabled={isLoading}
-              className="hero-wallet-input"
-            />
-            <button type="submit" disabled={isLoading || !walletAddress.trim()} className="hero-analyze-btn">
-              {isLoading ? (
-                <><span className="spinner" />{progress || 'Analyzing...'}</>
-              ) : (
-                <>Analyze<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg></>
-              )}
+            {/* Wallet Input with Breathing Glow */}
+            <form className="hero-wallet-form" onSubmit={handleSubmit}>
+              <p className="hero-wallet-label">Paste a wallet to analyze instantly</p>
+              <div className="hero-input-wrapper hero-input-breathing">
+                <input
+                  type="text"
+                  value={walletAddress}
+                  onChange={(e) => setWalletAddress(e.target.value)}
+                  placeholder="Paste any Solana wallet address"
+                  className="hero-wallet-input"
+                />
+                <button type="submit" disabled={!walletAddress.trim()} className="hero-analyze-btn">
+                  Analyze
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+              {error && <p className="hero-error">{error}</p>}
+            </form>
+
+            <button className="hero-learn-more" onClick={onScrollDown}>
+              <span>Learn more</span>
+              <svg className="hero-learn-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
             </button>
-            {isLoading && onCancelScan && (
-              <button type="button" onClick={onCancelScan} className="hero-cancel-btn">
-                Cancel
-              </button>
-            )}
-          </div>
-          {error && <p className="hero-error">{error}</p>}
-        </form>
+          </>
+        ) : (
+          // Loading State - Spinning Glow with Progressive Messages
+          <div className="hero-loading-card">
+            <div className="hero-loading-glow"></div>
+            <div className="hero-loading-content">
+              {/* Animated Logo */}
+              <div className="hero-loading-logo">
+                <img src="/hindsightlogo.png" alt="Hindsight" />
+              </div>
 
-        <button className="hero-learn-more" onClick={onScrollDown}>
-          <span>Learn more</span>
-          <svg className="hero-learn-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </button>
+              {/* Loading Message */}
+              <div className="hero-loading-message-container">
+                <p className={`hero-loading-message ${isMessageVisible ? 'visible' : ''}`}>
+                  {LOADING_MESSAGES[messageIndex]}
+                </p>
+              </div>
+
+              {/* Bouncing Dots */}
+              <div className="hero-loading-dots">
+                <span style={{ animationDelay: '0ms' }}></span>
+                <span style={{ animationDelay: '150ms' }}></span>
+                <span style={{ animationDelay: '300ms' }}></span>
+              </div>
+
+              {/* Cancel Button */}
+              {onCancelScan && (
+                <button onClick={onCancelScan} className="hero-loading-cancel">
+                  Cancel
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   )
