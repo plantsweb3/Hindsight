@@ -1123,11 +1123,11 @@ function Footer({ onOpenContact }) {
         <div className="footer-powered-by">
           <span className="powered-by-text">Powered by</span>
           <a href="https://www.anthropic.com" target="_blank" rel="noopener noreferrer" className="powered-by-link">
-            <img src="/anthropic-logo.svg" alt="Anthropic" className="powered-by-logo" />
+            <img src="/anthropic-logo.png" alt="Anthropic" className="powered-by-logo" />
           </a>
           <span className="powered-by-separator">&</span>
           <a href="https://www.helius.dev" target="_blank" rel="noopener noreferrer" className="powered-by-link">
-            <img src="/helius-logo.svg" alt="Helius" className="powered-by-logo" />
+            <img src="/helius-logo.png" alt="Helius" className="powered-by-logo" />
           </a>
         </div>
       </div>
