@@ -102,20 +102,38 @@ function PatternCard({ pattern }) {
   )
 }
 
+// Pattern color mapping
+const PATTERN_COLORS = {
+  'hyperactive day trading': '#EF4444',
+  'diamond hands': '#3B82F6',
+  'quick flipper': '#F59E0B',
+  'sniper': '#10B981',
+  'momentum rider': '#8B5CF6',
+  'whale watcher': '#06B6D4',
+  'degen': '#EC4899',
+  'conservative': '#6B7280',
+  'fomo chaser': '#F97316',
+  'paper hands': '#EAB308',
+  'bag holder': '#78716C',
+  'trend follower': '#14B8A6',
+}
+
+function getPatternColor(pattern) {
+  const normalized = pattern?.toLowerCase() || ''
+  return PATTERN_COLORS[normalized] || '#8B5CF6'
+}
+
 // Share Card Component with Image Generation
 function ShareCard({ analysis, stats }) {
   const cardRef = useRef(null)
   const [isGenerating, setIsGenerating] = useState(false)
-  const [imageGenerated, setImageGenerated] = useState(false)
 
-  // Parse win rate to determine color
-  const winRateNum = parseInt(analysis.winRate)
-  const isWinning = winRateNum >= 50
-
-  // Get top pattern
+  // Get top pattern and its color
   const topPattern = analysis.patterns?.[0]?.name || 'Unknown Pattern'
+  const patternColor = getPatternColor(topPattern)
 
   const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
   const [clipboardSupported, setClipboardSupported] = useState(false)
 
   // Check clipboard support on mount
@@ -143,11 +161,11 @@ function ShareCard({ analysis, stats }) {
       link.href = dataUrl
       link.click()
 
-      setImageGenerated(true)
+      setToastMessage('Image downloaded! Attach it to your tweet.')
       setShowToast(true)
       setTimeout(() => setShowToast(false), 4000)
 
-      // Open Twitter with pre-filled text (simplified - no verdict)
+      // Open Twitter with pre-filled text
       if (openTwitter) {
         const tweetText = encodeURIComponent(
           `Just got my trading patterns analyzed by @tradehindsight\n\nAnalyze yours: tradehindsight.com`
@@ -181,6 +199,7 @@ function ShareCard({ analysis, stats }) {
         new ClipboardItem({ 'image/png': blob })
       ])
 
+      setToastMessage('Image copied to clipboard!')
       setShowToast(true)
       setTimeout(() => setShowToast(false), 3000)
     } catch (err) {
@@ -194,65 +213,58 @@ function ShareCard({ analysis, stats }) {
     <div className="share-section">
       <h3 className="share-title">Share your results</h3>
 
-      {/* Card preview for image generation */}
+      {/* Card preview for image generation - scaled down for display */}
       <div className="share-card-wrapper">
         <div ref={cardRef} className="share-card-canvas">
-          {/* Subtle wave rings background */}
-          <div className="share-card-bg">
-            {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className="share-ring"
-                style={{
-                  width: `${300 + i * 120}px`,
-                  height: `${300 + i * 120}px`,
-                  opacity: 0.12 - i * 0.015,
-                }}
-              />
-            ))}
-          </div>
-
           {/* Content */}
           <div className="share-card-content">
-            {/* Header - actual logo + text */}
+            {/* Header - centered logo + wordmark */}
             <div className="share-card-header">
               <img src="/hindsightlogo.png" alt="" className="share-card-logo" />
               <span className="share-card-brand">hindsight</span>
             </div>
 
-            {/* Verdict */}
-            <div className="share-card-verdict-section">
-              <div className="share-card-verdict-label">THE VERDICT</div>
-              <div className="share-card-verdict">"{analysis.verdict}"</div>
+            {/* Verdict Quote - no label, italic styling */}
+            <div className="share-card-verdict">
+              "{analysis.verdict}"
             </div>
 
-            {/* Stats in glassmorphic boxes */}
+            {/* Stats Row - consistent purple borders */}
             <div className="share-card-stats">
-              <div className={`share-card-stat ${!isWinning ? 'stat-box-red' : 'stat-box-green'}`}>
-                <div className={`share-card-stat-value ${isWinning ? 'stat-green' : 'stat-red'}`}>
-                  {analysis.winRate}
-                </div>
+              <div className="share-card-stat">
+                <div className="share-card-stat-value primary">{analysis.winRate}</div>
                 <div className="share-card-stat-label">WIN RATE</div>
               </div>
               <div className="share-card-stat">
-                <div className="share-card-stat-value stat-purple">{stats.dexTrades}</div>
+                <div className="share-card-stat-value">{stats.dexTrades}</div>
                 <div className="share-card-stat-label">TRADES</div>
               </div>
               <div className="share-card-stat">
-                <div className="share-card-stat-value stat-purple">{analysis.avgHoldTime}</div>
+                <div className="share-card-stat-value">{analysis.avgHoldTime}</div>
                 <div className="share-card-stat-label">AVG HOLD</div>
               </div>
             </div>
 
-            {/* Top Pattern */}
-            <div className="share-card-pattern">
-              <span className="share-card-pattern-dot" />
-              <span className="share-card-pattern-text">Top Pattern: {topPattern.toUpperCase()}</span>
+            {/* Pattern Badge - pill shape with pattern-specific color */}
+            <div
+              className="share-card-pattern-badge"
+              style={{
+                '--pattern-color': patternColor,
+                background: `${patternColor}15`,
+                borderColor: `${patternColor}50`,
+              }}
+            >
+              <span
+                className="share-card-pattern-dot"
+                style={{ background: patternColor }}
+              />
+              <span className="share-card-pattern-text">{topPattern.toUpperCase()}</span>
             </div>
 
-            {/* CTA */}
+            {/* CTA - more prominent */}
             <div className="share-card-cta">
-              Analyze yours → tradehindsight.com
+              <span className="share-card-cta-text">Analyze your wallet →</span>
+              <span className="share-card-cta-url">tradehindsight.com</span>
             </div>
           </div>
         </div>
@@ -312,7 +324,7 @@ function ShareCard({ analysis, stats }) {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M20 6L9 17l-5-5" />
           </svg>
-          Image ready! Attach it to your tweet.
+          {toastMessage}
         </div>
       )}
     </div>

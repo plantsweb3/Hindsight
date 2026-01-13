@@ -2376,41 +2376,30 @@ input, button {
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* Share Card Canvas (for image generation) */
+/* Share Card Canvas (for image generation) - New Premium Design */
 .share-card-wrapper {
   margin-bottom: 1.5rem;
   display: flex;
   justify-content: center;
+  overflow: hidden;
 }
 
 .share-card-canvas {
   width: 600px;
   height: 315px;
-  background: #0a0a0a;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+    #0a0a0a;
   border-radius: 12px;
   overflow: hidden;
   position: relative;
   font-family: "Space Grotesk", system-ui, sans-serif;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.share-card-bg {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Subtle concentric ring pattern */
-.share-ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  /* Purple glow border */
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  box-shadow:
+    0 0 40px rgba(139, 92, 246, 0.25),
+    inset 0 0 0 2px rgba(139, 92, 246, 0.4);
 }
 
 .share-card-content {
@@ -2420,130 +2409,128 @@ input, button {
   height: 100%;
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
+/* Header - centered logo + wordmark */
 .share-card-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .share-card-logo {
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
 }
 
 .share-card-brand {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 600;
   color: #fff;
   letter-spacing: 0.02em;
 }
 
-.share-card-verdict-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
-.share-card-verdict-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  color: #8b5cf6;
-  margin-bottom: 8px;
-}
-
+/* Verdict Quote - centered, italic, no label */
 .share-card-verdict {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
   font-style: italic;
-  color: #f5f5f5;
+  color: #FAFAFA;
   line-height: 1.4;
-  max-width: 520px;
+  text-align: center;
+  max-width: 90%;
+  margin-bottom: 24px;
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 
+/* Stats Row - consistent purple borders */
 .share-card-stats {
   display: flex;
-  gap: 12px;
-  margin-bottom: 14px;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .share-card-stat {
-  background: rgba(139, 92, 246, 0.05);
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  border-radius: 8px;
-  padding: 10px 18px;
+  width: 100px;
+  padding: 12px 16px;
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
   text-align: center;
-  min-width: 90px;
-}
-
-.share-card-stat.stat-box-red {
-  border-color: rgba(239, 68, 68, 0.4);
-  background: rgba(239, 68, 68, 0.08);
-  box-shadow: 0 0 12px rgba(239, 68, 68, 0.15);
-}
-
-.share-card-stat.stat-box-green {
-  border-color: rgba(34, 197, 94, 0.4);
-  background: rgba(34, 197, 94, 0.08);
-  box-shadow: 0 0 12px rgba(34, 197, 94, 0.15);
 }
 
 .share-card-stat-value {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
-  margin-bottom: 2px;
+  color: #FAFAFA;
+  margin-bottom: 4px;
 }
 
-.share-card-stat-value.stat-purple {
-  color: #a78bfa;
-}
-
-.share-card-stat-value.stat-green {
-  color: #22c55e;
-}
-
-.share-card-stat-value.stat-red {
-  color: #ef4444;
+.share-card-stat-value.primary {
+  color: #8B5CF6;
 }
 
 .share-card-stat-label {
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.1em;
-  color: #71717a;
+  text-transform: uppercase;
+  color: #71717A;
 }
 
-.share-card-pattern {
-  display: flex;
+/* Pattern Badge - pill shape with pattern-specific color */
+.share-card-pattern-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
+  padding: 8px 16px;
+  border: 1px solid;
+  border-radius: 100px;
+  margin-bottom: 20px;
 }
 
 .share-card-pattern-dot {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #ef4444;
+  margin-right: 10px;
+  flex-shrink: 0;
 }
 
 .share-card-pattern-text {
   font-size: 11px;
-  font-weight: 500;
-  color: #71717a;
+  font-weight: 600;
+  color: #FAFAFA;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
+/* CTA - more prominent */
 .share-card-cta {
+  text-align: center;
+  margin-top: auto;
+}
+
+.share-card-cta-text {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #8B5CF6;
+  margin-bottom: 4px;
+}
+
+.share-card-cta-url {
+  display: block;
   font-size: 12px;
   font-weight: 500;
-  color: #52525b;
-  margin-top: auto;
+  color: #71717A;
 }
 
 /* Responsive share card */
@@ -2559,21 +2546,63 @@ input, button {
     padding: 18px 22px;
   }
 
+  .share-card-header {
+    margin-bottom: 16px;
+  }
+
+  .share-card-logo {
+    width: 24px;
+    height: 24px;
+  }
+
+  .share-card-brand {
+    font-size: 18px;
+  }
+
   .share-card-verdict {
-    font-size: 14px;
+    font-size: 13px;
+    margin-bottom: 16px;
   }
 
   .share-card-stats {
-    gap: 8px;
+    gap: 10px;
+    margin-bottom: 14px;
   }
 
   .share-card-stat {
-    padding: 8px 12px;
-    min-width: 70px;
+    width: 80px;
+    padding: 10px 12px;
   }
 
   .share-card-stat-value {
-    font-size: 16px;
+    font-size: 18px;
+  }
+
+  .share-card-stat-label {
+    font-size: 8px;
+  }
+
+  .share-card-pattern-badge {
+    padding: 6px 12px;
+    margin-bottom: 14px;
+  }
+
+  .share-card-pattern-dot {
+    width: 6px;
+    height: 6px;
+    margin-right: 8px;
+  }
+
+  .share-card-pattern-text {
+    font-size: 9px;
+  }
+
+  .share-card-cta-text {
+    font-size: 12px;
+  }
+
+  .share-card-cta-url {
+    font-size: 10px;
   }
 }
 
