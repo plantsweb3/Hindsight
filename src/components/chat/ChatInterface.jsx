@@ -318,7 +318,11 @@ export default function ChatInterface() {
       console.error('Failed to send message:', err)
       setIsStreaming(false)
       setStreamingMessage('')
-      setMessages(prev => prev.slice(0, -1))
+      // Show error as assistant message instead of removing user message
+      setMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: `Sorry, I couldn't respond. Error: ${err.message}. Please try again.`, createdAt: new Date().toISOString() }
+      ])
     }
   }
 

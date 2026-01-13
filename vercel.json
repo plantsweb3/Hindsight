@@ -16,6 +16,10 @@
     { "source": "/api/journal", "destination": "/api/journal/[...path]" },
     { "source": "/api/academy/:path*", "destination": "/api/academy/[...path]" },
     { "source": "/api/academy", "destination": "/api/academy/[...path]" },
+    { "source": "/api/chat/:path*", "destination": "/api/chat/[[...path]]" },
+    { "source": "/api/chat", "destination": "/api/chat/[[...path]]" },
+    { "source": "/api/conversations/:path*", "destination": "/api/conversations/[[...path]]" },
+    { "source": "/api/conversations", "destination": "/api/conversations/[[...path]]" },
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
