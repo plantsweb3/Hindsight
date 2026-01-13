@@ -110,6 +110,11 @@ export default function LessonView() {
   const trading101Quiz = lesson ? getTrading101LessonQuiz(moduleSlug, lesson.id) : null
   const quiz = trading101Quiz || getQuizByLessonSlug(lessonSlug)
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   useEffect(() => {
     fetchLesson()
   }, [moduleSlug, lessonSlug, token])

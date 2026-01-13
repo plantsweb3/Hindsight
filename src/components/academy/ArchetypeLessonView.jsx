@@ -88,6 +88,11 @@ export default function ArchetypeLessonView() {
   const module = getArchetypeModule(archetypeId)
   const quiz = lesson ? getArchetypeLessonQuiz(archetypeId, lesson.id) : null
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   useEffect(() => {
     // Check if lesson is completed from localStorage
     const checkCompleted = () => {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useOutletContext, useNavigate } from 'react-router-dom'
+import { Link, useOutletContext, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAchievements } from '../../contexts/AchievementContext'
 import { getArchetypeModule, hasArchetypeModule, getArchetypeDotClass, ARCHETYPE_DOT_COLORS } from '../../data/academy/archetypes'
@@ -1920,15 +1920,36 @@ export default function AcademyDashboard() {
   const [showDailyGoalModal, setShowDailyGoalModal] = useState(false)
   const [showPlacementTest, setShowPlacementTest] = useState(false)
 
-  // Tab state with localStorage persistence
+  // URL search params for tab navigation
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // Tab state - URL params take priority, then default to 'trading-101'
+  // We intentionally DON'T persist to localStorage anymore to ensure fresh navigation
   const [activeTab, setActiveTab] = useState(() => {
-    const saved = localStorage.getItem('academy_active_tab')
-    return saved && ACADEMY_TABS.some(t => t.id === saved) ? saved : 'trading-101'
+    const urlTab = searchParams.get('tab')
+    // Support both 'archetype' and 'by-archetype' as URL param values
+    if (urlTab === 'archetype' || urlTab === 'by-archetype') {
+      return 'by-archetype'
+    }
+    if (urlTab && ACADEMY_TABS.some(t => t.id === urlTab)) {
+      return urlTab
+    }
+    // Default to trading-101 for fresh navigation
+    return 'trading-101'
   })
 
+  // Scroll to top on mount (fresh page load)
   useEffect(() => {
-    localStorage.setItem('academy_active_tab', activeTab)
-  }, [activeTab])
+    window.scrollTo(0, 0)
+  }, [])
+
+  // Clear URL params after reading them (cleaner URL)
+  useEffect(() => {
+    if (searchParams.has('tab')) {
+      searchParams.delete('tab')
+      setSearchParams(searchParams, { replace: true })
+    }
+  }, [])
 
   // Check if we should auto-open placement test from onboarding
   useEffect(() => {

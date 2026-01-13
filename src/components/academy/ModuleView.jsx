@@ -82,6 +82,11 @@ export default function ModuleView() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   useEffect(() => {
     fetchModule()
   }, [moduleSlug, token])

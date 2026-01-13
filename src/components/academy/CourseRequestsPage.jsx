@@ -17,6 +17,11 @@ export default function CourseRequestsPage() {
   const [isVoting, setIsVoting] = useState(false)
   const [sortBy, setSortBy] = useState('votes') // 'votes' or 'recent'
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   useEffect(() => {
     fetchRequests()
   }, [])

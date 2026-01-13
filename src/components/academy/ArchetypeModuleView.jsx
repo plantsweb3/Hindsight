@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getArchetypeModule } from './archetypeData'
 import { getArchetypeLessonCardStatus } from '../../services/achievements'
@@ -43,6 +44,11 @@ function LessonCard({ lesson, archetypeId, lessonNumber, status }) {
 
 export default function ArchetypeModuleView() {
   const { archetypeId } = useParams()
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   const module = getArchetypeModule(archetypeId)
 

@@ -24,6 +24,11 @@ export default function LeaderboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   useEffect(() => {
     loadLeaderboard()
   }, [token])
