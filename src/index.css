@@ -10866,11 +10866,24 @@ input, button {
   position: relative;
   background: var(--folder-color-bg, rgba(30, 30, 35, 0.95));
   border: 1px solid var(--folder-color-border);
-  border-top: none;
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 12px 12px 12px;
   padding: 1.5rem;
   min-height: 400px;
   animation: folderOpen 0.3s ease;
+}
+
+/* Create smooth corner transition where first tab meets content */
+.academy-tabs-container::before {
+  content: '';
+  position: absolute;
+  top: calc(100% - 13px);
+  left: 0;
+  width: 12px;
+  height: 12px;
+  background: transparent;
+  border-bottom-left-radius: 12px;
+  box-shadow: -6px 6px 0 var(--folder-color-bg, rgba(30, 30, 35, 0.95));
+  z-index: 4;
 }
 
 @keyframes folderOpen {
@@ -10892,7 +10905,9 @@ input, button {
 .academy-tab-content .archetype-module-card,
 .academy-tab-content .lesson-recommendation-card,
 .academy-tab-content .most-requested-card,
-.academy-tab-content .coming-soon-footer-cta {
+.academy-tab-content .coming-soon-footer-cta,
+.academy-tab-content .coming-soon-hero-card,
+.academy-tab-content .archetype-hero-compact {
   background: rgba(24, 24, 27, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(8px);
@@ -10944,6 +10959,59 @@ input, button {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
+
+/* Card fade-up animation for all tabs */
+.academy-tab-content .coming-soon-hero-card,
+.academy-tab-content .archetype-hero-compact,
+.academy-tab-content .coming-soon-card,
+.academy-tab-content .archetype-module-card,
+.academy-tab-content .lesson-recommendation-card,
+.academy-tab-content .most-requested-card,
+.academy-tab-content .your-archetype-section,
+.academy-tab-content .most-requested-section,
+.academy-tab-content .coming-soon-footer-cta,
+.academy-tab-content .archetype-profile-card {
+  opacity: 0;
+  animation: cardFadeIn 0.4s ease-out forwards;
+}
+
+/* Stagger animation delays for cards */
+.academy-tab-content > *:nth-child(1) { animation-delay: 0.05s; }
+.academy-tab-content > *:nth-child(2) { animation-delay: 0.1s; }
+.academy-tab-content > *:nth-child(3) { animation-delay: 0.15s; }
+.academy-tab-content > *:nth-child(4) { animation-delay: 0.2s; }
+.academy-tab-content > *:nth-child(5) { animation-delay: 0.25s; }
+.academy-tab-content > *:nth-child(6) { animation-delay: 0.3s; }
+
+/* Coming Soon grid cards stagger */
+.coming-soon-grid .coming-soon-card:nth-child(1) { animation-delay: 0.1s; }
+.coming-soon-grid .coming-soon-card:nth-child(2) { animation-delay: 0.15s; }
+.coming-soon-grid .coming-soon-card:nth-child(3) { animation-delay: 0.2s; }
+.coming-soon-grid .coming-soon-card:nth-child(4) { animation-delay: 0.25s; }
+.coming-soon-grid .coming-soon-card:nth-child(5) { animation-delay: 0.3s; }
+.coming-soon-grid .coming-soon-card:nth-child(6) { animation-delay: 0.35s; }
+
+/* Archetype grid cards stagger */
+.archetypes-grid .archetype-module-card:nth-child(1) { animation-delay: 0.1s; }
+.archetypes-grid .archetype-module-card:nth-child(2) { animation-delay: 0.15s; }
+.archetypes-grid .archetype-module-card:nth-child(3) { animation-delay: 0.2s; }
+.archetypes-grid .archetype-module-card:nth-child(4) { animation-delay: 0.25s; }
+.archetypes-grid .archetype-module-card:nth-child(5) { animation-delay: 0.3s; }
+.archetypes-grid .archetype-module-card:nth-child(6) { animation-delay: 0.35s; }
+.archetypes-grid .archetype-module-card:nth-child(7) { animation-delay: 0.4s; }
+.archetypes-grid .archetype-module-card:nth-child(8) { animation-delay: 0.45s; }
+.archetypes-grid .archetype-module-card:nth-child(9) { animation-delay: 0.5s; }
+
+/* Lesson recommendation cards stagger */
+.your-archetype-grid .lesson-recommendation-card:nth-child(1) { animation-delay: 0.15s; }
+.your-archetype-grid .lesson-recommendation-card:nth-child(2) { animation-delay: 0.2s; }
+.your-archetype-grid .lesson-recommendation-card:nth-child(3) { animation-delay: 0.25s; }
+
+/* Most requested cards stagger */
+.most-requested-grid .most-requested-card:nth-child(1) { animation-delay: 0.15s; }
+.most-requested-grid .most-requested-card:nth-child(2) { animation-delay: 0.2s; }
+.most-requested-grid .most-requested-card:nth-child(3) { animation-delay: 0.25s; }
+.most-requested-grid .most-requested-card:nth-child(4) { animation-delay: 0.3s; }
 
 /* Master Exam Card - Special red "important folder" treatment */
 .academy-tab-content .master-exam-card {
