@@ -2581,10 +2581,8 @@ export default function AcademyDashboard() {
               </div>
             </section>
 
-            {/* Achievements - show for authenticated users or anyone with local achievements */}
-            {(isAuthenticated || achievements.length > 0) && (
-              <AchievementShowcase earnedAchievements={achievements} />
-            )}
+            {/* Achievements - visible to all users as social proof */}
+            <AchievementShowcase earnedAchievements={achievements} />
 
             {/* Leaderboard - visible to all users for social proof */}
             <Leaderboard
