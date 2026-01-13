@@ -1050,9 +1050,10 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
   const [showVerifySightModal, setShowVerifySightModal] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
+  // Re-fetch data when user changes (e.g., after signup/login as different user)
   useEffect(() => {
     loadDashboardData()
-  }, [])
+  }, [user?.id])
 
   // Load XP/level info from Academy progress
   useEffect(() => {
