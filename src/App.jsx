@@ -470,6 +470,7 @@ function AppContent() {
           isAuthenticated={isAuthenticated}
           onShowAuth={handleStartTrackingAuth}
           onOpenJournal={handleOpenJournal}
+          onOpenDashboard={handleOpenDashboard}
         />
         <AuthModal
           isOpen={showAuthModal}
@@ -498,6 +499,7 @@ function AppContent() {
             isLoading={isLoading}
             progress={progress}
             error={error}
+            onDismissError={() => setError('')}
             isAuthenticated={isAuthenticated}
             user={user}
           />
@@ -625,6 +627,7 @@ function AppContent() {
         isLoading={isLoading}
         progress={progress}
         error={error}
+        onDismissError={() => setError('')}
         isAuthenticated={isAuthenticated}
         user={user}
         onCancelScan={handleCancelScan}

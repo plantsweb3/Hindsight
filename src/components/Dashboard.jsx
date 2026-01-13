@@ -385,6 +385,7 @@ function ArchetypeHero({ user, onRetakeQuiz }) {
 // Journal Section - Shows unjournaled trades waiting for reflection
 function JournalSection({ trades, user, onOpenJournal, onJournalTrade }) {
   const hasWallet = user?.savedWallets?.length > 0
+  const hasTrades = (trades || []).length > 0
 
   // Filter trades that don't have reflection notes
   const unjournaled = (trades || []).filter(trade =>
@@ -397,7 +398,7 @@ function JournalSection({ trades, user, onOpenJournal, onJournalTrade }) {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
 
-  // State 3: No wallet connected
+  // State 4: No wallet connected
   if (!hasWallet) {
     return (
       <div className="journal-section">
@@ -417,7 +418,27 @@ function JournalSection({ trades, user, onOpenJournal, onJournalTrade }) {
     )
   }
 
-  // State 2: All caught up
+  // State 3: Has wallet but no trades yet
+  if (!hasTrades) {
+    return (
+      <div className="journal-section">
+        <div className="journal-section-header">
+          <h3 className="journal-section-title">
+            <span className="journal-section-icon">📝</span>
+            Journal
+          </h3>
+        </div>
+        <div className="journal-section-empty">
+          <p>No trades synced yet. Refresh your wallet to import trades.</p>
+          <button className="journal-section-cta" onClick={onOpenJournal}>
+            Open Journal
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // State 2: All caught up (has trades, all journaled)
   if (unjournaled.length === 0) {
     return (
       <div className="journal-section">
@@ -622,6 +643,31 @@ function SuccessToast({ message, onClose }) {
         <path d="M20 6L9 17l-5-5" />
       </svg>
       {message}
+    </div>
+  )
+}
+
+// Logout Confirmation Modal
+function LogoutConfirmModal({ isOpen, onConfirm, onCancel }) {
+  if (!isOpen) return null
+
+  return (
+    <div className="logout-confirm-overlay" onClick={onCancel}>
+      <div className="logout-confirm-modal" onClick={e => e.stopPropagation()}>
+        <div className="logout-confirm-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+        </div>
+        <h3 className="logout-confirm-title">Log out?</h3>
+        <p className="logout-confirm-text">Are you sure you want to log out of your account?</p>
+        <div className="logout-confirm-actions">
+          <button className="logout-confirm-cancel" onClick={onCancel}>Cancel</button>
+          <button className="logout-confirm-btn" onClick={onConfirm}>Log out</button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -1002,6 +1048,7 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
   const [showXpPopup, setShowXpPopup] = useState(false)
   const [showWalletAnalysisModal, setShowWalletAnalysisModal] = useState(false)
   const [showVerifySightModal, setShowVerifySightModal] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   useEffect(() => {
     loadDashboardData()
@@ -1180,6 +1227,11 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
   }
 
   const handleLogout = () => {
+    setShowLogoutConfirm(true)
+  }
+
+  const confirmLogout = () => {
+    setShowLogoutConfirm(false)
     logout()
     onBack()
   }
@@ -1353,6 +1405,13 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
           }}
         />
       )}
+
+      {/* Logout Confirmation Modal */}
+      <LogoutConfirmModal
+        isOpen={showLogoutConfirm}
+        onConfirm={confirmLogout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
     </div>
   )
 }

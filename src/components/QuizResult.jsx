@@ -195,6 +195,11 @@ export default function QuizResult({ results, onAnalyze, onRetake, onBack, isAut
                   )}
                 </button>
               </form>
+              {isAuthenticated && (
+                <button onClick={onOpenDashboard} className="cta-skip-link">
+                  Skip to Dashboard →
+                </button>
+              )}
             </>
           )}
         </section>

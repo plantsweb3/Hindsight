@@ -58,19 +58,32 @@ function CursorGlow() {
 }
 
 // Header
-function Header({ onReset }) {
+function Header({ onReset, onOpenDashboard, isAuthenticated }) {
   return (
     <header className="results-header">
       <a href="/" className="header-logo" onClick={(e) => { e.preventDefault(); onReset(); }}>
         <img src="/hindsightlogo.png" alt="Hindsight" className="header-logo-img" />
         <span className="header-title">hindsight</span>
       </a>
-      <button onClick={onReset} className="header-action">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
-        Analyze another
-      </button>
+      <div className="header-actions">
+        {isAuthenticated && (
+          <button onClick={onOpenDashboard} className="header-action header-action-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="7" height="7" />
+              <rect x="14" y="3" width="7" height="7" />
+              <rect x="14" y="14" width="7" height="7" />
+              <rect x="3" y="14" width="7" height="7" />
+            </svg>
+            Go to Dashboard
+          </button>
+        )}
+        <button onClick={onReset} className="header-action">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          Analyze another
+        </button>
+      </div>
     </header>
   )
 }
@@ -411,10 +424,10 @@ function ProgressCTA({ isAuthenticated, onStartTracking }) {
 }
 
 // Main Results Component
-export default function Results({ analysis, stats, onReset, isAuthenticated, onShowAuth, onOpenJournal }) {
+export default function Results({ analysis, stats, onReset, isAuthenticated, onShowAuth, onOpenJournal, onOpenDashboard }) {
   const handleStartTracking = () => {
     if (isAuthenticated) {
-      onOpenJournal()
+      onOpenDashboard()
     } else {
       onShowAuth('signup')
     }
@@ -424,7 +437,7 @@ export default function Results({ analysis, stats, onReset, isAuthenticated, onS
     <div className="results-page">
       <WaveBackground />
       <CursorGlow />
-      <Header onReset={onReset} />
+      <Header onReset={onReset} onOpenDashboard={onOpenDashboard} isAuthenticated={isAuthenticated} />
 
       <main className="results-content">
         {/* Verdict Section */}

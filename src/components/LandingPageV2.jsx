@@ -183,7 +183,7 @@ function Header({ onLogoClick, onShowAuth, onOpenDashboard, onOpenJournal, onOpe
 }
 
 // SECTION 1: Updated Hero Section with Loading Experience
-function HeroSection({ onScrollDown, onAnalyze, onStartQuiz, isLoading, progress, error, onCancelScan }) {
+function HeroSection({ onScrollDown, onAnalyze, onStartQuiz, isLoading, progress, error, onDismissError, onCancelScan }) {
   const [walletAddress, setWalletAddress] = useState('')
   const [messageIndex, setMessageIndex] = useState(0)
   const [isMessageVisible, setIsMessageVisible] = useState(true)
@@ -262,7 +262,16 @@ function HeroSection({ onScrollDown, onAnalyze, onStartQuiz, isLoading, progress
                   </svg>
                 </button>
               </div>
-              {error && <p className="hero-error">{error}</p>}
+              {error && (
+                <div className="hero-error">
+                  <span>{error}</span>
+                  <button className="error-dismiss" onClick={onDismissError} type="button">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              )}
             </form>
 
             <button className="hero-learn-more" onClick={onScrollDown}>
@@ -1118,6 +1127,7 @@ export default function LandingPageV2({
   isLoading,
   progress,
   error,
+  onDismissError,
   isAuthenticated,
   user,
   onCancelScan,
@@ -1152,6 +1162,7 @@ export default function LandingPageV2({
         isLoading={isLoading}
         progress={progress}
         error={error}
+        onDismissError={onDismissError}
         onCancelScan={onCancelScan}
       />
       <CredibilityBar />
