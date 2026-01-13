@@ -166,7 +166,7 @@ function PrivacyPolicy() {
         <h2>10. Contact Us</h2>
         <p>
           If you have questions about this Privacy Policy, please contact us at{' '}
-          <a href="mailto:privacy@tradehindsight.com">privacy@tradehindsight.com</a>.
+          <a href="mailto:hindsight.trade@proton.me">hindsight.trade@proton.me</a>.
         </p>
       </section>
     </article>
@@ -508,7 +508,7 @@ function TermsOfService() {
         <h2>18. Contact</h2>
         <p>For questions about these Terms, contact us at:</p>
         <p>
-          <strong>Email:</strong> <a href="mailto:legal@tradehindsight.com">legal@tradehindsight.com</a><br />
+          <strong>Email:</strong> <a href="mailto:hindsight.trade@proton.me">hindsight.trade@proton.me</a><br />
           <strong>Website:</strong> tradehindsight.com
         </p>
       </section>
