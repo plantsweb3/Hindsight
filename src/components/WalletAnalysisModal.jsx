@@ -135,13 +135,18 @@ export default function WalletAnalysisModal({
       }
 
       // Step 6: Create journal entries from trades
+      console.log(`[WalletAnalysisModal] Wallet data trades: ${walletData.trades?.length || 0}`)
       const journalEntries = convertTradesToJournalEntries(walletData.trades, trimmedAddress)
+      console.log(`[WalletAnalysisModal] Journal entries to create: ${journalEntries.length}`)
       if (journalEntries.length > 0 && token) {
         try {
-          await createJournalEntriesBatch(journalEntries, token)
+          const result = await createJournalEntriesBatch(journalEntries, token)
+          console.log(`[WalletAnalysisModal] Journal batch result:`, result)
         } catch (err) {
           console.error('Failed to create journal entries:', err)
         }
+      } else {
+        console.log(`[WalletAnalysisModal] Skipping journal creation: entries=${journalEntries.length}, token=${!!token}`)
       }
 
       // Step 7: Refresh user data to get updated wallet list

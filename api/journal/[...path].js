@@ -156,12 +156,15 @@ export default async function handler(req, res) {
     if (route === 'batch' && req.method === 'POST') {
       const { entries } = req.body || {}
 
+      console.log(`[Journal Batch] Received ${entries?.length || 0} entries`)
+
       if (!entries || !Array.isArray(entries)) {
         return error(res, 'Entries array required', 400)
       }
 
       // Check if user can add journal entries
       const canAdd = await canAddJournalEntry(decoded.id)
+      console.log(`[Journal Batch] User canAdd: isPro=${canAdd.isPro}, allowed=${canAdd.allowed}, count=${canAdd.count}`)
 
       let created = 0
       let skipped = 0
@@ -188,6 +191,7 @@ export default async function handler(req, res) {
         created++
       }
 
+      console.log(`[Journal Batch] Result: created=${created}, skipped=${skipped}, limitReached=${limitReached}`)
       return json(res, {
         created,
         skipped,
