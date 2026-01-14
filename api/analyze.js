@@ -538,11 +538,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  // Require authentication for wallet analysis
+  // Authentication is optional - allows landing page analysis for new visitors
+  // Logged-in users will have their token validated, but it's not required
   const decoded = authenticateRequest(req)
-  if (!decoded) {
-    return res.status(401).json({ error: 'Authentication required' })
-  }
 
   const { walletAddress } = req.body
 
