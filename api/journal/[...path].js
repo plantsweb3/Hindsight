@@ -156,23 +156,30 @@ export default async function handler(req, res) {
 
       let created = 0
       let skipped = 0
+      let failed = 0
 
       for (const entry of entries) {
-        // Skip if already exists
-        const exists = await journalEntryExists(decoded.id, entry.tokenAddress, entry.exitTime)
-        if (exists) {
-          skipped++
-          continue
-        }
+        try {
+          // Skip if already exists
+          const exists = await journalEntryExists(decoded.id, entry.tokenAddress, entry.exitTime)
+          if (exists) {
+            skipped++
+            continue
+          }
 
-        await createJournalEntry(decoded.id, entry)
-        created++
+          await createJournalEntry(decoded.id, entry)
+          created++
+        } catch (err) {
+          console.error(`[Journal Batch] Failed to create entry for ${entry.tokenAddress}:`, err.message)
+          failed++
+        }
       }
 
-      console.log(`[Journal Batch] Result: created=${created}, skipped=${skipped}`)
+      console.log(`[Journal Batch] Result: created=${created}, skipped=${skipped}, failed=${failed}`)
       return json(res, {
         created,
         skipped,
+        failed,
         total: entries.length,
         isPro: canAdd.isPro,
       })
@@ -181,24 +188,37 @@ export default async function handler(req, res) {
     // PATCH /api/journal/:id - Update entry (adding notes/reflections)
     if (req.method === 'PATCH') {
       const entryId = parseInt(route)
+      console.log(`[Journal PATCH] Entry ID: ${entryId}, User ID: ${decoded.id}`)
+
       if (isNaN(entryId)) {
+        console.log('[Journal PATCH] Invalid entry ID')
         return error(res, 'Invalid entry ID', 400)
       }
 
       const updates = req.body
+      console.log('[Journal PATCH] Updates:', JSON.stringify(updates))
+
       if (!updates || Object.keys(updates).length === 0) {
+        console.log('[Journal PATCH] No updates provided')
         return error(res, 'No updates provided', 400)
       }
 
       // Check if this update includes reflection fields (notes)
       const hasReflectionFields = updates.lessonLearned || updates.exitReasoning || updates.thesis
+      console.log(`[Journal PATCH] Has reflection fields: ${hasReflectionFields}`)
+
       if (hasReflectionFields) {
         // Allow editing if entry already has a reflection (not a new reflection)
         const alreadyHasReflection = await journalEntryHasReflection(entryId, decoded.id)
+        console.log(`[Journal PATCH] Already has reflection: ${alreadyHasReflection}`)
+
         if (!alreadyHasReflection) {
           // This is a NEW reflection - check the limit
           const canReflect = await canAddJournalReflection(decoded.id)
+          console.log(`[Journal PATCH] Can reflect:`, canReflect)
+
           if (!canReflect.allowed) {
+            console.log('[Journal PATCH] Reflection limit reached')
             return json(res, {
               error: 'reflection_limit_reached',
               message: 'Free tier allows 1 journal reflection. Upgrade to Pro to reflect on all your trades.',
@@ -211,6 +231,7 @@ export default async function handler(req, res) {
       }
 
       await updateJournalEntry(entryId, decoded.id, updates)
+      console.log('[Journal PATCH] Update successful')
       return json(res, { success: true })
     }
 

@@ -451,6 +451,12 @@ function AppContent() {
     }
   }
 
+  // Show results from modal analysis (used by Dashboard WalletAnalysisModal)
+  const handleShowResults = (resultsData) => {
+    setResults(resultsData)
+    setView('results')
+  }
+
   // Show loading while checking auth
   if (authLoading) {
     return (
@@ -521,6 +527,7 @@ function AppContent() {
         onOpenJournal={handleOpenJournal}
         onOpenSettings={handleOpenSettings}
         onOpenPro={handleOpenPro}
+        onShowResults={handleShowResults}
       />
     )
   }

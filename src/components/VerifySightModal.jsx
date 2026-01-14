@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { isValidSolanaAddress } from '../services/solana'
 
 // Modal for verifying $SIGHT holdings to unlock Pro
-export default function VerifySightModal({ isOpen, onClose, onSuccess }) {
+export default function VerifySightModal({ isOpen, onClose, onSuccess, title, message }) {
   const { token, refreshUser } = useAuth()
   const [walletAddress, setWalletAddress] = useState('')
   const [isVerifying, setIsVerifying] = useState(false)
@@ -103,8 +103,8 @@ export default function VerifySightModal({ isOpen, onClose, onSuccess }) {
                   <path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z" />
                 </svg>
               </div>
-              <h2 className="upgrade-modal-title">Verify $SIGHT Holdings</h2>
-              <p className="upgrade-modal-subtitle">Add a wallet that holds $SIGHT to unlock Pro features.</p>
+              <h2 className="upgrade-modal-title">{title || 'Verify $SIGHT Holdings'}</h2>
+              <p className="upgrade-modal-subtitle">{message || 'Add a wallet that holds $SIGHT to unlock Pro features.'}</p>
             </div>
 
             <form onSubmit={handleVerify} className="verify-form">

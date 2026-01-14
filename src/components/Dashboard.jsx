@@ -1032,7 +1032,7 @@ function TradeHistory({ trades, onJournal }) {
 }
 
 // Main Copilot Component
-export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJournal, onOpenSettings, onOpenPro }) {
+export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJournal, onOpenSettings, onOpenPro, onShowResults }) {
   const { user, token, logout, getAnalyses, refreshUser } = useAuth()
   const [stats, setStats] = useState({
     totalPnl: 0,
@@ -1265,11 +1265,22 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
     }
   }
 
-  const handleWalletAnalysisComplete = async (walletAddress, analysis) => {
+  const handleWalletAnalysisComplete = async (walletAddress, resultsData) => {
     // Wallet is already saved during analysis in the modal
-    // Close modal and refresh dashboard data
     setShowWalletAnalysisModal(false)
-    await loadDashboardData()
+
+    // Navigate to results page to show analysis
+    if (onShowResults && resultsData) {
+      onShowResults({
+        analysis: resultsData.analysis,
+        stats: resultsData.stats,
+        openPositions: resultsData.openPositions,
+        walletAddress,
+      })
+    } else {
+      // Fallback: just refresh dashboard
+      await loadDashboardData()
+    }
   }
 
   return (

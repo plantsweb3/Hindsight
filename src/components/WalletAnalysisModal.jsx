@@ -141,26 +141,33 @@ export default function WalletAnalysisModal({
       }
 
       // Step 6: Create journal entries from trades
-      console.log(`[WalletAnalysisModal] Wallet data trades: ${walletData.trades?.length || 0}`)
+      console.log(`[WalletAnalysisModal] Creating journal entries...`)
+      console.log(`[WalletAnalysisModal] - Trades available: ${walletData.trades?.length || 0}`)
+      console.log(`[WalletAnalysisModal] - Token present: ${!!token}`)
+
       const journalEntries = convertTradesToJournalEntries(walletData.trades, trimmedAddress)
-      console.log(`[WalletAnalysisModal] Journal entries to create: ${journalEntries.length}`)
+      console.log(`[WalletAnalysisModal] - Journal entries to create: ${journalEntries.length}`)
+
       if (journalEntries.length > 0 && token) {
         try {
           const result = await createJournalEntriesBatch(journalEntries, token)
-          console.log(`[WalletAnalysisModal] Journal batch result:`, result)
+          console.log(`[WalletAnalysisModal] Journal batch SUCCESS:`, result)
         } catch (err) {
-          console.error('Failed to create journal entries:', err)
+          console.error('[WalletAnalysisModal] Journal batch FAILED:', err)
         }
       } else {
-        console.log(`[WalletAnalysisModal] Skipping journal creation: entries=${journalEntries.length}, token=${!!token}`)
+        console.warn(`[WalletAnalysisModal] Skipping journal creation - entries: ${journalEntries.length}, token: ${!!token}`)
       }
 
       // Step 7: Refresh user data to get updated wallet list
       await refreshUser()
 
-      // Step 8: Callback to parent and close
-      onAnalysisComplete?.(trimmedAddress, analysis)
-      onClose()
+      // Step 8: Callback to parent with full results data (for showing results page)
+      onAnalysisComplete?.(trimmedAddress, {
+        analysis,
+        stats: walletData.stats,
+        openPositions: walletData.openPositions,
+      })
     } catch (err) {
       if (err.name === 'AbortError') {
         return // Cancelled by user

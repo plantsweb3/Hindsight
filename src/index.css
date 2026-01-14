@@ -13765,6 +13765,55 @@ input, button {
   color: #fff;
 }
 
+/* Quick Navigation - Back to Module/Academy */
+.lesson-quick-nav {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.lesson-quick-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #71717a;
+  text-decoration: none;
+  font-size: 0.8125rem;
+  transition: all 0.2s;
+}
+
+.lesson-quick-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #a1a1aa;
+}
+
+.lesson-quick-nav-btn svg {
+  opacity: 0.7;
+}
+
+.lesson-quick-nav-btn:hover svg {
+  opacity: 1;
+}
+
+@media (max-width: 480px) {
+  .lesson-quick-nav {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .lesson-quick-nav-btn {
+    justify-content: center;
+  }
+}
+
 /* Archetype Module Styles */
 .archetype-module-subtitle {
   font-size: 0.75rem;

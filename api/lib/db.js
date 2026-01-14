@@ -713,6 +713,8 @@ export async function createJournalEntry(userId, entry) {
 }
 
 export async function updateJournalEntry(entryId, userId, updates) {
+  console.log(`[updateJournalEntry] Entry: ${entryId}, User: ${userId}, Updates:`, updates)
+
   const fields = []
   const args = []
 
@@ -720,21 +722,29 @@ export async function updateJournalEntry(entryId, userId, updates) {
 
   for (const [key, value] of Object.entries(updates)) {
     const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase()
+    console.log(`[updateJournalEntry] Field: ${key} -> ${dbKey}, allowed: ${allowedFields.includes(dbKey)}`)
     if (allowedFields.includes(dbKey)) {
       fields.push(`${dbKey} = ?`)
       args.push(value)
     }
   }
 
-  if (fields.length === 0) return
+  console.log(`[updateJournalEntry] Fields to update: ${fields.length}`)
+
+  if (fields.length === 0) {
+    console.log('[updateJournalEntry] No valid fields to update!')
+    return
+  }
 
   fields.push('updated_at = CURRENT_TIMESTAMP')
   args.push(entryId, userId)
 
-  await getDb().execute({
-    sql: `UPDATE trade_journal SET ${fields.join(', ')} WHERE id = ? AND user_id = ?`,
-    args,
-  })
+  const sql = `UPDATE trade_journal SET ${fields.join(', ')} WHERE id = ? AND user_id = ?`
+  console.log(`[updateJournalEntry] SQL: ${sql}`)
+  console.log(`[updateJournalEntry] Args:`, args)
+
+  await getDb().execute({ sql, args })
+  console.log('[updateJournalEntry] Update complete')
 }
 
 export async function journalEntryExists(userId, tokenAddress, exitTime) {
@@ -941,7 +951,7 @@ export async function canAddJournalEntry(userId) {
 // Count journal entries that have reflections (notes added)
 export async function countJournalReflections(userId) {
   const result = await getDb().execute({
-    sql: `SELECT COUNT(*) as count FROM journal_entries
+    sql: `SELECT COUNT(*) as count FROM trade_journal
           WHERE user_id = ?
           AND (lesson_learned IS NOT NULL OR exit_reasoning IS NOT NULL OR thesis IS NOT NULL)`,
     args: [userId],

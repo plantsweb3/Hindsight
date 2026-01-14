@@ -5,6 +5,7 @@ import { awardJournalEntryXp, canEarnJournalXp, syncXpToServer } from '../servic
 import { getUserFriendlyError } from '../utils/helpers'
 import WalletLabelBadge from './WalletLabelBadge'
 import { JournalSkeleton } from './Skeleton'
+import VerifySightModal from './VerifySightModal'
 
 const API_URL = '/api/journal'
 
@@ -713,6 +714,9 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
   // XP toast state
   const [xpToast, setXpToast] = useState(null)
 
+  // Pro upgrade modal state
+  const [showProModal, setShowProModal] = useState(false)
+
   // Get saved wallets from user
   const savedWallets = user?.savedWallets || []
 
@@ -806,6 +810,8 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
   }
 
   const handleSaveEntry = async (entryId, updates) => {
+    console.log('[Journal] Saving entry:', entryId, updates)
+
     const res = await fetch(`${API_URL}/${entryId}`, {
       method: 'PATCH',
       headers: {
@@ -815,9 +821,22 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
       body: JSON.stringify(updates),
     })
 
+    console.log('[Journal] Save response status:', res.status)
+
     if (!res.ok) {
-      throw new Error('Failed to save')
+      // Check if it's the reflection limit error
+      const data = await res.json().catch(() => ({}))
+      console.log('[Journal] Save error data:', data)
+
+      if (data.error === 'reflection_limit_reached') {
+        // Show Pro upgrade modal
+        setShowProModal(true)
+        throw new Error('Upgrade to Pro to journal more trades')
+      }
+      throw new Error(data.error || 'Failed to save')
     }
+
+    console.log('[Journal] Save successful')
 
     // Check if user added reflection notes (thesis, lessonLearned, or exitReasoning)
     const hasReflection = !!(updates.thesis || updates.lessonLearned || updates.exitReasoning)
@@ -983,6 +1002,16 @@ export default function Journal({ onBack, onAnalyze, onOpenDashboard }) {
             </div>
           )}
         </div>
+      )}
+
+      {/* Pro Upgrade Modal */}
+      {showProModal && (
+        <VerifySightModal
+          isOpen={showProModal}
+          onClose={() => setShowProModal(false)}
+          title="Unlock Unlimited Journaling"
+          message="Free accounts can reflect on 1 trade. Hold $SIGHT tokens to unlock unlimited journal reflections and become a better trader."
+        />
       )}
     </div>
   )
