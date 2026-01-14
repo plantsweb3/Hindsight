@@ -1007,20 +1007,25 @@ export async function checkSightBalance(walletAddresses) {
       }
     }
 
-    // Fetch token price from DexScreener to calculate SOL value
+    // Fetch token price from Jupiter Price API to calculate SOL value
     let priceInSol = 0
+    const SOL_MINT = 'So11111111111111111111111111111111111111112'
     try {
+      // Get both $SIGHT and SOL prices in USD, then calculate ratio
       const priceResponse = await fetch(
-        `https://api.dexscreener.com/tokens/v1/solana/${SIGHT_CA}`,
+        `https://lite-api.jup.ag/price/v3?ids=${SIGHT_CA},${SOL_MINT}`,
         { headers: { 'Accept': 'application/json' } }
       )
       const priceData = await priceResponse.json()
 
-      if (priceData?.[0]?.priceNative) {
-        priceInSol = parseFloat(priceData[0].priceNative)
+      const sightPriceUSD = priceData?.[SIGHT_CA]?.usdPrice
+      const solPriceUSD = priceData?.[SOL_MINT]?.usdPrice
+
+      if (sightPriceUSD && solPriceUSD) {
+        priceInSol = sightPriceUSD / solPriceUSD
       }
     } catch (priceErr) {
-      console.warn('[checkSightBalance] Failed to fetch price:', priceErr.message)
+      console.warn('[checkSightBalance] Failed to fetch price from Jupiter:', priceErr.message)
     }
 
     const valueInSol = totalBalance * priceInSol
