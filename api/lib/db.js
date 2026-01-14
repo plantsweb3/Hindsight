@@ -26,7 +26,7 @@ function getDb() {
 // Free tier limits
 export const FREE_TIER_LIMITS = {
   MAX_WALLETS: 1,
-  MAX_JOURNAL_ENTRIES: 100, // Allow 100 journal entries for free tier
+  MAX_JOURNAL_REFLECTIONS: 1, // Free users can add notes to 1 journal entry
 }
 
 // Initialize tables (run once on first deploy)
@@ -745,6 +745,17 @@ export async function journalEntryExists(userId, tokenAddress, exitTime) {
   return result.rows.length > 0
 }
 
+// Check if a specific journal entry already has a reflection
+export async function journalEntryHasReflection(entryId, userId) {
+  const result = await getDb().execute({
+    sql: `SELECT lesson_learned, exit_reasoning, thesis FROM trade_journal WHERE id = ? AND user_id = ?`,
+    args: [entryId, userId],
+  })
+  if (result.rows.length === 0) return false
+  const row = result.rows[0]
+  return !!(row.lesson_learned || row.exit_reasoning || row.thesis)
+}
+
 export async function getJournalPatterns(userId) {
   const excludeSight = SIGHT_CA !== 'PLACEHOLDER_UPDATE_AT_LAUNCH'
   const sightFilter = excludeSight ? ' AND (token_address IS NULL OR token_address != ?)' : ''
@@ -919,22 +930,48 @@ export async function canAddWallet(userId) {
   }
 }
 
-// Check if user can add journal entry (within free tier or is Pro)
+// Check if user can add journal entry - always allowed (entries are free, reflections are limited)
 export async function canAddJournalEntry(userId) {
+  const stats = await getUserUsageStats(userId)
+  if (!stats) return { allowed: false, reason: 'User not found' }
+  // Always allow creating journal entries - the limit is on adding reflections/notes
+  return { allowed: true, isPro: stats.isPro }
+}
+
+// Count journal entries that have reflections (notes added)
+export async function countJournalReflections(userId) {
+  const result = await getDb().execute({
+    sql: `SELECT COUNT(*) as count FROM journal_entries
+          WHERE user_id = ?
+          AND (lesson_learned IS NOT NULL OR exit_reasoning IS NOT NULL OR thesis IS NOT NULL)`,
+    args: [userId],
+  })
+  return result.rows[0]?.count || 0
+}
+
+// Check if user can add reflection/notes to a journal entry
+export async function canAddJournalReflection(userId) {
   const stats = await getUserUsageStats(userId)
   if (!stats) return { allowed: false, reason: 'User not found' }
 
   if (stats.isPro) return { allowed: true, isPro: true }
-  if (stats.journalEntryCount < FREE_TIER_LIMITS.MAX_JOURNAL_ENTRIES) {
-    return { allowed: true, isPro: false, remaining: FREE_TIER_LIMITS.MAX_JOURNAL_ENTRIES - stats.journalEntryCount }
+
+  const reflectionCount = await countJournalReflections(userId)
+  if (reflectionCount < FREE_TIER_LIMITS.MAX_JOURNAL_REFLECTIONS) {
+    return {
+      allowed: true,
+      isPro: false,
+      remaining: FREE_TIER_LIMITS.MAX_JOURNAL_REFLECTIONS - reflectionCount,
+      count: reflectionCount,
+    }
   }
 
   return {
     allowed: false,
     isPro: false,
-    reason: 'Free tier journal entry limit reached',
-    limit: FREE_TIER_LIMITS.MAX_JOURNAL_ENTRIES,
-    current: stats.journalEntryCount,
+    reason: 'Free tier reflection limit reached. Upgrade to Pro to journal all your trades.',
+    limit: FREE_TIER_LIMITS.MAX_JOURNAL_REFLECTIONS,
+    current: reflectionCount,
   }
 }
 

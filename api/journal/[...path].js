@@ -4,10 +4,12 @@ import {
   createJournalEntry,
   updateJournalEntry,
   journalEntryExists,
+  journalEntryHasReflection,
   getJournalPatterns,
   getWeeklySummary,
   getMonthlySummary,
   canAddJournalEntry,
+  canAddJournalReflection,
   FREE_TIER_LIMITS,
   initDb,
 } from '../lib/db.js'
@@ -122,7 +124,7 @@ export default async function handler(req, res) {
       return json(res, summary)
     }
 
-    // POST /api/journal - Create entry
+    // POST /api/journal - Create entry (no limit on creating entries, only on reflections)
     if (route === '' && req.method === 'POST') {
       const entry = req.body
 
@@ -136,23 +138,11 @@ export default async function handler(req, res) {
         return json(res, { id: null, success: true, skipped: true, message: 'Entry already exists' })
       }
 
-      // Check limits for free users
-      const canAdd = await canAddJournalEntry(decoded.id)
-      if (!canAdd.allowed) {
-        return json(res, {
-          error: 'limit_reached',
-          message: 'Journal entry limit reached',
-          requiresPro: true,
-          limit: FREE_TIER_LIMITS.MAX_JOURNAL_ENTRIES,
-          current: canAdd.count,
-        }, 403)
-      }
-
       const id = await createJournalEntry(decoded.id, entry)
       return json(res, { id, success: true })
     }
 
-    // POST /api/journal/batch - Create multiple entries
+    // POST /api/journal/batch - Create multiple entries (no limit - users see all trades)
     if (route === 'batch' && req.method === 'POST') {
       const { entries } = req.body || {}
 
@@ -162,13 +152,10 @@ export default async function handler(req, res) {
         return error(res, 'Entries array required', 400)
       }
 
-      // Check if user can add journal entries
       const canAdd = await canAddJournalEntry(decoded.id)
-      console.log(`[Journal Batch] User canAdd: isPro=${canAdd.isPro}, allowed=${canAdd.allowed}, count=${canAdd.count}`)
 
       let created = 0
       let skipped = 0
-      let limitReached = false
 
       for (const entry of entries) {
         // Skip if already exists
@@ -178,31 +165,20 @@ export default async function handler(req, res) {
           continue
         }
 
-        // Check limits before each creation (for free users)
-        if (!canAdd.isPro) {
-          const currentCanAdd = await canAddJournalEntry(decoded.id)
-          if (!currentCanAdd.allowed) {
-            limitReached = true
-            break
-          }
-        }
-
         await createJournalEntry(decoded.id, entry)
         created++
       }
 
-      console.log(`[Journal Batch] Result: created=${created}, skipped=${skipped}, limitReached=${limitReached}`)
+      console.log(`[Journal Batch] Result: created=${created}, skipped=${skipped}`)
       return json(res, {
         created,
         skipped,
         total: entries.length,
-        limitReached,
-        limit: FREE_TIER_LIMITS.MAX_JOURNAL_ENTRIES,
         isPro: canAdd.isPro,
       })
     }
 
-    // PATCH /api/journal/:id - Update entry
+    // PATCH /api/journal/:id - Update entry (adding notes/reflections)
     if (req.method === 'PATCH') {
       const entryId = parseInt(route)
       if (isNaN(entryId)) {
@@ -212,6 +188,26 @@ export default async function handler(req, res) {
       const updates = req.body
       if (!updates || Object.keys(updates).length === 0) {
         return error(res, 'No updates provided', 400)
+      }
+
+      // Check if this update includes reflection fields (notes)
+      const hasReflectionFields = updates.lessonLearned || updates.exitReasoning || updates.thesis
+      if (hasReflectionFields) {
+        // Allow editing if entry already has a reflection (not a new reflection)
+        const alreadyHasReflection = await journalEntryHasReflection(entryId, decoded.id)
+        if (!alreadyHasReflection) {
+          // This is a NEW reflection - check the limit
+          const canReflect = await canAddJournalReflection(decoded.id)
+          if (!canReflect.allowed) {
+            return json(res, {
+              error: 'reflection_limit_reached',
+              message: 'Free tier allows 1 journal reflection. Upgrade to Pro to reflect on all your trades.',
+              requiresPro: true,
+              limit: FREE_TIER_LIMITS.MAX_JOURNAL_REFLECTIONS,
+              current: canReflect.current,
+            }, 403)
+          }
+        }
       }
 
       await updateJournalEntry(entryId, decoded.id, updates)
