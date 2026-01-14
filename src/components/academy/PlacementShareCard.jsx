@@ -105,7 +105,7 @@ function PlacementShareCardContent({ level, modulesCleared, totalModules, xpEarn
 
 // Main exported component with share functionality
 export default function PlacementShareCard({ level, modulesCleared, totalModules = 5, xpEarned, averageScore }) {
-  const cardRef = useRef(null)
+  const hiddenCardRef = useRef(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
@@ -124,20 +124,18 @@ export default function PlacementShareCard({ level, modulesCleared, totalModules
   }
 
   const handleShareToTwitter = useCallback(async () => {
-    if (!cardRef.current || isGenerating) return
+    if (!hiddenCardRef.current || isGenerating) return
 
     setIsGenerating(true)
     try {
       // Lazy-load html2canvas only when needed
       const { default: html2canvas } = await import('html2canvas')
-      const canvas = await html2canvas(cardRef.current, {
+      const canvas = await html2canvas(hiddenCardRef.current, {
         backgroundColor: '#0a0a0a',
         scale: 2,
         logging: false,
         useCORS: true,
         allowTaint: true,
-        width: 1200,
-        height: 630,
       })
 
       // Download the image
@@ -163,20 +161,18 @@ export default function PlacementShareCard({ level, modulesCleared, totalModules
   }, [isGenerating, level])
 
   const handleCopyImage = useCallback(async () => {
-    if (!cardRef.current || isGenerating) return
+    if (!hiddenCardRef.current || isGenerating) return
 
     setIsGenerating(true)
     try {
       // Lazy-load html2canvas only when needed
       const { default: html2canvas } = await import('html2canvas')
-      const canvas = await html2canvas(cardRef.current, {
+      const canvas = await html2canvas(hiddenCardRef.current, {
         backgroundColor: '#0a0a0a',
         scale: 2,
         logging: false,
         useCORS: true,
         allowTaint: true,
-        width: 1200,
-        height: 630,
       })
 
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
@@ -194,20 +190,18 @@ export default function PlacementShareCard({ level, modulesCleared, totalModules
   }, [isGenerating])
 
   const handleDownload = useCallback(async () => {
-    if (!cardRef.current || isGenerating) return
+    if (!hiddenCardRef.current || isGenerating) return
 
     setIsGenerating(true)
     try {
       // Lazy-load html2canvas only when needed
       const { default: html2canvas } = await import('html2canvas')
-      const canvas = await html2canvas(cardRef.current, {
+      const canvas = await html2canvas(hiddenCardRef.current, {
         backgroundColor: '#0a0a0a',
         scale: 2,
         logging: false,
         useCORS: true,
         allowTaint: true,
-        width: 1200,
-        height: 630,
       })
 
       const dataUrl = canvas.toDataURL('image/png')
@@ -227,9 +221,32 @@ export default function PlacementShareCard({ level, modulesCleared, totalModules
 
   return (
     <div className="placement-share-section">
+      {/* Hidden full-size card for html2canvas capture (off-screen) */}
+      <div
+        ref={hiddenCardRef}
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          top: 0,
+          width: 1200,
+          height: 630,
+          pointerEvents: 'none',
+        }}
+        aria-hidden="true"
+      >
+        <PlacementShareCardContent
+          level={level}
+          modulesCleared={modulesCleared}
+          totalModules={totalModules}
+          xpEarned={xpEarned}
+          averageScore={averageScore}
+          flexLine={flexLine}
+        />
+      </div>
+
       {/* Card preview - scaled down for display */}
       <div className="placement-share-card-wrapper">
-        <div ref={cardRef} style={{ width: 1200, height: 630 }}>
+        <div style={{ width: 1200, height: 630 }}>
           <PlacementShareCardContent
             level={level}
             modulesCleared={modulesCleared}
