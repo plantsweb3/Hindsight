@@ -113,6 +113,9 @@ async function resolveTokenNames(mints) {
   }
 }
 
+// Track unique program IDs found for debugging
+const foundPrograms = new Set()
+
 function isDexTx(tx) {
   if (!tx?.transaction?.message) return false
 
@@ -130,6 +133,8 @@ function isDexTx(tx) {
   for (const ix of instructions) {
     const programId = ix.programId?.toString() || ''
     if (DEX_PROGRAMS.includes(programId)) return true
+    // Track non-DEX programs for debugging (limit to reduce memory)
+    if (programId && foundPrograms.size < 50) foundPrograms.add(programId)
   }
 
   for (const inner of innerInstructions) {
@@ -204,7 +209,15 @@ function parseSwap(tx, wallet) {
     }
   }
 
-  if (changes.length < 2) return null
+  if (changes.length < 2) {
+    // Log first few rejections for debugging
+    if (typeof parseSwap.rejectionCount === 'undefined') parseSwap.rejectionCount = 0
+    if (parseSwap.rejectionCount < 5) {
+      console.log(`[parseSwap] Rejected: only ${changes.length} changes detected (need 2+)`)
+      parseSwap.rejectionCount++
+    }
+    return null
+  }
 
   // Filter out $SIGHT token trades from analytics
   if (involvesSightToken(changes)) return null
@@ -555,7 +568,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid Solana wallet address' })
   }
 
-  debug(`Analyzing: ${walletAddress}`)
+  console.log(`[Analyze] Starting analysis for: ${walletAddress}`)
+
+  // Reset debugging counters for this request
+  foundPrograms.clear()
+  parseSwap.rejectionCount = 0
 
   // Track execution time to avoid timeout
   const startTime = Date.now()
@@ -592,7 +609,13 @@ export default async function handler(req, res) {
         options.before = lastSignature
       }
 
-      const signatures = await connection.getSignaturesForAddress(pubkey, options)
+      let signatures
+      try {
+        signatures = await connection.getSignaturesForAddress(pubkey, options)
+      } catch (sigErr) {
+        console.error(`[Analyze] Signature fetch error on page ${pageCount + 1}: ${sigErr.message}`)
+        break
+      }
 
       if (signatures.length === 0) {
         debug(`No more transactions found after page ${pageCount}`)
@@ -618,6 +641,7 @@ export default async function handler(req, res) {
     }
 
     debug(`Found ${allSignatures.length} total transactions across ${pageCount} pages`)
+    console.log(`[Analyze] Fetched ${allSignatures.length} signatures across ${pageCount} pages`)
 
     // Calculate date range of history
     let oldestDate = null
@@ -645,6 +669,8 @@ export default async function handler(req, res) {
 
     const trades = []
     let processedCount = 0
+    // Use object for counters to ensure closure captures work correctly in async callbacks
+    const counters = { dexTxCount: 0, parseFailCount: 0, fetchErrorCount: 0 }
 
     // Process transactions in batches to avoid overwhelming the RPC
     // Increased batch size for better throughput
@@ -664,13 +690,20 @@ export default async function handler(req, res) {
           })
 
           if (tx && isDexTx(tx)) {
+            counters.dexTxCount++
             const swap = parseSwap(tx, walletAddress)
             if (swap) {
               return swap
+            } else {
+              counters.parseFailCount++
             }
           }
         } catch (err) {
-          // Silently skip failed transactions to avoid log spam
+          // Log first few transaction fetch errors for debugging
+          if (counters.fetchErrorCount < 3) {
+            console.error(`[Analyze] Transaction fetch error: ${err.message}`)
+          }
+          counters.fetchErrorCount++
           return null
         }
         return null
@@ -692,6 +725,14 @@ export default async function handler(req, res) {
 
     const elapsed = Math.round((Date.now() - startTime) / 1000)
     debug(`[${elapsed}s] Found ${trades.length} DEX trades from ${processedCount}/${allSignatures.length} transactions (${historyDays} days)`)
+
+    // Production logging for debugging trade detection issues
+    console.log(`[Analyze] Completed: ${trades.length} DEX trades from ${processedCount}/${allSignatures.length} transactions`)
+    console.log(`[Analyze] DEX detection: ${counters.dexTxCount} DEX txs found, ${counters.parseFailCount} failed to parse, ${counters.fetchErrorCount} fetch errors`)
+    if (foundPrograms.size > 0 && trades.length < 5) {
+      // Log programs found if we're missing trades (helps identify new DEXs)
+      console.log(`[Analyze] Non-DEX program IDs found: ${[...foundPrograms].slice(0, 20).join(', ')}`)
+    }
 
     // Track if we have partial results due to timeout
     const isPartialResult = processedCount < allSignatures.length
