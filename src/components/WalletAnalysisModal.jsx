@@ -13,6 +13,7 @@ export default function WalletAnalysisModal({
   const { user, token, saveAnalysis, addWallet, refreshUser } = useAuth()
   const [walletAddress, setWalletAddress] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false) // Prevent Pro prompt flash after success
   const [error, setError] = useState('')
   const [messageIndex, setMessageIndex] = useState(0)
   const [isMessageVisible, setIsMessageVisible] = useState(true)
@@ -22,7 +23,8 @@ export default function WalletAnalysisModal({
   const isPro = user?.isPro || false
   const walletCount = user?.savedWallets?.length || 0
   const limits = user?.limits || { MAX_WALLETS: 1 }
-  const atLimit = walletCount >= limits.MAX_WALLETS && !isPro
+  // Don't show limit prompt if analysis just succeeded (prevents flash during state updates)
+  const atLimit = walletCount >= limits.MAX_WALLETS && !isPro && !isSuccess
 
   // Cycle through loading messages with loop behavior for last 10 messages
   useEffect(() => {
@@ -64,6 +66,7 @@ export default function WalletAnalysisModal({
       setWalletAddress('')
       setError('')
       setIsLoading(false)
+      setIsSuccess(false)
       setMessageIndex(0)
     }
   }, [isOpen])
@@ -120,6 +123,9 @@ export default function WalletAnalysisModal({
         journalPatterns,
         crossWalletStats
       )
+
+      // Mark as success BEFORE state updates to prevent Pro prompt flash
+      setIsSuccess(true)
 
       // Step 4: Save analysis (this also adds wallet to savedWallets)
       await saveAnalysis(trimmedAddress, analysis, walletData.stats)
