@@ -673,8 +673,8 @@ export default async function handler(req, res) {
     const counters = { dexTxCount: 0, parseFailCount: 0, fetchErrorCount: 0 }
 
     // Process transactions in batches to avoid overwhelming the RPC
-    // Increased batch size for better throughput
-    const BATCH_SIZE = 25
+    // Reduced batch size to avoid 429 rate limiting from Helius
+    const BATCH_SIZE = 5
     for (let i = 0; i < allSignatures.length; i += BATCH_SIZE) {
       // Check timeout before processing more batches
       if (isApproachingTimeout()) {
@@ -684,27 +684,39 @@ export default async function handler(req, res) {
 
       const batch = allSignatures.slice(i, i + BATCH_SIZE)
       const batchPromises = batch.map(async (sig, idx) => {
-        try {
-          const tx = await connection.getParsedTransaction(sig.signature, {
-            maxSupportedTransactionVersion: 0,
-          })
+        // Retry logic for rate limiting
+        const maxRetries = 3
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+          try {
+            const tx = await connection.getParsedTransaction(sig.signature, {
+              maxSupportedTransactionVersion: 0,
+            })
 
-          if (tx && isDexTx(tx)) {
-            counters.dexTxCount++
-            const swap = parseSwap(tx, walletAddress)
-            if (swap) {
-              return swap
-            } else {
-              counters.parseFailCount++
+            if (tx && isDexTx(tx)) {
+              counters.dexTxCount++
+              const swap = parseSwap(tx, walletAddress)
+              if (swap) {
+                return swap
+              } else {
+                counters.parseFailCount++
+              }
             }
+            return null // Success, exit retry loop
+          } catch (err) {
+            // Retry on rate limit (429) errors
+            if (err.message?.includes('429') || err.message?.includes('Too Many')) {
+              if (attempt < maxRetries - 1) {
+                await new Promise(r => setTimeout(r, 1000 * (attempt + 1))) // Exponential backoff
+                continue
+              }
+            }
+            // Log first few transaction fetch errors for debugging
+            if (counters.fetchErrorCount < 3) {
+              console.error(`[Analyze] Transaction fetch error: ${err.message}`)
+            }
+            counters.fetchErrorCount++
+            return null
           }
-        } catch (err) {
-          // Log first few transaction fetch errors for debugging
-          if (counters.fetchErrorCount < 3) {
-            console.error(`[Analyze] Transaction fetch error: ${err.message}`)
-          }
-          counters.fetchErrorCount++
-          return null
         }
         return null
       })
@@ -719,7 +731,8 @@ export default async function handler(req, res) {
           const elapsed = Math.round((Date.now() - startTime) / 1000)
           debug(`[${elapsed}s] Processed ${processedCount}/${allSignatures.length} transactions, found ${trades.length} trades`)
         }
-        await new Promise(r => setTimeout(r, 25))
+        // Longer delay to avoid 429 rate limiting from Helius
+        await new Promise(r => setTimeout(r, 200))
       }
     }
 
