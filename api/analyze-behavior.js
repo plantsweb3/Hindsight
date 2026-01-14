@@ -22,11 +22,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  // Require authentication for AI analysis
+  // Authentication is optional - allows landing page analysis for new visitors
+  // This enables the full experience before signup to improve conversion
   const decoded = authenticateRequest(req)
-  if (!decoded) {
-    return res.status(401).json({ error: 'Authentication required' })
-  }
 
   const { trades, stats, openPositions, userArchetype, journalPatterns, crossWalletStats } = req.body
 
