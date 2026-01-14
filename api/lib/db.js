@@ -26,7 +26,7 @@ function getDb() {
 // Free tier limits
 export const FREE_TIER_LIMITS = {
   MAX_WALLETS: 1,
-  MAX_JOURNAL_ENTRIES: 1,
+  MAX_JOURNAL_ENTRIES: 100, // Allow 100 journal entries for free tier
 }
 
 // Initialize tables (run once on first deploy)
