@@ -23,8 +23,16 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
 // $SIGHT token contract address - set via environment variable at launch
 const SIGHT_CA = process.env.SIGHT_TOKEN_CA || 'PLACEHOLDER_UPDATE_AT_LAUNCH'
 
-// Helius RPC
+// Warn if SIGHT_TOKEN_CA is not configured (optional but recommended)
+if (SIGHT_CA === 'PLACEHOLDER_UPDATE_AT_LAUNCH') {
+  console.warn('[Analyze] SIGHT_TOKEN_CA not set - $SIGHT trades will not be excluded')
+}
+
+// Helius RPC - REQUIRED for wallet analysis
 const HELIUS_KEY = process.env.HELIUS_API_KEY
+if (!HELIUS_KEY) {
+  console.error('[Analyze] FATAL: HELIUS_API_KEY environment variable is required')
+}
 const RPC_URL = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`
 
 // In-memory caches (reset on cold start, which is fine for serverless)
