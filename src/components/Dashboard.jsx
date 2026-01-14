@@ -7,6 +7,7 @@ import { getCalculatedXPInfo } from '../services/achievements'
 import { DashboardSkeleton } from './Skeleton'
 import WalletAnalysisModal from './WalletAnalysisModal'
 import VerifySightModal from './VerifySightModal'
+import ProExpiredModal from './ProExpiredModal'
 
 // Typewriter Text Component
 function TypewriterText({ text, delay = 30, className = '' }) {
@@ -1048,12 +1049,20 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
   const [showXpPopup, setShowXpPopup] = useState(false)
   const [showWalletAnalysisModal, setShowWalletAnalysisModal] = useState(false)
   const [showVerifySightModal, setShowVerifySightModal] = useState(false)
+  const [showProExpiredModal, setShowProExpiredModal] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   // Re-fetch data when user changes (e.g., after signup/login as different user)
   useEffect(() => {
     loadDashboardData()
   }, [user?.id])
+
+  // Show Pro expired modal when user's Pro status has expired
+  useEffect(() => {
+    if (user?.proExpired && !showProExpiredModal) {
+      setShowProExpiredModal(true)
+    }
+  }, [user?.proExpired])
 
   // Load XP/level info from Academy progress
   useEffect(() => {
@@ -1403,6 +1412,18 @@ export default function Dashboard({ onBack, onAnalyze, onRetakeQuiz, onOpenJourn
           onClose={() => setShowVerifySightModal(false)}
           onVerified={() => {
             setShowVerifySightModal(false)
+            refreshUser()
+          }}
+        />
+      )}
+
+      {/* Pro Expired Modal - shown when user's Pro status has expired */}
+      {showProExpiredModal && (
+        <ProExpiredModal
+          isOpen={showProExpiredModal}
+          onClose={() => setShowProExpiredModal(false)}
+          onSuccess={() => {
+            setShowProExpiredModal(false)
             refreshUser()
           }}
         />

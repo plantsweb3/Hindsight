@@ -840,14 +840,18 @@ export async function getUserUsageStats(userId) {
   const journalEntryCount = Number(journalResult.rows[0]?.count || 0)
 
   // Check if Pro status is still valid (not expired)
-  const isPro = user.is_pro === 1 && (
-    !user.pro_expires_at || new Date(user.pro_expires_at) > new Date()
-  )
+  const wasProBefore = user.is_pro === 1
+  const isExpired = user.pro_expires_at && new Date(user.pro_expires_at) <= new Date()
+  const isPro = wasProBefore && !isExpired
+
+  // proExpired = user was Pro but it expired (need to re-verify)
+  const proExpired = wasProBefore && isExpired
 
   return {
     walletCount,
     journalEntryCount,
     isPro,
+    proExpired,
     proVerifiedAt: user.pro_verified_at,
     proExpiresAt: user.pro_expires_at,
   }
@@ -863,6 +867,37 @@ export async function updateProStatus(userId, isPro) {
     sql: `UPDATE users SET is_pro = ?, pro_verified_at = ?, pro_expires_at = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
     args: [isPro ? 1 : 0, isPro ? now : null, isPro ? expiresAt : null, userId],
   })
+}
+
+// Re-verify Pro status by checking all saved wallets
+// Returns { isPro, reVerified, balance, requiredBalance }
+export async function reVerifyProStatus(userId) {
+  const user = await getUserById(userId)
+  if (!user) return { isPro: false, reVerified: false, error: 'User not found' }
+
+  const wallets = normalizeWallets(user.saved_wallets)
+  if (wallets.length === 0) {
+    // No wallets to check - mark as not Pro
+    await updateProStatus(userId, false)
+    return { isPro: false, reVerified: true, balance: 0, requiredBalance: MIN_SIGHT_VALUE_SOL }
+  }
+
+  // Get all wallet addresses
+  const walletAddresses = wallets.map(w => typeof w === 'string' ? w : w.address)
+
+  // Check $SIGHT balance across all wallets
+  const balanceCheck = await checkSightBalance(walletAddresses)
+
+  // Update Pro status based on balance check
+  await updateProStatus(userId, balanceCheck.isPro)
+
+  return {
+    isPro: balanceCheck.isPro,
+    reVerified: true,
+    balance: balanceCheck.balance,
+    valueInSol: balanceCheck.valueInSol,
+    requiredBalance: balanceCheck.requiredBalance,
+  }
 }
 
 // Check if user can add wallet (within free tier or is Pro)

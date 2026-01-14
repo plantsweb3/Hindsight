@@ -16,6 +16,7 @@ import {
   canAddWallet,
   updateProStatus,
   checkSightBalance,
+  reVerifyProStatus,
   deleteUser,
   FREE_TIER_LIMITS,
   WALLET_LABELS,
@@ -120,11 +121,21 @@ export default async function handler(req, res) {
       }
 
       let usageStats = null
+      let proExpired = false
       try {
         usageStats = await getUserUsageStats(user.id)
+
+        // If Pro expired, automatically re-verify using saved wallets
+        if (usageStats?.proExpired && wallets.length > 0) {
+          const reVerifyResult = await reVerifyProStatus(user.id)
+          usageStats.isPro = reVerifyResult.isPro
+          usageStats.proExpired = !reVerifyResult.isPro // Still expired if they don't qualify
+          proExpired = !reVerifyResult.isPro // They were Pro but no longer qualify
+        }
       } catch (statsErr) {
         // Continue without stats
       }
+
       return json(res, {
         token,
         user: {
@@ -134,6 +145,8 @@ export default async function handler(req, res) {
           secondaryArchetype: user.secondary_archetype,
           savedWallets: wallets,
           isPro: usageStats?.isPro || false,
+          proExpired: proExpired,
+          proExpiresAt: usageStats?.proExpiresAt || null,
         },
       })
     }
@@ -151,8 +164,22 @@ export default async function handler(req, res) {
       }
 
       // Get usage stats and wallets with labels
-      const usageStats = await getUserUsageStats(decoded.id)
+      let usageStats = await getUserUsageStats(decoded.id)
       const wallets = await getUserWallets(decoded.id)
+
+      // If Pro expired, automatically re-verify using saved wallets
+      let proExpired = false
+      if (usageStats?.proExpired && wallets.length > 0) {
+        const reVerifyResult = await reVerifyProStatus(decoded.id)
+        usageStats.isPro = reVerifyResult.isPro
+        proExpired = !reVerifyResult.isPro // They were Pro but no longer qualify
+        // Refresh stats after re-verification
+        if (reVerifyResult.isPro) {
+          usageStats = await getUserUsageStats(decoded.id)
+        }
+      } else if (usageStats?.proExpired) {
+        proExpired = true
+      }
 
       return json(res, {
         id: user.id,
@@ -163,6 +190,8 @@ export default async function handler(req, res) {
         createdAt: user.created_at,
         // Pro status and usage
         isPro: usageStats?.isPro || false,
+        proExpired: proExpired,
+        proExpiresAt: usageStats?.proExpiresAt || null,
         walletCount: usageStats?.walletCount || 0,
         journalEntryCount: usageStats?.journalEntryCount || 0,
         limits: FREE_TIER_LIMITS,

@@ -9520,6 +9520,41 @@ input, button {
   border-color: rgba(16, 185, 129, 0.3);
 }
 
+/* Pro Expired Modal */
+.pro-expired-modal {
+  max-width: 420px;
+}
+
+.pro-expired-icon {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(239, 68, 68, 0.2));
+  color: #f59e0b;
+}
+
+.pro-expired-info {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.pro-expired-requirement {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.requirement-label {
+  color: #a1a1aa;
+  font-size: 0.85rem;
+}
+
+.requirement-value {
+  color: #f59e0b;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
 .verify-form {
   display: flex;
   flex-direction: column;
