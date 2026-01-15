@@ -217,7 +217,8 @@ function clearLocalProgress() {
     'placementTestBestScores',
     'placementTestLatestScores',
     'placementTestBestQuestionResults',
-    'masterExamBestQuestionResults'
+    'masterExamBestQuestionResults',
+    'hindsight_highest_celebrated_level'
   ]
   keysToRemove.forEach(key => localStorage.removeItem(key))
 }
@@ -412,6 +413,14 @@ export async function fetchAndMergeProgress(token, userId) {
       dailyBonusesClaimed: Math.max(
         localData.stats.dailyBonusesClaimed || 0,
         serverData.stats.dailyBonusesClaimed || 0
+      ),
+      lessonsCompleted: Math.max(
+        localData.stats.lessonsCompleted || 0,
+        serverData.stats.lessonsCompleted || 0
+      ),
+      modulesCompleted: Math.max(
+        localData.stats.modulesCompleted || 0,
+        serverData.stats.modulesCompleted || 0
       )
     }
 

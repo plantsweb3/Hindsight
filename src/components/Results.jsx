@@ -187,9 +187,73 @@ function getPatternColor(pattern) {
   return PATTERN_COLORS[normalized] || '#8B5CF6'
 }
 
+// The actual card content (rendered to image)
+function ShareCardContent({ analysis, stats, topPattern, patternColor }) {
+  return (
+    <div className="share-card-canvas">
+      {/* Content */}
+      <div className="share-card-content">
+        {/* Header - centered logo + wordmark */}
+        <div className="share-card-header">
+          <img src="/hindsightlogo.png" alt="" className="share-card-logo" />
+          <span className="share-card-brand">hindsight</span>
+        </div>
+
+        {/* Verdict Quote - no label, italic styling */}
+        <div className="share-card-verdict">
+          "{analysis.verdict}"
+        </div>
+
+        {/* Stats Row - consistent purple borders, fixed height */}
+        <div className="share-card-stats">
+          <div className="share-card-stat">
+            <div className="share-card-stat-value primary">{analysis.winRate}</div>
+            <div className="share-card-stat-label">WIN RATE</div>
+          </div>
+          <div className="share-card-stat">
+            <div className="share-card-stat-value">{stats.dexTrades}</div>
+            <div className="share-card-stat-label">TRADES</div>
+          </div>
+          <div className="share-card-stat">
+            <div
+              className="share-card-stat-value"
+              style={{ fontSize: getStatFontSize(formatAvgHold(analysis.avgHoldTime)) }}
+            >
+              {formatAvgHold(analysis.avgHoldTime)}
+            </div>
+            <div className="share-card-stat-label">AVG HOLD</div>
+          </div>
+        </div>
+
+        {/* Pattern Badge - pill shape with pattern-specific color */}
+        <div
+          className="share-card-pattern-badge"
+          style={{
+            '--pattern-color': patternColor,
+            background: `${patternColor}15`,
+            borderColor: `${patternColor}50`,
+          }}
+        >
+          <span
+            className="share-card-pattern-dot"
+            style={{ background: patternColor }}
+          />
+          <span className="share-card-pattern-text">{topPattern.toUpperCase()}</span>
+        </div>
+
+        {/* CTA - more prominent */}
+        <div className="share-card-cta">
+          <span className="share-card-cta-text">Analyze your wallet →</span>
+          <span className="share-card-cta-url">tradehindsight.com</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Share Card Component with Image Generation
 function ShareCard({ analysis, stats }) {
-  const cardRef = useRef(null)
+  const hiddenCardRef = useRef(null)
   const [isGenerating, setIsGenerating] = useState(false)
 
   // Get top pattern and its color
@@ -206,13 +270,13 @@ function ShareCard({ analysis, stats }) {
   }, [])
 
   const generateAndShare = useCallback(async (openTwitter = true) => {
-    if (!cardRef.current || isGenerating) return
+    if (!hiddenCardRef.current || isGenerating) return
 
     setIsGenerating(true)
     try {
       // Lazy-load html2canvas only when needed
       const { default: html2canvas } = await import('html2canvas')
-      const canvas = await html2canvas(cardRef.current, {
+      const canvas = await html2canvas(hiddenCardRef.current, {
         backgroundColor: '#0a0a0a',
         scale: 2,
         logging: false,
@@ -248,13 +312,13 @@ function ShareCard({ analysis, stats }) {
   }, [isGenerating])
 
   const copyImageToClipboard = useCallback(async () => {
-    if (!cardRef.current) return
+    if (!hiddenCardRef.current) return
 
     setIsGenerating(true)
     try {
       // Lazy-load html2canvas only when needed
       const { default: html2canvas } = await import('html2canvas')
-      const canvas = await html2canvas(cardRef.current, {
+      const canvas = await html2canvas(hiddenCardRef.current, {
         backgroundColor: '#0a0a0a',
         scale: 2,
         logging: false,
@@ -281,66 +345,35 @@ function ShareCard({ analysis, stats }) {
     <div className="share-section">
       <h3 className="share-title">Share your results</h3>
 
-      {/* Card preview for image generation - scaled down for display */}
+      {/* Hidden full-size card for html2canvas capture (off-screen) */}
+      <div
+        ref={hiddenCardRef}
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          top: 0,
+          width: 600,
+          height: 315,
+          pointerEvents: 'none',
+        }}
+        aria-hidden="true"
+      >
+        <ShareCardContent
+          analysis={analysis}
+          stats={stats}
+          topPattern={topPattern}
+          patternColor={patternColor}
+        />
+      </div>
+
+      {/* Card preview for display */}
       <div className="share-card-wrapper">
-        <div ref={cardRef} className="share-card-canvas">
-          {/* Content */}
-          <div className="share-card-content">
-            {/* Header - centered logo + wordmark */}
-            <div className="share-card-header">
-              <img src="/hindsightlogo.png" alt="" className="share-card-logo" />
-              <span className="share-card-brand">hindsight</span>
-            </div>
-
-            {/* Verdict Quote - no label, italic styling */}
-            <div className="share-card-verdict">
-              "{analysis.verdict}"
-            </div>
-
-            {/* Stats Row - consistent purple borders, fixed height */}
-            <div className="share-card-stats">
-              <div className="share-card-stat">
-                <div className="share-card-stat-value primary">{analysis.winRate}</div>
-                <div className="share-card-stat-label">WIN RATE</div>
-              </div>
-              <div className="share-card-stat">
-                <div className="share-card-stat-value">{stats.dexTrades}</div>
-                <div className="share-card-stat-label">TRADES</div>
-              </div>
-              <div className="share-card-stat">
-                <div
-                  className="share-card-stat-value"
-                  style={{ fontSize: getStatFontSize(formatAvgHold(analysis.avgHoldTime)) }}
-                >
-                  {formatAvgHold(analysis.avgHoldTime)}
-                </div>
-                <div className="share-card-stat-label">AVG HOLD</div>
-              </div>
-            </div>
-
-            {/* Pattern Badge - pill shape with pattern-specific color */}
-            <div
-              className="share-card-pattern-badge"
-              style={{
-                '--pattern-color': patternColor,
-                background: `${patternColor}15`,
-                borderColor: `${patternColor}50`,
-              }}
-            >
-              <span
-                className="share-card-pattern-dot"
-                style={{ background: patternColor }}
-              />
-              <span className="share-card-pattern-text">{topPattern.toUpperCase()}</span>
-            </div>
-
-            {/* CTA - more prominent */}
-            <div className="share-card-cta">
-              <span className="share-card-cta-text">Analyze your wallet →</span>
-              <span className="share-card-cta-url">tradehindsight.com</span>
-            </div>
-          </div>
-        </div>
+        <ShareCardContent
+          analysis={analysis}
+          stats={stats}
+          topPattern={topPattern}
+          patternColor={patternColor}
+        />
       </div>
 
       {/* Action buttons */}

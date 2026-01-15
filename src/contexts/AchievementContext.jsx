@@ -17,6 +17,26 @@ import { getLevelInfo } from '../config/xpConfig'
 
 const AchievementContext = createContext(null)
 
+// Track highest celebrated level to prevent duplicate level-up popups
+const HIGHEST_CELEBRATED_LEVEL_KEY = 'hindsight_highest_celebrated_level'
+
+function getHighestCelebratedLevel() {
+  try {
+    const stored = localStorage.getItem(HIGHEST_CELEBRATED_LEVEL_KEY)
+    return stored ? parseInt(stored, 10) : 0
+  } catch {
+    return 0
+  }
+}
+
+function setHighestCelebratedLevel(level) {
+  try {
+    localStorage.setItem(HIGHEST_CELEBRATED_LEVEL_KEY, String(level))
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 export function AchievementProvider({ children }) {
   // Queue of achievements to celebrate (shown one at a time)
   const [achievementQueue, setAchievementQueue] = useState([])
@@ -68,10 +88,6 @@ export function AchievementProvider({ children }) {
 
   // Check achievements after lesson completion (local)
   const checkLessonCompletion = useCallback((moduleSlug, lessonSlug, earnedAchievements = []) => {
-    // Get level before changes
-    const statsBefore = getLocalStats()
-    const levelBefore = getLevelInfo(statsBefore.totalXp || 0)
-
     // Increment local lesson count (this also adds lesson XP)
     const stats = incrementLessonsCompleted()
 
@@ -93,17 +109,22 @@ export function AchievementProvider({ children }) {
     // Queue achievements for celebration
     queueAchievements(newAchievements)
 
-    // Check for level up
+    // Check for level up - use highest celebrated level to prevent duplicate popups
     const updatedStats = getLocalStats()
     const levelAfter = getLevelInfo(updatedStats.totalXp || 0)
-    if (levelAfter.level > levelBefore.level) {
+    const highestCelebrated = getHighestCelebratedLevel()
+
+    if (levelAfter.level > highestCelebrated) {
+      // Update the highest celebrated level BEFORE showing popup to prevent race conditions
+      setHighestCelebratedLevel(levelAfter.level)
+
       // Delay level up to show after achievements
       setTimeout(() => {
         queueLevelUp({
           newLevel: levelAfter.level,
           newTitle: levelAfter.title,
-          previousLevel: levelBefore.level,
-          titleChanged: levelAfter.title !== levelBefore.title
+          previousLevel: highestCelebrated,
+          titleChanged: levelAfter.title !== getLevelInfo((highestCelebrated - 1) * 100).title
         })
       }, newAchievements.length > 0 ? 500 : 0)
     }
@@ -117,10 +138,6 @@ export function AchievementProvider({ children }) {
 
   // Check achievements after quiz completion
   const checkQuizCompletion = useCallback((quizResults, earnedAchievements = []) => {
-    // Get level before changes
-    const statsBefore = getLocalStats()
-    const levelBefore = getLevelInfo(statsBefore.totalXp || 0)
-
     // Add quiz XP first
     addQuizXp(quizResults.passed, quizResults.perfect)
 
@@ -143,16 +160,21 @@ export function AchievementProvider({ children }) {
     // Queue achievements for celebration
     queueAchievements(newAchievements)
 
-    // Check for level up
+    // Check for level up - use highest celebrated level to prevent duplicate popups
     const updatedStats = getLocalStats()
     const levelAfter = getLevelInfo(updatedStats.totalXp || 0)
-    if (levelAfter.level > levelBefore.level) {
+    const highestCelebrated = getHighestCelebratedLevel()
+
+    if (levelAfter.level > highestCelebrated) {
+      // Update the highest celebrated level BEFORE showing popup to prevent race conditions
+      setHighestCelebratedLevel(levelAfter.level)
+
       setTimeout(() => {
         queueLevelUp({
           newLevel: levelAfter.level,
           newTitle: levelAfter.title,
-          previousLevel: levelBefore.level,
-          titleChanged: levelAfter.title !== levelBefore.title
+          previousLevel: highestCelebrated,
+          titleChanged: levelAfter.title !== getLevelInfo((highestCelebrated - 1) * 100).title
         })
       }, newAchievements.length > 0 ? 500 : 0)
     }
