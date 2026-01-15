@@ -156,7 +156,7 @@ export default function VerifySightModal({ isOpen, onClose, onSuccess, title, me
                 Requirement: 0.25 SOL worth of $SIGHT
               </p>
               <a
-                href="https://pump.fun"
+                href="https://pump.fun/coin/DWxk2VaurkbvFGK8cQ15BHf7ene38ngXaMy5K38ipump"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="verify-buy-link"
