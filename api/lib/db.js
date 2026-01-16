@@ -1010,40 +1010,51 @@ export async function checkSightBalance(walletAddresses) {
     }
   }
 
+  console.log(`[checkSightBalance] Checking ${walletAddresses.length} wallets for SIGHT_CA: ${SIGHT_CA}`)
+
   try {
     let totalBalance = 0
 
-    // Check each wallet address for $SIGHT balance
+    // Check each wallet address for $SIGHT balance using getTokenAccountsByOwner
+    // This is more reliable than searchAssets for specific token lookups
     for (const walletAddress of walletAddresses) {
-      // Use Helius DAS API to get token balances
+      console.log(`[checkSightBalance] Checking wallet: ${walletAddress}`)
+
       const response = await fetch(`https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           jsonrpc: '2.0',
           id: 'sight-check',
-          method: 'searchAssets',
-          params: {
-            ownerAddress: walletAddress,
-            tokenType: 'fungible',
-            displayOptions: { showFungible: true },
-          },
+          method: 'getTokenAccountsByOwner',
+          params: [
+            walletAddress,
+            { mint: SIGHT_CA },
+            { encoding: 'jsonParsed' }
+          ],
         }),
       })
 
       const data = await response.json()
 
-      if (data.result?.items) {
-        // Find $SIGHT token in the wallet
-        const sightToken = data.result.items.find(item => item.id === SIGHT_CA)
+      if (data.error) {
+        console.warn(`[checkSightBalance] RPC error for ${walletAddress}:`, data.error)
+        continue
+      }
 
-        if (sightToken) {
-          const balance = sightToken.token_info?.balance || 0
-          const decimals = sightToken.token_info?.decimals || 0
-          totalBalance += balance / Math.pow(10, decimals)
+      if (data.result?.value?.length > 0) {
+        for (const account of data.result.value) {
+          const tokenAmount = account.account?.data?.parsed?.info?.tokenAmount
+          if (tokenAmount) {
+            const balance = parseFloat(tokenAmount.uiAmount || 0)
+            console.log(`[checkSightBalance] Found ${balance} $SIGHT in ${walletAddress}`)
+            totalBalance += balance
+          }
         }
       }
     }
+
+    console.log(`[checkSightBalance] Total balance: ${totalBalance}`)
 
     // If no balance found, return early
     if (totalBalance === 0) {
@@ -1060,23 +1071,49 @@ export async function checkSightBalance(walletAddresses) {
     try {
       // Get both $SIGHT and SOL prices in USD, then calculate ratio
       const priceResponse = await fetch(
-        `https://lite-api.jup.ag/price/v3?ids=${SIGHT_CA},${SOL_MINT}`,
+        `https://api.jup.ag/price/v2?ids=${SIGHT_CA},${SOL_MINT}`,
         { headers: { 'Accept': 'application/json' } }
       )
       const priceData = await priceResponse.json()
 
-      const sightPriceUSD = priceData?.[SIGHT_CA]?.usdPrice
-      const solPriceUSD = priceData?.[SOL_MINT]?.usdPrice
+      const sightPriceUSD = priceData.data?.[SIGHT_CA]?.price
+      const solPriceUSD = priceData.data?.[SOL_MINT]?.price
+
+      console.log(`[checkSightBalance] Prices - SIGHT: $${sightPriceUSD}, SOL: $${solPriceUSD}`)
 
       if (sightPriceUSD && solPriceUSD) {
         priceInSol = sightPriceUSD / solPriceUSD
+      } else {
+        // Jupiter doesn't have price data yet (new token) - use launch fallback
+        console.warn('[checkSightBalance] Jupiter has no price data - using launch fallback')
+        if (totalBalance > 0) {
+          return {
+            isPro: true,
+            balance: totalBalance,
+            valueInSol: 'N/A (launch period)',
+            requiredBalance: MIN_SIGHT_VALUE_SOL,
+            note: 'Price not available yet - Pro granted for holding any $SIGHT',
+          }
+        }
       }
     } catch (priceErr) {
       console.warn('[checkSightBalance] Failed to fetch price from Jupiter:', priceErr.message)
+      // Launch fallback - if they have balance but price check failed, grant Pro
+      if (totalBalance > 0) {
+        return {
+          isPro: true,
+          balance: totalBalance,
+          valueInSol: 'N/A (price unavailable)',
+          requiredBalance: MIN_SIGHT_VALUE_SOL,
+          note: 'Price check failed - Pro granted for holding any $SIGHT',
+        }
+      }
     }
 
     const valueInSol = totalBalance * priceInSol
     const isPro = valueInSol >= MIN_SIGHT_VALUE_SOL
+
+    console.log(`[checkSightBalance] Value: ${valueInSol} SOL, isPro: ${isPro}`)
 
     return {
       isPro,
