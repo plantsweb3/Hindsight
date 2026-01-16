@@ -159,7 +159,7 @@ export default function ProFeatures({ onBack, onVerifySuccess }) {
 
           <div className="pro-unlock-actions">
             <a
-              href="https://pump.fun/coin/DWxk2VaurkbvFGK8cQ15BHf7ene38ngXaMy5K38ipump"
+              href="https://pump.fun"
               target="_blank"
               rel="noopener noreferrer"
               className="pro-btn pro-btn-primary"

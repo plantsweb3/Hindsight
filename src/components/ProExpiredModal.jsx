@@ -162,7 +162,7 @@ export default function ProExpiredModal({ isOpen, onClose, onSuccess }) {
 
             <div className="verify-footer">
               <a
-                href="https://pump.fun/coin/DWxk2VaurkbvFGK8cQ15BHf7ene38ngXaMy5K38ipump"
+                href="https://pump.fun"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="verify-buy-link"

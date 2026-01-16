@@ -103,7 +103,7 @@ export default function UpgradeModal({ isOpen, onClose, onSuccess }) {
           </button>
 
           <a
-            href="https://pump.fun/coin/DWxk2VaurkbvFGK8cQ15BHf7ene38ngXaMy5K38ipump"
+            href="https://pump.fun"
             target="_blank"
             rel="noopener noreferrer"
             className="upgrade-modal-btn secondary"

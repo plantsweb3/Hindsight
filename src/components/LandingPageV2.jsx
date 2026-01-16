@@ -873,7 +873,7 @@ function SightSection({ onOpenPro }) {
 
           {/* Buttons */}
           <div className="sight-buttons">
-            <a href="https://pump.fun/coin/DWxk2VaurkbvFGK8cQ15BHf7ene38ngXaMy5K38ipump" target="_blank" rel="noopener noreferrer" className="sight-btn sight-btn-primary">
+            <a href="https://pump.fun" target="_blank" rel="noopener noreferrer" className="sight-btn sight-btn-primary">
               Buy on Pump.fun
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M5 12h14M12 5l7 7-7 7" />
